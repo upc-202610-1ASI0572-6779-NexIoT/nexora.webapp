@@ -28,8 +28,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import SidebarMenu from '../components/SidebarMenu.vue';
-import HeaderTop from '../components/HeaderTop.vue';
+import SidebarMenu from '@/components/SidebarMenu.vue';
+import HeaderTop from '@/components/HeaderTop.vue';
 import KpiCard from '../components/KpiCard.vue';
 import ConsumptionChart from '../components/ConsumptionChart.vue';
 import RecentAlerts from '../components/RecentAlerts.vue';

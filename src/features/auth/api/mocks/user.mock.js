@@ -23,6 +23,14 @@ export const MOCK_USERS = [
     role: 'manager',
     status: 'active',
   },
+  {
+    email: 'admin@email.com',
+    password: '1234',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
+    status: 'active',
+  },
 ];
 
 export const MOCK_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6Ik5leG9yYSIsImlhdCI6MTUxNjIzOTAyMn0';

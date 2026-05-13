@@ -11,23 +11,23 @@
     </div>
     
     <nav class="sidebar-nav">
-      <a href="#" class="nav-item active">
+      <router-link to="/dashboard" class="nav-item" active-class="active">
         <font-awesome-icon icon="table-cells-large" />
         <span>Main Panel</span>
-      </a>
-      <a href="#" class="nav-item">
+      </router-link>
+      <router-link to="/buildings" class="nav-item" active-class="active">
         <font-awesome-icon icon="building" />
         <span>Buildings</span>
-      </a>
-      <a href="#" class="nav-item">
+      </router-link>
+      <router-link to="/devices" class="nav-item" active-class="active">
         <font-awesome-icon icon="wifi" />
         <span>Devices</span>
-      </a>
-      <a href="#" class="nav-item">
+      </router-link>
+      <router-link to="/alerts" class="nav-item" active-class="active">
         <font-awesome-icon icon="triangle-exclamation" />
         <span>Alerts</span>
         <span class="badge">3</span>
-      </a>
+      </router-link>
     </nav>
   </aside>
 </template>

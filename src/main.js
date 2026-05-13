@@ -5,9 +5,9 @@ import router from './router'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, faLightbulb, faLock, faWifi, faGear, faTableCellsLarge, faBuilding, faBell, faMagnifyingGlass, faUser, faTemperatureHigh, faDroplet, faXmark, faBars } from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, faLightbulb, faLock, faWifi, faGear, faTableCellsLarge, faBuilding, faBell, faMagnifyingGlass, faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, faLightbulb, faLock, faWifi, faGear, faTableCellsLarge, faBuilding, faBell, faMagnifyingGlass, faUser, faTemperatureHigh, faDroplet, faXmark, faBars)
+library.add(faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, faLightbulb, faLock, faWifi, faGear, faTableCellsLarge, faBuilding, faBell, faMagnifyingGlass, faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus)
 
 import './style.css'
 

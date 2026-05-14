@@ -17,6 +17,11 @@ const routes = [
         component: () => import('../features/property-buildings/views/BuildingsView.vue')
     },
     {
+        path: '/alerts',
+        name: 'alerts',
+        component: () => import('../features/alerts-management/views/AlertsCenterView.vue')
+    },
+    {
         path: '/',
         redirect: '/login'
     }

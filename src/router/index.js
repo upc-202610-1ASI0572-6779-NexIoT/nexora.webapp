@@ -12,6 +12,11 @@ const routes = [
         component: () => import('../features/landlord-dashboard/views/DashboardView.vue')
     },
     {
+        path: '/buildings',
+        name: 'buildings',
+        component: () => import('../features/property-buildings/views/BuildingsView.vue')
+    },
+    {
         path: '/',
         redirect: '/login'
     }

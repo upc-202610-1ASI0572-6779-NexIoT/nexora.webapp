@@ -11,7 +11,8 @@ import {
   faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus,
   faSearch, faFilePdf, faChartLine, faClipboardList, faFilter, faEllipsisV,
   faExclamationCircle, faInfoCircle, faWind, faThermometerHalf, faTint, faBolt,
-  faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt
+  faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
+  faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -20,7 +21,8 @@ library.add(
   faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus,
   faSearch, faFilePdf, faChartLine, faClipboardList, faFilter, faEllipsisV,
   faExclamationCircle, faInfoCircle, faWind, faThermometerHalf, faTint, faBolt,
-  faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt
+  faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
+  faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard
 )
 
 import './style.css'

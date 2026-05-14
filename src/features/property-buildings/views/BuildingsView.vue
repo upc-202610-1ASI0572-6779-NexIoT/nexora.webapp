@@ -1,57 +1,45 @@
 <template>
-  <div class="dashboard-layout">
-    <div :class="['sidebar-overlay', { 'is-active': isSidebarOpen }]" @click="isSidebarOpen = false"></div>
-    <SidebarMenu :class="{ 'is-open': isSidebarOpen }" @close="isSidebarOpen = false" />
-    
-    <div class="main-content">
-      <HeaderTop @toggle-sidebar="isSidebarOpen = !isSidebarOpen" />
-      
-      <div class="buildings-content">
-        <header class="content-header">
-          <div class="title-group">
-            <h1 class="page-title">My Buildings</h1>
-            <p class="page-subtitle">Manage your properties and monitor their efficiency.</p>
-          </div>
-          <button class="btn--primary">
-            <font-awesome-icon icon="plus" />
-            Add Building
-          </button>
-        </header>
-
-        <div class="filters-bar">
-          <div class="search-box">
-            <font-awesome-icon icon="magnifying-glass" />
-            <input type="text" placeholder="Search buildings by name or address..." v-model="searchQuery" />
-          </div>
-          <div class="filter-actions">
-            <select class="filter-select">
-              <option value="all">All Status</option>
-              <option value="optimal">Optimal</option>
-              <option value="warning">Warning</option>
-              <option value="critical">Critical</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="buildings-grid">
-          <BuildingCard 
-            v-for="building in filteredBuildings" 
-            :key="building.id" 
-            :building="building" 
-          />
-        </div>
+  <div class="buildings-content">
+    <header class="content-header">
+      <div class="title-group">
+        <h1 class="page-title">My Buildings</h1>
+        <p class="page-subtitle">Manage your properties and monitor their efficiency.</p>
       </div>
+      <button class="btn--primary">
+        <font-awesome-icon icon="plus" />
+        Add Building
+      </button>
+    </header>
+
+    <div class="filters-bar">
+      <div class="search-box">
+        <font-awesome-icon icon="magnifying-glass" />
+        <input type="text" placeholder="Search buildings by name or address..." v-model="searchQuery" />
+      </div>
+      <div class="filter-actions">
+        <select class="filter-select">
+          <option value="all">All Status</option>
+          <option value="optimal">Optimal</option>
+          <option value="warning">Warning</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="buildings-grid">
+      <BuildingCard 
+        v-for="building in filteredBuildings" 
+        :key="building.id" 
+        :building="building" 
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue';
-import SidebarMenu from '@/components/SidebarMenu.vue';
-import HeaderTop from '@/components/HeaderTop.vue';
 import BuildingCard from '../components/BuildingCard.vue';
 
-const isSidebarOpen = ref(false);
 const searchQuery = ref('');
 
 const buildings = ref([
@@ -106,22 +94,6 @@ const filteredBuildings = computed(() => {
 </script>
 
 <style scoped>
-.dashboard-layout {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  background-color: var(--bg-primary);
-  overflow: hidden;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  min-width: 0;
-}
-
 .buildings-content {
   padding: 0 32px 32px 32px;
   display: flex;
@@ -193,20 +165,7 @@ const filteredBuildings = computed(() => {
   gap: 24px;
 }
 
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 998;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
 
-.sidebar-overlay.is-active {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 @media (max-width: 768px) {
   .buildings-content {

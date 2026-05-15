@@ -38,6 +38,17 @@ const routes = [
         component: () => import('../iam/settings/presentation/views/SettingsView.vue')
     },
     {
+        path: '/subscription',
+        name: 'subscription',
+        component: () => import('../subscriptions-payment-management/presentation/views/SubscriptionPaymentManagementView.vue'),
+        meta: {
+            title: 'Subscription Management',
+            searchPlaceholder: 'Search invoices, plans, or payment methods...',
+            actionLabel: 'Add Payment Method',
+            actionIcon: 'credit-card'
+        }
+    },
+    {
         path: '/',
         redirect: '/login'
     }

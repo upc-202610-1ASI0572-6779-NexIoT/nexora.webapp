@@ -12,7 +12,8 @@ import {
   faSearch, faFilePdf, faChartLine, faClipboardList, faFilter, faEllipsisV,
   faExclamationCircle, faInfoCircle, faWind, faThermometerHalf, faTint, faBolt,
   faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
-  faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard
+  faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard, faDownload,
+  faArrowUp, faSliders
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -22,7 +23,8 @@ library.add(
   faSearch, faFilePdf, faChartLine, faClipboardList, faFilter, faEllipsisV,
   faExclamationCircle, faInfoCircle, faWind, faThermometerHalf, faTint, faBolt,
   faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
-  faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard
+  faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard, faDownload,
+  faArrowUp, faSliders
 )
 
 import './style.css'

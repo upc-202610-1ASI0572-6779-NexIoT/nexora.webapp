@@ -4,12 +4,12 @@
       <button class="menu-btn" @click="$emit('toggle-sidebar')">
         <font-awesome-icon icon="bars" />
       </button>
-      <h1 class="page-title">Properties Management</h1>
+      <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
     
     <div class="search-bar">
       <font-awesome-icon icon="magnifying-glass" class="search-icon" />
-      <input type="text" placeholder="Search properties, tenants, or devices..." />
+      <input type="text" :placeholder="searchPlaceholder" />
     </div>
     
     <div class="header-actions">
@@ -19,15 +19,63 @@
       </button>
       
       <button class="register-btn">
-        <font-awesome-icon icon="building" class="register-icon" />
-        <span class="register-text">Register New Property</span>
+        <font-awesome-icon :icon="actionIcon" class="register-icon" />
+        <span class="register-text">{{ actionLabel }}</span>
       </button>
     </div>
   </header>
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 defineEmits(['toggle-sidebar']);
+
+const route = useRoute();
+
+const routeDefaults = {
+  dashboard: {
+    title: 'Dashboard',
+    searchPlaceholder: 'Search devices, alerts, or locations...',
+    actionLabel: 'Register New Device',
+    actionIcon: 'plus'
+  },
+  buildings: {
+    title: 'Properties Management',
+    searchPlaceholder: 'Search properties, tenants, or devices...',
+    actionLabel: 'Register New Property',
+    actionIcon: 'building'
+  },
+  devices: {
+    title: 'Devices Management',
+    searchPlaceholder: 'Search devices, locations, or status...',
+    actionLabel: 'Register New Device',
+    actionIcon: 'plus'
+  },
+  alerts: {
+    title: 'Alerts Center',
+    searchPlaceholder: 'Search alerts, severity, or devices...',
+    actionLabel: 'Create Alert Rule',
+    actionIcon: 'bell'
+  },
+  settings: {
+    title: 'Settings',
+    searchPlaceholder: 'Search settings, roles, or integrations...',
+    actionLabel: 'Save Settings',
+    actionIcon: 'gear'
+  }
+};
+
+const headerConfig = computed(() => ({
+  ...routeDefaults[route.name],
+  ...route.meta
+}));
+
+const pageTitle = computed(() => headerConfig.value.title || 'Nexora');
+const searchPlaceholder = computed(() => headerConfig.value.searchPlaceholder || 'Search Nexora...');
+const actionLabel = computed(() => headerConfig.value.actionLabel || 'New Item');
+const actionIcon = computed(() => headerConfig.value.actionIcon || 'plus');
 </script>
 
 <style scoped>

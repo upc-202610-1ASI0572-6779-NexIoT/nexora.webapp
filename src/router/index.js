@@ -22,6 +22,17 @@ const routes = [
         component: () => import('../service-monitoring/alerts/presentation/views/AlertsCenterView.vue')
     },
     {
+        path: '/devices',
+        name: 'devices',
+        component: () => import('../asset-management/devices/presentation/views/DevicesView.vue')
+    },
+    {
+        path: '/devices/:deviceId',
+        name: 'device-details',
+        component: () => import('../asset-management/devices/presentation/views/DeviceDetailsView.vue'),
+        props: true
+    },
+    {
         path: '/',
         redirect: '/login'
     }

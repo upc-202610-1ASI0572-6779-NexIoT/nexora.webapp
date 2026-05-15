@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useSettingsStore } from '@/features/settings/presentation/store/settingsStore';
+import { useSettingsStore } from '../store/settingsStore';
 
 const settingsStore = useSettingsStore();
 const activeTab = ref('Profile');
@@ -241,9 +241,7 @@ onMounted(() => {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-/* ... rest of styles ... */
 
-<style scoped>
 .settings-view {
   padding: 25px 30px;
   display: flex;

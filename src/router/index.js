@@ -4,7 +4,7 @@ const routes = [
     {
         path: '/login',
         name: 'login',
-        component: () => import('../iam/presentation/views/LoginView.vue')
+        component: () => import('../iam/auth/presentation/views/LoginView.vue')
     },
     {
         path: '/dashboard',
@@ -20,6 +20,22 @@ const routes = [
         path: '/alerts',
         name: 'alerts',
         component: () => import('../service-monitoring/alerts/presentation/views/AlertsCenterView.vue')
+    },
+    {
+        path: '/devices',
+        name: 'devices',
+        component: () => import('../asset-management/devices/presentation/views/DevicesView.vue')
+    },
+    {
+        path: '/devices/:deviceId',
+        name: 'device-details',
+        component: () => import('../asset-management/devices/presentation/views/DeviceDetailsView.vue'),
+        props: true
+    },
+    {
+        path: '/settings',
+        name: 'settings',
+        component: () => import('../iam/settings/presentation/views/SettingsView.vue')
     },
     {
         path: '/',

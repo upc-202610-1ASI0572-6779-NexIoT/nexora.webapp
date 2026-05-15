@@ -1,16 +1,16 @@
 <template>
   <div class="dashboard-content">
-    <div class="kpis-row">
+    <div v-if="dashboardStore.stats" class="kpis-row">
       <KpiCard 
         title="ACTIVE LEAKS" 
-        value="02" 
+        :value="dashboardStore.stats.kpis.activeLeaks.toString().padStart(2, '0')" 
         subtitle="Critical incidents active" 
         colorType="danger" 
         icon="house-damage" 
       />
       <KpiCard 
         title="AIR QUALITY AVG" 
-        value="Good" 
+        :value="dashboardStore.stats.kpis.airQuality" 
         valueIcon="circle-check"
         subtitle="Optimal range (14 PPM)" 
         colorType="success" 
@@ -18,15 +18,15 @@
       />
       <KpiCard 
         title="DEVICES ONLINE" 
-        value="148" 
-        valueSub="/152"
+        :value="dashboardStore.stats.kpis.devicesOnline.toString()" 
+        :valueSub="'/' + dashboardStore.stats.kpis.totalDevices"
         subtitle="97.4% System Uptime" 
         colorType="default" 
         icon="signal" 
       />
       <KpiCard 
         title="DAILY ENERGY" 
-        value="42.8" 
+        :value="dashboardStore.stats.kpis.dailyEnergy.toString()" 
         valueSuffix="kWh"
         subtitle="-4% from yesterday" 
         colorType="primary" 
@@ -54,11 +54,19 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
+import { useDashboardStore } from '../store/dashboardStore';
 import KpiCard from '../components/KpiCard.vue';
 import ConsumptionChart from '../components/ConsumptionChart.vue';
 import RecentAlerts from '../components/RecentAlerts.vue';
 import AirQualityCard from '../components/AirQualityCard.vue';
 import SystemHealthCard from '../components/SystemHealthCard.vue';
+
+const dashboardStore = useDashboardStore();
+
+onMounted(() => {
+  dashboardStore.fetchStats();
+});
 </script>
 
 <style scoped>

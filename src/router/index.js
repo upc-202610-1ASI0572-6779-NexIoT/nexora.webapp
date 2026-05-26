@@ -27,6 +27,11 @@ const routes = [
         component: () => import('../service-monitoring/alerts/presentation/views/AlertsCenterView.vue')
     },
     {
+        path: '/reports',
+        name: 'reports',
+        component: () => import('../analytics/reports/presentation/views/ReportsView.vue')
+    },
+    {
         path: '/devices',
         name: 'devices',
         component: () => import('../asset-management/devices/presentation/views/DevicesView.vue')

@@ -32,6 +32,11 @@ const routes = [
         component: () => import('../asset-management/devices/presentation/views/DevicesView.vue')
     },
     {
+        path: '/devices/new',
+        name: 'device-registration',
+        component: () => import('../asset-management/devices/presentation/views/DeviceRegistrationView.vue')
+    },
+    {
         path: '/devices/:deviceId',
         name: 'device-details',
         component: () => import('../asset-management/devices/presentation/views/DeviceDetailsView.vue'),

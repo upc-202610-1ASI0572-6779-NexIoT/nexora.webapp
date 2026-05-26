@@ -53,7 +53,8 @@ const routeDefaults = {
     title: 'Devices Management',
     searchPlaceholder: 'Search devices, locations, or status...',
     actionLabel: 'Register New Device',
-    actionIcon: 'plus'
+    actionIcon: 'plus',
+    actionRoute: '/devices/new'
   },
   alerts: {
     title: 'Alerts Center',

@@ -17,6 +17,11 @@ const routes = [
         component: () => import('../asset-management/properties/presentation/views/BuildingsView.vue')
     },
     {
+        path: '/buildings/new',
+        name: 'property-registration',
+        component: () => import('../asset-management/properties/presentation/views/PropertyRegistrationView.vue')
+    },
+    {
         path: '/alerts',
         name: 'alerts',
         component: () => import('../service-monitoring/alerts/presentation/views/AlertsCenterView.vue')

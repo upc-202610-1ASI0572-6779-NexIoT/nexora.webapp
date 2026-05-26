@@ -18,7 +18,7 @@
         <span class="notification-dot"></span>
       </button>
       
-      <button class="register-btn">
+      <button class="register-btn" @click="handleAction">
         <font-awesome-icon :icon="actionIcon" class="register-icon" />
         <span class="register-text">{{ actionLabel }}</span>
       </button>
@@ -28,11 +28,12 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 defineEmits(['toggle-sidebar']);
 
 const route = useRoute();
+const router = useRouter();
 
 const routeDefaults = {
   dashboard: {
@@ -45,7 +46,8 @@ const routeDefaults = {
     title: 'Properties Management',
     searchPlaceholder: 'Search properties, tenants, or devices...',
     actionLabel: 'Register New Property',
-    actionIcon: 'building'
+    actionIcon: 'building',
+    actionRoute: '/buildings/new'
   },
   devices: {
     title: 'Devices Management',
@@ -67,15 +69,27 @@ const routeDefaults = {
   }
 };
 
-const headerConfig = computed(() => ({
-  ...routeDefaults[route.name],
-  ...route.meta
-}));
+const headerConfig = computed(() => {
+  const name = route.name;
+  const defaults = (name && routeDefaults[name]) || {};
+  const meta = route.meta || {};
+  return {
+    ...defaults,
+    ...meta
+  };
+});
 
 const pageTitle = computed(() => headerConfig.value.title || 'Nexora');
 const searchPlaceholder = computed(() => headerConfig.value.searchPlaceholder || 'Search Nexora...');
 const actionLabel = computed(() => headerConfig.value.actionLabel || 'New Item');
 const actionIcon = computed(() => headerConfig.value.actionIcon || 'plus');
+
+const handleAction = () => {
+  const path = headerConfig.value.actionRoute;
+  if (path) {
+    router.push(path);
+  }
+};
 </script>
 
 <style scoped>

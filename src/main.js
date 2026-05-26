@@ -14,7 +14,7 @@ import {
   faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
   faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard, faDownload,
   faArrowUp, faSliders, faMapPin, faNetworkWired, faTrash, faQrcode, faCircleQuestion, faShield,
-  faUsers, faHeartPulse, faArrowTrendUp
+  faUsers, faHeartPulse, faArrowTrendUp, faPenToSquare, faArrowUpRightFromSquare, faCheck
 } from '@fortawesome/free-solid-svg-icons'
 
 library.add(
@@ -26,7 +26,7 @@ library.add(
   faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
   faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard, faDownload,
   faArrowUp, faSliders, faMapPin, faNetworkWired, faTrash, faQrcode, faCircleQuestion, faShield,
-  faUsers, faHeartPulse, faArrowTrendUp
+  faUsers, faHeartPulse, faArrowTrendUp, faPenToSquare, faArrowUpRightFromSquare, faCheck
 )
 
 import './style.css'

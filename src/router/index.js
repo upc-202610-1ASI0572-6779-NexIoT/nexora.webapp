@@ -22,6 +22,12 @@ const routes = [
         component: () => import('../asset-management/properties/presentation/views/PropertyRegistrationView.vue')
     },
     {
+        path: '/buildings/edit/:id',
+        name: 'property-edit',
+        component: () => import('../asset-management/properties/presentation/views/PropertyEditView.vue'),
+        props: true
+    },
+    {
         path: '/alerts',
         name: 'alerts',
         component: () => import('../service-monitoring/alerts/presentation/views/AlertsCenterView.vue')

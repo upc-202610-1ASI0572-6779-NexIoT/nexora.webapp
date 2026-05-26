@@ -62,6 +62,12 @@ const routeDefaults = {
     actionLabel: 'Create Alert Rule',
     actionIcon: 'bell'
   },
+  reports: {
+    title: 'Consumption Reports',
+    searchPlaceholder: 'Search data points, dates, or assets...',
+    actionLabel: 'Export Data',
+    actionIcon: 'file-pdf'
+  },
   settings: {
     title: 'Settings',
     searchPlaceholder: 'Search settings, roles, or integrations...',

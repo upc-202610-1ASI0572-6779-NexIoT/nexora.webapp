@@ -17,14 +17,35 @@ const routes = [
         component: () => import('../asset-management/properties/presentation/views/BuildingsView.vue')
     },
     {
+        path: '/buildings/new',
+        name: 'property-registration',
+        component: () => import('../asset-management/properties/presentation/views/PropertyRegistrationView.vue')
+    },
+    {
+        path: '/buildings/edit/:id',
+        name: 'property-edit',
+        component: () => import('../asset-management/properties/presentation/views/PropertyEditView.vue'),
+        props: true
+    },
+    {
         path: '/alerts',
         name: 'alerts',
         component: () => import('../service-monitoring/alerts/presentation/views/AlertsCenterView.vue')
     },
     {
+        path: '/reports',
+        name: 'reports',
+        component: () => import('../analytics/reports/presentation/views/ReportsView.vue')
+    },
+    {
         path: '/devices',
         name: 'devices',
         component: () => import('../asset-management/devices/presentation/views/DevicesView.vue')
+    },
+    {
+        path: '/devices/new',
+        name: 'device-registration',
+        component: () => import('../asset-management/devices/presentation/views/DeviceRegistrationView.vue')
     },
     {
         path: '/devices/:deviceId',

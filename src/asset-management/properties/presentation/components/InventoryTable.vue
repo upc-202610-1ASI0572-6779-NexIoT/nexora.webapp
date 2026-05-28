@@ -41,9 +41,14 @@
               </div>
             </td>
             <td>
-              <button class="more-btn">
-                <font-awesome-icon icon="ellipsis-vertical" />
-              </button>
+              <div class="actions-cell">
+                <router-link :to="`/buildings/edit/${item.apartmentId}`" class="edit-btn">
+                  <font-awesome-icon icon="pen-to-square" />
+                </router-link>
+                <button class="more-btn">
+                  <font-awesome-icon icon="ellipsis-vertical" />
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -219,6 +224,23 @@ const getHealthColorClass = (score) => {
   font-weight: 700;
   font-size: 0.85rem;
   width: 32px;
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edit-btn {
+  color: #3498db;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.edit-btn:hover {
+  color: #2980b9;
 }
 
 .more-btn {

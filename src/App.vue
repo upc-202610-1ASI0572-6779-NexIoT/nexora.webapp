@@ -18,8 +18,8 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import SidebarMenu from '@/shared/presentation/components/SidebarMenu.vue';
-import HeaderTop from '@/shared/presentation/components/HeaderTop.vue';
+import SidebarMenu from './shared/presentation/components/SidebarMenu.vue';
+import HeaderTop from './shared/presentation/components/HeaderTop.vue';
 
 const route = useRoute();
 const isSidebarOpen = ref(false);

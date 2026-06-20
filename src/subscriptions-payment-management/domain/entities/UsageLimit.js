@@ -1,3 +1,5 @@
+import { UsagePercentage } from '../../value-objects/UsagePercentage';
+
 export class UsageLimit {
   constructor({ activeDevices, activeDevicesLimit, dataProcessing, dataProcessingLimit, resetDays, remainingPercentage }) {
     this.activeDevices = activeDevices;
@@ -6,6 +8,8 @@ export class UsageLimit {
     this.dataProcessingLimit = dataProcessingLimit;
     this.resetDays = resetDays;
     this.remainingPercentage = remainingPercentage;
+    this._activeDevicesPct = new UsagePercentage((activeDevices / activeDevicesLimit) * 100);
+    this._dataProcessingPct = new UsagePercentage((dataProcessing / dataProcessingLimit) * 100);
   }
 
   getActiveDevicesPercentage() {
@@ -26,5 +30,13 @@ export class UsageLimit {
 
   getCycleSummary() {
     return `Your cycle resets in ${this.resetDays} days. You have ${this.remainingPercentage}% of your volume remaining.`;
+  }
+
+  isNearDeviceLimit() {
+    return this._activeDevicesPct.isNearLimit();
+  }
+
+  isNearDataLimit() {
+    return this._dataProcessingPct.isNearLimit();
   }
 }

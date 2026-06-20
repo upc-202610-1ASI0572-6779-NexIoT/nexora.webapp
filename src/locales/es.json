@@ -1,0 +1,452 @@
+{
+  "settings": {
+    "title": "Configuración",
+    "close": "Cerrar configuración",
+    "tabs": {
+      "system": "Sistema",
+      "account": "Cuenta",
+      "security": "Seguridad"
+    },
+    "language": {
+      "label": "Idioma",
+      "english": "Inglés",
+      "spanish": "Español"
+    },
+    "notifications": {
+      "label": "Notificaciones",
+      "emailTitle": "Alertas por correo",
+      "emailDescription": "Recibe notificaciones por correo electrónico",
+      "smsTitle": "Alertas por SMS",
+      "smsDescription": "Recibe notificaciones por SMS",
+      "pushTitle": "Notificaciones push",
+      "pushDescription": "Recibe notificaciones dentro de la aplicación"
+    },
+    "account": {
+      "editTitle": "Editar información personal",
+      "editDescription": "Actualiza tus datos de perfil y contacto",
+      "deactivateTitle": "Eliminar o desactivar cuenta",
+      "deactivateDescription": "Desactiva o elimina permanentemente tu cuenta",
+      "deactivateConfirmation": "¿Estás seguro de que deseas desactivar tu cuenta? Esta acción puede ser irreversible."
+    },
+    "security": {
+      "passwordLabel": "Contraseña",
+      "passwordStatus": "Último cambio: {value}",
+      "changePassword": "Cambiar contraseña",
+      "currentPasswordPlaceholder": "Contraseña actual",
+      "newPasswordPlaceholder": "Nueva contraseña",
+      "confirmPasswordPlaceholder": "Confirmar nueva contraseña",
+      "updatePassword": "Actualizar",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "never": "Nunca",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirmar nueva contraseña",
+      "currentPasswordInput": "Ingresa la contraseña actual",
+      "newPasswordInput": "Ingresa la nueva contraseña",
+      "confirmPasswordInput": "Repite la nueva contraseña",
+      "showPassword": "Mostrar contraseña",
+      "hidePassword": "Ocultar contraseña",
+      "cancel": "Cancelar",
+      "changingPassword": "Cambiando...",
+      "passwordChanged": "Contraseña cambiada correctamente.",
+      "passwordChangeFailed": "No se pudo cambiar la contraseña.",
+      "errors": {
+        "noUser": "No hay un usuario con sesión activa.",
+        "currentRequired": "La contraseña actual es obligatoria.",
+        "newRequired": "La nueva contraseña es obligatoria.",
+        "invalidPassword": "Debe tener entre 8 y 64 caracteres, con 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (@$!%*?&.#_-).",
+        "confirmRequired": "Confirma tu nueva contraseña.",
+        "passwordMismatch": "Las contraseñas no coinciden.",
+        "samePassword": "La nueva contraseña debe ser diferente de la actual."
+      }
+    }
+  },
+  "sidebar": {
+    "brand": {
+      "name": "Nexora",
+      "tagline": "Gestión IoT",
+      "logoAlt": "Logo de Nexora"
+    },
+    "nav": {
+      "home": "Inicio",
+      "properties": "Propiedades",
+      "devices": "Dispositivos",
+      "alerts": "Alertas",
+      "reports": "Informes",
+      "subscription": "Suscripción"
+    },
+    "user": {
+      "guest": "Invitado",
+      "active": "ACTIVO",
+      "inactive": "INACTIVO",
+      "notSignedIn": "NO HA INICIADO SESIÓN"
+    },
+    "actions": {
+      "logout": "Cerrar sesión",
+      "settings": "Configuración",
+      "close": "Cerrar"
+    }
+  },
+  "profile": {
+    "header": {
+      "title": "Mi perfil",
+      "editAction": "Editar perfil"
+    },
+    "loading": "Cargando perfil...",
+    "accountInfo": "Información de la cuenta",
+    "personalInfo": "Información personal",
+    "email": "Correo electrónico",
+    "status": "Estado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "country": "País",
+    "city": "Ciudad",
+    "address": "Dirección",
+    "phone": "Teléfono",
+    "empty": "No hay datos de perfil disponibles.",
+    "edit": {
+      "title": "Editar perfil",
+      "close": "Cerrar editor de perfil",
+      "firstNamePlaceholder": "Tu nombre",
+      "lastNamePlaceholder": "Tu apellido",
+      "countryPlaceholder": "p. ej. Perú",
+      "cityPlaceholder": "p. ej. Lima",
+      "addressPlaceholder": "p. ej. Av. Javier Prado 123",
+      "phoneNumber": "Número de teléfono",
+      "phonePlaceholder": "p. ej. +51987654321",
+      "optional": "opcional",
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "saveFailed": "No se pudo guardar el perfil.",
+      "errors": {
+        "firstNameRequired": "El nombre es obligatorio.",
+        "firstNameMin": "El nombre debe tener al menos 2 caracteres.",
+        "lastNameRequired": "El apellido es obligatorio.",
+        "lastNameMin": "El apellido debe tener al menos 2 caracteres.",
+        "countryRequired": "El país es obligatorio.",
+        "cityRequired": "La ciudad es obligatoria.",
+        "addressRequired": "La dirección es obligatoria.",
+        "addressMin": "La dirección debe tener al menos 5 caracteres.",
+        "phoneInvalid": "Ingresa un número de teléfono válido (p. ej., +51987654321)."
+      }
+    }
+    ,
+    "loadFailed": "No se pudo cargar el perfil.",
+    "errors": {
+      "USER_NOT_FOUND": "Usuario no encontrado.",
+      "SERVER_ERROR": "Error del servidor. Inténtalo más tarde.",
+      "UPDATE_FAILED": "No se pudo actualizar el perfil."
+    }
+  }
+  ,
+  "common": {
+    "yes": "Si",
+    "no": "No",
+    "comingSoon": "Próximamente"
+  },
+  "subscription": {
+    "loading": "Cargando información de suscripción...",
+    "loadFailed": "No se pudo cargar la información de la suscripción.",
+    "overview": {
+      "ariaLabel": "Resumen de suscripción"
+    },
+    "labels": {
+      "status": "Estado",
+      "start": "Inicio",
+      "nextCharge": "Próximo cobro",
+      "cancelAtPeriodEnd": "Cancelación al final del periodo",
+      "billing": "Facturación",
+      "renewalAmount": "Monto de renovación"
+    },
+    "plan": {
+      "unlimited": "Propiedades ilimitadas",
+      "limited": "Hasta {count} propiedades"
+    },
+    "perMonth": "/ mes",
+    "billingCycle": {
+      "monthly": "Mensual"
+    },
+    "invoice": {
+      "status": {
+        "paid": "Pagado",
+        "pending": "Pendiente"
+      }
+    },
+    "billing": {
+      "title": "Historial de facturación",
+      "exportCsv": "Exportar Excel",
+      "filter": "Filtrar",
+      "headers": {
+        "invoiceId": "ID de factura",
+        "date": "Fecha",
+        "amount": "Monto",
+        "status": "Estado",
+        "action": "Acción"
+      },
+      "viewPdf": "Ver PDF",
+      "filters": {
+        "status": "Estado",
+        "startDate": "Fecha Desde",
+        "endDate": "Fecha Hasta",
+        "clear": "Limpiar Filtros",
+        "all": "Todos",
+        "paid": "Pagados",
+        "pending": "Pendientes",
+        "empty": "No se encontraron comprobantes de facturación con los filtros actuales."
+      },
+      "receipt": {
+        "title": "Boleta de Pago",
+        "code": "Código",
+        "date": "Fecha",
+        "currency": "Moneda",
+        "client": "Cliente",
+        "details": "Detalles de Suscripción",
+        "plan": "Plan",
+        "status": "Estado",
+        "paid": "PAGADO",
+        "pending": "PENDIENTE",
+        "description": "Descripción",
+        "total": "Total",
+        "subtotal": "Subtotal",
+        "tax": "Impuestos (0%)",
+        "footer": "Gracias por su confianza en Nexora.<br>Este documento es un comprobante de pago generado electrónicamente. Para dudas o consultas, contáctenos en support@nexora.io.",
+        "concept": "Suscripción Mensual Nexora IoT Asset Management - Plan {planName}"
+      }
+    },
+    "payment": {
+      "cardTitle": "Tarjeta guardada",
+      "cardHolder": "Titular",
+      "expires": "Vence",
+      "placeholderName": "TU NOMBRE",
+      "placeholderExpiry": "MM/AA",
+      "securityCode": "Código de seguridad",
+      "edit": {
+        "title": "Actualizar Tarjeta de Pago",
+        "brand": "Marca de Tarjeta",
+        "holder": "Titular de la tarjeta",
+        "number": "Número de tarjeta",
+        "expiryMonth": "Mes de vencimiento",
+        "expiryYear": "Año de vencimiento",
+        "cvv": "Código de seguridad (CVV)",
+        "cancel": "Cancelar",
+        "save": "Guardar cambios",
+        "saving": "Guardando...",
+        "errorSaving": "Error al guardar: "
+      }
+    },
+    "actions": {
+      "viewPlans": "Ver Planes",
+      "changePlan": "Cambiar Plan",
+      "updateCard": "Actualizar tarjeta",
+      "addPaymentMethod": "Agregar tarjeta de pago"
+    },
+    "currentPlan": {
+      "title": "Plan actual"
+    },
+    "checkout": {
+      "backToPlans": "Volver a planes de suscripción",
+      "orderSummary": "Resumen de orden",
+      "subtotal": "Subtotal",
+      "taxLabel": "IGV ({rate})",
+      "secureCheckout": "CHECKOUT SEGURO",
+      "summaryHtml": "Estás a punto de activar el plan <strong>{planName}</strong> por <strong>${amount}</strong> al mes.",
+      "summaryNote": "Al hacer clic en \"Activar Suscripción\" aceptas los términos y condiciones del servicio.",
+      "action": {
+        "activate": "Activar Suscripción",
+        "activating": "Activando suscripción..."
+      },
+      "loadPlanFailed": "No se pudieron cargar los detalles del plan.",
+      "activateFailed": "Ocurrió un error al activar la suscripción. Intenta nuevamente."
+    },
+    "empty": {
+      "title": "Sin suscripción activa",
+      "description": "No tienes una suscripción activa. Selecciona un plan para comenzar."
+    },
+    "confirmation": {
+      "title": "Tu suscripción ha sido activada correctamente.",
+      "planLabel": "Plan contratado",
+      "amountLabel": "Monto a pagar",
+      "dueDateLabel": "Fecha de vencimiento",
+      "invoiceLabel": "N° de factura",
+      "statusLabel": "Estado",
+      "statusActive": "Activa",
+      "goToDashboard": "Ir al Dashboard"
+    }
+  },
+   "tenantProfile": {
+      "title": "Perfil del inquilino",
+      "loading": "Cargando inquilino...",
+      "loadFailed": "No se pudo cargar la información del inquilino.",
+      "personalInfo": "Información personal",
+      "location": "Ubicación"
+   },
+   "buildings": {
+      "kpis": {
+        "totalAssets": "Propiedades totales",
+        "activeTenants": "Inquilinos activos",
+        "avgHealthScore": "Puntuación de salud promedio"
+      },
+     "inventory": {
+       "title": "Inventario de propiedades",
+       "searchPlaceholder": "Buscar por ID, código, nombre o inquilino...",
+       "filterAllStatus": "Todos los Estados",
+       "filterAllHealth": "Cualquier Puntuación",
+       "healthLow": "Lento o Crítico (-50%)",
+       "healthMedium": "Aceptable (+50%)",
+       "healthHigh": "Óptimo (+70%)",
+       "showingText": "Mostrando {count} propiedades de {total} totales",
+       "headers": {
+         "apartmentId": "ID",
+         "buildingName": "Nombre de propiedad",
+         "tenantName": "Inquilino",
+         "status": "Estado",
+         "healthScore": "Puntuación de salud",
+         "actions": "Acciones"
+       },
+       "actions": {
+         "edit": "Editar"
+       },
+       "empty": "No se encontraron propiedades.",
+       "showing": "Mostrando {count} propiedades",
+       "viewMore": "Ver más inquilinos"
+     },
+     "breadcrumbs": {
+       "index": "Propiedades",
+       "editProperty": "Editar propiedad",
+       "newRegistration": "Nueva propiedad"
+     },
+     "loading": "Cargando propiedad...",
+      "errors": {
+        "notFound": "Propiedad no encontrada.",
+        "loadFailed": "No se pudo cargar la propiedad.",
+        "updateStatusFailed": "No se pudo actualizar el estado de la propiedad.",
+        "saveFailed": "No se pudo guardar el inquilino.",
+        "deleteFailed": "No se pudo eliminar el inquilino."
+      },
+     "labels": {
+       "propertyCode": "CÓDIGO DE PROPIEDAD"
+     },
+     "form": {
+       "general": {
+         "title": "Información general"
+       },
+       "security": {
+         "title": "Configuración de seguridad"
+       },
+       "tenant": {
+         "title": "Información del inquilino"
+       },
+       "deviceLink": {
+         "title": "Vinculación de dispositivos"
+       },
+        "labels": {
+          "propertyName": "NOMBRE DE LA PROPIEDAD",
+          "propertyType": "TIPO DE PROPIEDAD",
+          "country": "PAÍS",
+          "city": "CIUDAD",
+          "address": "DIRECCIÓN",
+          "description": "DESCRIPCIÓN",
+          "zoning": "ZONIFICACIÓN",
+          "firstName": "NOMBRE",
+          "lastName": "APELLIDO",
+          "phone": "TELÉFONO"
+        },
+        "placeholders": {
+          "propertyName": "Ingresa el nombre de la propiedad",
+          "selectType": "Selecciona el tipo de propiedad",
+          "country": "Ingresa el país",
+          "city": "Ingresa la ciudad",
+          "address": "Ingresa la dirección de la propiedad",
+          "description": "Ingresa una descripción (opcional)"
+        },
+       "gateways": {
+         "title": "Puertas de enlace de hardware",
+         "add": "Agregar puerta de enlace",
+         "serialPlaceholder": "Ingresa el número de serie o ID de puerta de enlace",
+         "linkDevice": "Vincular dispositivo",
+         "helper": "Vincula puertas de enlace IoT para gestionar los dispositivos y sensores conectados de tu propiedad."
+       },
+       "noDescription": "No hay descripción disponible."
+     },
+      "types": {
+        "industrial": "Industrial",
+        "commercial": "Comercial",
+        "residential": "Residencial",
+        "house": "Casa",
+        "apartment": "Apartamento",
+        "room": "Habitación",
+        "office": "Oficina"
+      },
+     "security": {
+       "modeLabel": "MODO DE SEGURIDAD",
+       "armed": "Armado",
+       "disarmed": "Desarmado",
+       "enabled": "Habilitado",
+       "disabled": "Deshabilitado",
+       "helper": "La configuración del modo de seguridad estará disponible en una futura actualización."
+     },
+      "tenant": {
+        "add": "Agregar inquilino",
+        "noTenants": "No hay inquilinos asignados aún.",
+        "confirmDelete": "¿Estás seguro de eliminar este inquilino?"
+      },
+      "mockups": {
+        "tenant": "La gestión de inquilinos estará disponible pronto. Podrás asignar inquilinos a tus propiedades y gestionar su acceso.",
+        "deviceLink": "La vinculación de dispositivos estará disponible pronto. Podrás conectar y gestionar gateways y sensores IoT para esta propiedad."
+      },
+     "statusCard": {
+       "title": "Estado de la propiedad"
+     },
+     "status": {
+       "operationalLabel": "ESTADO OPERATIVO",
+       "active": "Activo",
+       "inactive": "Inactivo",
+       "maintenance": "Mantenimiento"
+     },
+     "notifications": {
+       "statusUpdated": "Estado actualizado correctamente.",
+       "unsavedChanges": "Cambios de estado sin guardar.",
+       "allSaved": "Todos los cambios guardados."
+     },
+      "actions": {
+        "registerNew": "Registrar nueva propiedad",
+        "saveStatus": "Guardar estado",
+        "saveChanges": "Guardar cambios",
+        "save": "Guardar",
+        "delete": "Eliminar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "backToList": "Volver a la lista",
+       "create": {
+         "createProperty": "Crear propiedad",
+         "saveDraft": "Guardar como borrador",
+         "discard": "Descartar cambios",
+          "error": {
+            "noSubscription": "Necesitas una suscripción activa para crear propiedades.",
+            "limitReached": "Has alcanzado el número máximo de propiedades para tu plan.",
+            "createFailed": "No se pudo crear la propiedad."
+          }
+       }
+     },
+     "alerts": {
+       "regulatory": {
+         "title": "Cumplimiento normativo",
+         "description": "Esta propiedad cumple con todos los códigos de construcción y regulaciones aplicables."
+       }
+     },
+     "details": {
+       "title": "Detalles de la propiedad",
+       "propertyCode": "Código de propiedad",
+       "landlord": "Propietario",
+       "contact": "Contacto",
+       "created": "Creado",
+       "lastUpdated": "Última actualización"
+     },
+     "preview": {
+       "assetPreview": "VISTA PREVIA",
+       "buildingAlt": "Vista previa del edificio"
+     }
+   }
+}

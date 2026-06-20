@@ -53,7 +53,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '../../../iam/auth/presentation/store/authStore';
+import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 import { useI18n } from '@/shared/presentation/i18n';
 
 const route = useRoute();

@@ -1,126 +1,51 @@
-import apiClient from '@/shared/infrastructure/http/apiClient';
-import { ISubscriptionPaymentRepository } from '../../domain/repositories/ISubscriptionPaymentRepository';
+import { SubscriptionPaymentMapper } from '../mappers/SubscriptionPaymentMapper';
 
-export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepository {
-  async getPlans() {
-    try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/plans');
-      return data;
-    } catch (err) {
-      const body = err.response?.data;
-      const message = typeof body === 'string' ? body : body?.message || '';
-      throw {
-        code: 'SERVER_ERROR',
-        message: message || 'Unable to load subscription plans.',
-      };
-    }
-  }
-
-  async getCurrentSubscription() {
-    try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/current');
-      return data.subscription || null;
-    } catch (err) {
-      const status = err.response?.status;
-      const body = err.response?.data;
-      const message = typeof body === 'string' ? body : body?.message || '';
-
-      if (status === 404) {
-        return null;
+export class SubscriptionPaymentRepositoryImpl {
+  constructor() {
+    this.rawSubscriptionPayment = {
+      tabs: ['Subscription', 'Billing Overview', 'Usage Logs', 'Payment Methods'],
+      plan: {
+        name: 'Enterprise Infrastructure Pro',
+        description: 'Managed Industrial IoT solution for up to 5,000 devices across multiple regions.',
+        status: 'active',
+        billingCycle: 'Annual (Save 15%)',
+        nextPayment: 'October 12, 2024',
+        renewalAmount: '$4,800.00 / year'
+      },
+      usage: {
+        activeDevices: 3420,
+        activeDevicesLimit: 5000,
+        dataProcessing: 1.2,
+        dataProcessingLimit: 2.0,
+        resetDays: 14,
+        remainingPercentage: 26
+      },
+      invoices: [
+        { id: 'INV-2023-0912', date: 'Sep 12, 2023', amount: '$4,800.00', status: 'paid' },
+        { id: 'INV-2022-0912', date: 'Sep 12, 2022', amount: '$4,800.00', status: 'paid' },
+        { id: 'INV-2021-0912', date: 'Sep 12, 2021', amount: '$4,800.00', status: 'paid' },
+        { id: 'INV-2020-0912', date: 'Sep 12, 2020', amount: '$2,400.00', status: 'paid' }
+      ],
+      paymentMethod: {
+        brand: 'visa',
+        maskedNumber: '•••• •••• •••• 2422',
+        expiresAt: '12/26'
+      },
+      accountManager: {
+        name: 'Sarah Jenkins',
+        email: 's.jenkins@nexora.io'
       }
-
-      throw {
-        code: 'SERVER_ERROR',
-        message: message || 'Unable to load subscription data.',
-      };
-    }
+    };
   }
 
-  async activateSubscription(planId) {
-    try {
-      const { data } = await apiClient.post('/api/v1/subscriptions', {
-        subscriptionPlanId: planId,
-      });
-      return {
-        subscription: data.subscription,
-        amountDue: data.amountDue,
-        dueDate: data.dueDate,
-        invoiceId: data.invoiceId,
-      };
-    } catch (err) {
-      const status = err.response?.status;
-      const body = err.response?.data;
-      const message = typeof body === 'string' ? body : body?.message || '';
-
-      if (status === 400) {
-        throw { code: 'VALIDATION_ERROR', message: message || 'Invalid request.' };
-      }
-
-      throw {
-        code: 'SERVER_ERROR',
-        message: message || 'Unable to activate subscription.',
-      };
-    }
-  }
-
-  async getPaymentMethods() {
-    try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/payment-methods');
-      return data;
-    } catch (err) {
-      return { paymentMethods: [] };
-    }
-  }
-
-  async getInvoices() {
-    try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/invoices');
-      return data;
-    } catch (err) {
-      return { invoices: [] };
-    }
-  }
-
-  async updatePaymentMethod(id, data) {
-    try {
-      const { data: response } = await apiClient.put(`/api/v1/subscriptions/payment-methods/${id}`, data);
-      return response;
-    } catch (err) {
-      const status = err.response?.status;
-      const body = err.response?.data;
-      const message = typeof body === 'string' ? body : body?.message || '';
-
-      if (status === 404) {
-        throw { code: 'NOT_FOUND', message: 'Payment method not found.' };
-      }
-      if (status === 400) {
-        throw { code: 'VALIDATION_ERROR', message: message || 'Invalid data.' };
-      }
-
-      throw {
-        code: 'SERVER_ERROR',
-        message: message || 'Unable to update payment method.',
-      };
-    }
-  }
-
-  async cancelSubscription() {
-    try {
-      const { data } = await apiClient.put('/api/v1/subscriptions/status');
-      return data;
-    } catch (err) {
-      const status = err.response?.status;
-      const body = err.response?.data;
-      const message = typeof body === 'string' ? body : body?.message || '';
-
-      if (status === 400) {
-        throw { code: 'VALIDATION_ERROR', message: message || message || 'Cannot cancel subscription.' };
-      }
-
-      throw {
-        code: 'SERVER_ERROR',
-        message: message || 'Unable to cancel subscription.',
-      };
-    }
+  async getOverview() {
+    return {
+      tabs: this.rawSubscriptionPayment.tabs,
+      plan: SubscriptionPaymentMapper.planToDomain(this.rawSubscriptionPayment.plan),
+      usage: SubscriptionPaymentMapper.usageToDomain(this.rawSubscriptionPayment.usage),
+      invoices: this.rawSubscriptionPayment.invoices.map(SubscriptionPaymentMapper.invoiceToDomain),
+      paymentMethod: SubscriptionPaymentMapper.paymentMethodToDomain(this.rawSubscriptionPayment.paymentMethod),
+      accountManager: SubscriptionPaymentMapper.accountManagerToDomain(this.rawSubscriptionPayment.accountManager)
+    };
   }
 }

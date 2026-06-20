@@ -15,4 +15,8 @@ export class SubscriptionPlan {
   getStatusLabel() {
     return this.isActive() ? 'Active' : 'Inactive';
   }
+
+  requiresPayment() {
+    return this.renewalAmount && this.renewalAmount > 0;
+  }
 }

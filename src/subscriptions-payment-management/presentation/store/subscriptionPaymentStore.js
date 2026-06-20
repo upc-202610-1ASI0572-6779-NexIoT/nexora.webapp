@@ -7,25 +7,25 @@ const getSubscriptionPaymentOverviewUseCase = new GetSubscriptionPaymentOverview
 
 export const useSubscriptionPaymentStore = defineStore('subscription-payment', {
   state: () => ({
-    tabs: [],
+    subscription: null,
     plan: null,
-    usage: null,
+    paymentMethods: [],
     invoices: [],
-    paymentMethod: null,
-    accountManager: null,
-    isLoading: false
+    isLoading: false,
+    error: null,
   }),
   actions: {
     async fetchOverview() {
       this.isLoading = true;
+      this.error = null;
       try {
         const overview = await getSubscriptionPaymentOverviewUseCase.execute();
-        this.tabs = overview.tabs;
+        this.subscription = overview.subscription;
         this.plan = overview.plan;
-        this.usage = overview.usage;
-        this.invoices = overview.invoices;
-        this.paymentMethod = overview.paymentMethod;
-        this.accountManager = overview.accountManager;
+        this.paymentMethods = overview.paymentMethods || [];
+        this.invoices = overview.invoices || [];
+      } catch (err) {
+        this.error = err.code || 'SERVER_ERROR';
       } finally {
         this.isLoading = false;
       }

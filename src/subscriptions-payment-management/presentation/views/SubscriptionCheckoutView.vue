@@ -103,8 +103,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '@/shared/presentation/i18n';
 import { ActivateSubscriptionUseCase } from '../../application/use-cases/ActivateSubscriptionUseCase';
-import { SubscriptionPaymentRepositoryImpl } from '../../../../../../../Users/mimim/Downloads/MaferXD/MaferXD/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl.js';
-import { useAuthStore } from '../../../iam/auth/presentation/store/authStore';
+import { SubscriptionPaymentRepositoryImpl } from '@/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl.js';
+import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 
 const route = useRoute();
 const router = useRouter();

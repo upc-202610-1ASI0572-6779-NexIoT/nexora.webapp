@@ -1,8 +1,7 @@
 <template>
   <article class="current-plan-card">
-    <div class="card-eyebrow-row">
-      <span class="eyebrow">Current Plan</span>
-      <span class="status-pill">{{ plan.getStatusLabel() }}</span>
+    <div class="card-eyebrow">
+      <span class="eyebrow">{{ t('subscription.currentPlan.title') }}</span>
     </div>
 
     <div class="plan-copy">
@@ -12,39 +11,41 @@
 
     <div class="plan-details">
       <div>
-        <span>Billing Cycle</span>
+        <span>{{ t('subscription.labels.billing') }}</span>
         <strong>{{ plan.billingCycle }}</strong>
       </div>
       <div>
-        <span>Next Payment</span>
-        <strong>{{ plan.nextPayment }}</strong>
-      </div>
-      <div>
-        <span>Renewal Amount</span>
+        <span>{{ t('subscription.labels.renewalAmount') }}</span>
         <strong>{{ plan.renewalAmount }}</strong>
       </div>
     </div>
 
     <div class="plan-actions">
-      <button class="primary-action" type="button">
+      <button class="primary-action" type="button" @click="goToPlanSelection">
         <font-awesome-icon icon="arrow-up" />
-        <span>Upgrade Plan</span>
-      </button>
-      <button class="secondary-action" type="button">
-        <font-awesome-icon icon="sliders" />
-        <span>Manage Features</span>
+        <span>{{ t('subscription.actions.changePlan') }}</span>
       </button>
     </div>
   </article>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
+import { useI18n } from '@/shared/presentation/i18n';
+
 defineProps({
   plan: {
     type: Object,
     required: true
   }
 });
+
+const router = useRouter();
+const { t } = useI18n();
+
+const goToPlanSelection = () => {
+  router.push({ name: 'plan-selection' });
+};
 </script>
 
 <style scoped>
@@ -57,31 +58,17 @@ defineProps({
   padding: 28px 30px;
 }
 
-.card-eyebrow-row,
+.card-eyebrow,
 .plan-actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.card-eyebrow-row {
-  justify-content: space-between;
-}
-
 .eyebrow {
   color: #b45309;
   font-size: 0.82rem;
   font-weight: 700;
-  text-transform: uppercase;
-}
-
-.status-pill {
-  background: #fff1e6;
-  border-radius: 999px;
-  color: #b45309;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 6px 14px;
   text-transform: uppercase;
 }
 
@@ -107,7 +94,7 @@ defineProps({
 .plan-details {
   border-top: 1px solid #e5e7eb;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin-top: 28px;
   padding-top: 22px;
@@ -132,10 +119,12 @@ defineProps({
   margin-top: 28px;
 }
 
-.primary-action,
-.secondary-action {
+.primary-action {
   align-items: center;
+  background: #f47b20;
+  border: 1px solid #f47b20;
   border-radius: 4px;
+  color: #ffffff;
   cursor: pointer;
   display: inline-flex;
   font-family: var(--font-general);
@@ -147,20 +136,7 @@ defineProps({
   transition: filter 0.2s ease, border-color 0.2s ease;
 }
 
-.primary-action {
-  background: #f47b20;
-  border: 1px solid #f47b20;
-  color: #ffffff;
-}
-
-.secondary-action {
-  background: #ffffff;
-  border: 1px solid #082765;
-  color: #082765;
-}
-
-.primary-action:hover,
-.secondary-action:hover {
+.primary-action:hover {
   filter: brightness(0.96);
 }
 

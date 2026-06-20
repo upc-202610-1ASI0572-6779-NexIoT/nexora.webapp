@@ -1,12 +1,12 @@
 <template>
   <section class="subscription-tabs" aria-label="Subscription sections">
     <button
-      v-for="tab in tabs"
-      :key="tab"
-      class="tab-button"
-      :class="{ active: tab === activeTab }"
-      type="button"
-      @click="$emit('update:activeTab', tab)"
+        v-for="tab in tabs"
+        :key="tab"
+        class="tab-button"
+        :class="{ active: tab === activeTab }"
+        type="button"
+        @click="$emit('update:activeTab', tab)"
     >
       {{ tab }}
     </button>

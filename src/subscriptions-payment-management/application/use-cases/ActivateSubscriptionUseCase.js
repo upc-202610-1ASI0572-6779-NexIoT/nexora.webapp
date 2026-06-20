@@ -1,5 +1,3 @@
-import { SubscriptionActivated } from '../../domain/events/SubscriptionActivated';
-
 export class ActivateSubscriptionUseCase {
   constructor(subscriptionPaymentRepository) {
     this.subscriptionPaymentRepository = subscriptionPaymentRepository;

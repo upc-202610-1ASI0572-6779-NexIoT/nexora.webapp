@@ -1,0 +1,452 @@
+{
+  "settings": {
+    "title": "Settings",
+    "close": "Close settings",
+    "tabs": {
+      "system": "System",
+      "account": "Account",
+      "security": "Security"
+    },
+    "language": {
+      "label": "Language",
+      "english": "English",
+      "spanish": "Spanish"
+    },
+    "notifications": {
+      "label": "Notifications",
+      "emailTitle": "Email Alerts",
+      "emailDescription": "Receive notifications via email",
+      "smsTitle": "SMS Alerts",
+      "smsDescription": "Receive notifications via SMS",
+      "pushTitle": "Push Notifications",
+      "pushDescription": "Receive push notifications in-app"
+    },
+    "account": {
+      "editTitle": "Edit personal information",
+      "editDescription": "Update your profile and contact details",
+      "deactivateTitle": "Delete or deactivate account",
+      "deactivateDescription": "Deactivate or permanently delete your account",
+      "deactivateConfirmation": "Are you sure you want to deactivate your account? This action may be irreversible."
+    },
+    "security": {
+      "passwordLabel": "Password",
+      "passwordStatus": "Last changed: {value}",
+      "changePassword": "Change Password",
+      "currentPasswordPlaceholder": "Current password",
+      "newPasswordPlaceholder": "New password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "updatePassword": "Update",
+      "passwordMismatch": "Passwords do not match",
+      "never": "Never",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "currentPasswordInput": "Enter current password",
+      "newPasswordInput": "Enter new password",
+      "confirmPasswordInput": "Repeat new password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "cancel": "Cancel",
+      "changingPassword": "Changing...",
+      "passwordChanged": "Password changed successfully.",
+      "passwordChangeFailed": "Failed to change password.",
+      "errors": {
+        "noUser": "No user is currently logged in.",
+        "currentRequired": "Current password is required.",
+        "newRequired": "New password is required.",
+        "invalidPassword": "Must be 8-64 chars with 1 uppercase, 1 lowercase, 1 number, and 1 special character (@$!%*?&.#_-).",
+        "confirmRequired": "Please confirm your new password.",
+        "passwordMismatch": "Passwords do not match.",
+        "samePassword": "New password must be different from current password."
+      }
+    }
+  },
+  "sidebar": {
+    "brand": {
+      "name": "Nexora",
+      "tagline": "IoT Management",
+      "logoAlt": "Nexora logo"
+    },
+    "nav": {
+      "home": "Home",
+      "properties": "Properties",
+      "devices": "Devices",
+      "alerts": "Alerts",
+      "reports": "Reports",
+      "subscription": "Subscription"
+    },
+    "user": {
+      "guest": "Guest",
+      "active": "ACTIVE",
+      "inactive": "INACTIVE",
+      "notSignedIn": "NOT SIGNED IN"
+    },
+    "actions": {
+      "logout": "Log Out",
+      "settings": "Settings",
+      "close": "Close"
+    }
+  },
+  "profile": {
+    "header": {
+      "title": "My Profile",
+      "editAction": "Edit Profile"
+    },
+    "loading": "Loading profile...",
+    "accountInfo": "Account Information",
+    "personalInfo": "Personal Information",
+    "email": "Email",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "country": "Country",
+    "city": "City",
+    "address": "Address",
+    "phone": "Phone",
+    "empty": "No profile data available.",
+    "edit": {
+      "title": "Edit Profile",
+      "close": "Close profile editor",
+      "firstNamePlaceholder": "Your first name",
+      "lastNamePlaceholder": "Your last name",
+      "countryPlaceholder": "e.g. Peru",
+      "cityPlaceholder": "e.g. Lima",
+      "addressPlaceholder": "e.g. Av. Javier Prado 123",
+      "phoneNumber": "Phone number",
+      "phonePlaceholder": "e.g. +51987654321",
+      "optional": "optional",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "saveFailed": "Failed to save profile.",
+      "errors": {
+        "firstNameRequired": "First name is required.",
+        "firstNameMin": "First name must be at least 2 characters.",
+        "lastNameRequired": "Last name is required.",
+        "lastNameMin": "Last name must be at least 2 characters.",
+        "countryRequired": "Country is required.",
+        "cityRequired": "City is required.",
+        "addressRequired": "Address is required.",
+        "addressMin": "Address must be at least 5 characters.",
+        "phoneInvalid": "Enter a valid phone number (e.g., +51987654321)."
+      }
+    }
+    ,
+    "loadFailed": "Failed to load profile.",
+    "errors": {
+      "USER_NOT_FOUND": "User not found.",
+      "SERVER_ERROR": "Server error. Please try again later.",
+      "UPDATE_FAILED": "Failed to update profile."
+    }
+  }
+  ,
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "comingSoon": "Coming Soon"
+  },
+  "subscription": {
+    "loading": "Loading subscription information...",
+    "loadFailed": "Failed to load subscription information.",
+    "overview": {
+      "ariaLabel": "Subscription overview"
+    },
+    "labels": {
+      "status": "Status",
+      "start": "Start",
+      "nextCharge": "Next charge",
+      "cancelAtPeriodEnd": "Cancel at period end",
+      "billing": "Billing",
+      "renewalAmount": "Renewal Amount"
+    },
+    "plan": {
+      "unlimited": "Unlimited properties",
+      "limited": "Up to {count} properties"
+    },
+    "perMonth": "/ month",
+    "billingCycle": {
+      "monthly": "Monthly"
+    },
+    "invoice": {
+      "status": {
+        "paid": "Paid",
+        "pending": "Pending"
+      }
+    },
+    "billing": {
+      "title": "Billing History",
+      "exportCsv": "Export Excel",
+      "filter": "Filter",
+      "headers": {
+        "invoiceId": "Invoice ID",
+        "date": "Date",
+        "amount": "Amount",
+        "status": "Status",
+        "action": "Action"
+      },
+      "viewPdf": "View PDF",
+      "filters": {
+        "status": "Status",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "clear": "Clear Filters",
+        "all": "All",
+        "paid": "Paid",
+        "pending": "Pending",
+        "empty": "No billing invoices found with the current filters."
+      },
+      "receipt": {
+        "title": "Receipt",
+        "code": "Code",
+        "date": "Date",
+        "currency": "Currency",
+        "client": "Client",
+        "details": "Subscription Details",
+        "plan": "Plan",
+        "status": "Status",
+        "paid": "PAID",
+        "pending": "PENDING",
+        "description": "Description",
+        "total": "Total",
+        "subtotal": "Subtotal",
+        "tax": "Tax (0%)",
+        "footer": "Thank you for trusting Nexora.<br>This document is an electronically generated proof of payment. For questions, contact us at support@nexora.io.",
+        "concept": "Nexora IoT Asset Management Monthly Subscription - Plan {planName}"
+      }
+    },
+    "payment": {
+      "cardTitle": "Saved Card",
+      "cardHolder": "Card Holder",
+      "expires": "Expires",
+      "placeholderName": "YOUR NAME",
+      "placeholderExpiry": "MM/YY",
+      "securityCode": "Security code",
+      "edit": {
+        "title": "Update Payment Card",
+        "brand": "Card Brand",
+        "holder": "Cardholder Name",
+        "number": "Card Number",
+        "expiryMonth": "Expiration Month",
+        "expiryYear": "Expiration Year",
+        "cvv": "Security Code (CVV)",
+        "cancel": "Cancel",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "errorSaving": "Error saving: "
+      }
+    },
+    "actions": {
+      "viewPlans": "View Plans",
+      "changePlan": "Change Plan",
+      "updateCard": "Update Card",
+      "addPaymentMethod": "Add Payment Card"
+    },
+    "currentPlan": {
+      "title": "Current Plan"
+    },
+    "checkout": {
+      "backToPlans": "Back to subscription plans",
+      "orderSummary": "Order Summary",
+      "subtotal": "Subtotal",
+      "taxLabel": "Tax ({rate})",
+      "secureCheckout": "Secure Checkout",
+      "summaryHtml": "You are about to activate the <strong>{planName}</strong> plan for <strong>${amount}</strong> per month.",
+      "summaryNote": "By clicking \"Activate Subscription\" you agree to the service terms and conditions.",
+      "action": {
+        "activate": "Activate Subscription",
+        "activating": "Activating subscription..."
+      },
+      "loadPlanFailed": "Failed to load plan details.",
+      "activateFailed": "An error occurred while activating subscription. Please try again."
+    },
+    "empty": {
+      "title": "No active subscription",
+      "description": "You do not have an active subscription. Choose a plan to get started."
+    },
+    "confirmation": {
+      "title": "Your subscription has been successfully activated.",
+      "planLabel": "Plan",
+      "amountLabel": "Amount",
+      "dueDateLabel": "Due date",
+      "invoiceLabel": "Invoice #",
+      "statusLabel": "Status",
+      "statusActive": "Active",
+      "goToDashboard": "Go to Dashboard"
+    }
+  },
+   "tenantProfile": {
+      "title": "Tenant Profile",
+      "loading": "Loading tenant...",
+      "loadFailed": "Failed to load tenant data.",
+      "personalInfo": "Personal Information",
+      "location": "Location"
+   },
+   "buildings": {
+      "kpis": {
+        "totalAssets": "Total Properties",
+        "activeTenants": "Active Tenants",
+        "avgHealthScore": "Avg Health Score"
+      },
+     "inventory": {
+       "title": "Property Inventory",
+       "searchPlaceholder": "Search by ID, code, name or tenant...",
+       "filterAllStatus": "All Statuses",
+       "filterAllHealth": "Any Score",
+       "healthLow": "Slow or Critical (-50%)",
+       "healthMedium": "Acceptable (+50%)",
+       "healthHigh": "Optimal (+70%)",
+       "showingText": "Showing {count} properties of {total} total properties",
+       "headers": {
+         "apartmentId": "ID",
+         "buildingName": "Property Name",
+         "tenantName": "Tenant",
+         "status": "Status",
+         "healthScore": "Health Score",
+         "actions": "Actions"
+       },
+       "actions": {
+         "edit": "Edit"
+       },
+       "empty": "No properties found.",
+       "showing": "Showing {count} properties",
+       "viewMore": "View more tenants"
+     },
+     "breadcrumbs": {
+       "index": "Properties",
+       "editProperty": "Edit Property",
+       "newRegistration": "New Property"
+     },
+     "loading": "Loading property...",
+      "errors": {
+        "notFound": "Property not found.",
+        "loadFailed": "Failed to load property.",
+        "updateStatusFailed": "Failed to update property status.",
+        "saveFailed": "Failed to save tenant.",
+        "deleteFailed": "Failed to delete tenant."
+      },
+     "labels": {
+       "propertyCode": "PROPERTY CODE"
+     },
+     "form": {
+       "general": {
+         "title": "General Information"
+       },
+       "security": {
+         "title": "Security Configuration"
+       },
+       "tenant": {
+         "title": "Tenant Information"
+       },
+       "deviceLink": {
+         "title": "Device Linkage"
+       },
+        "labels": {
+          "propertyName": "PROPERTY NAME",
+          "propertyType": "PROPERTY TYPE",
+          "country": "COUNTRY",
+          "city": "CITY",
+          "address": "ADDRESS",
+          "description": "DESCRIPTION",
+          "zoning": "ZONING",
+          "firstName": "FIRST NAME",
+          "lastName": "LAST NAME",
+          "phone": "PHONE"
+        },
+        "placeholders": {
+          "propertyName": "Enter property name",
+          "selectType": "Select property type",
+          "country": "Enter country",
+          "city": "Enter city",
+          "address": "Enter property address",
+          "description": "Enter description (optional)"
+        },
+       "gateways": {
+         "title": "Hardware Gateways",
+         "add": "Add Gateway",
+         "serialPlaceholder": "Enter serial number or gateway ID",
+         "linkDevice": "Link Device",
+         "helper": "Link IoT gateways to manage your property's connected devices and sensors."
+       },
+       "noDescription": "No description provided."
+     },
+      "types": {
+        "industrial": "Industrial",
+        "commercial": "Commercial",
+        "residential": "Residential",
+        "house": "House",
+        "apartment": "Apartment",
+        "room": "Room",
+        "office": "Office"
+      },
+     "security": {
+       "modeLabel": "SECURITY MODE",
+       "armed": "Armed",
+       "disarmed": "Disarmed",
+       "enabled": "Enabled",
+       "disabled": "Disabled",
+       "helper": "Security mode configuration will be available in a future update."
+     },
+      "tenant": {
+        "add": "Add Tenant",
+        "noTenants": "No tenants assigned yet.",
+        "confirmDelete": "Are you sure you want to delete this tenant?"
+      },
+      "mockups": {
+        "tenant": "Tenant management will be available soon. You will be able to assign tenants to your properties and manage their access.",
+        "deviceLink": "Device linking will be available soon. You will be able to connect and manage IoT gateways and sensors for this property."
+      },
+     "statusCard": {
+       "title": "Property Status"
+     },
+     "status": {
+       "operationalLabel": "OPERATIONAL STATUS",
+       "active": "Active",
+       "inactive": "Inactive",
+       "maintenance": "Maintenance"
+     },
+     "notifications": {
+       "statusUpdated": "Status updated successfully.",
+       "unsavedChanges": "Unsaved status changes detected.",
+       "allSaved": "All changes saved."
+     },
+      "actions": {
+        "registerNew": "Register New Property",
+        "saveStatus": "Save Status",
+        "saveChanges": "Save Changes",
+        "save": "Save",
+        "delete": "Delete",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "backToList": "Back to list",
+       "create": {
+         "createProperty": "Create Property",
+         "saveDraft": "Save as Draft",
+         "discard": "Discard Changes",
+          "error": {
+            "noSubscription": "You need an active subscription to create properties.",
+            "limitReached": "You have reached the maximum number of properties for your plan.",
+            "createFailed": "Failed to create property."
+          }
+       }
+     },
+     "alerts": {
+       "regulatory": {
+         "title": "Regulatory Compliance",
+         "description": "This property complies with all applicable building codes and regulations."
+       }
+     },
+     "details": {
+       "title": "Property Details",
+       "propertyCode": "Property Code",
+       "landlord": "Landlord",
+       "contact": "Contact",
+       "created": "Created",
+       "lastUpdated": "Last Updated"
+     },
+     "preview": {
+       "assetPreview": "ASSET PREVIEW",
+       "buildingAlt": "Building Preview"
+     }
+   }
+}

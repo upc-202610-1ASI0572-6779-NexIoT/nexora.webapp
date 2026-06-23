@@ -23,13 +23,13 @@ const routes = [
         path: '/checkout',
         name: 'checkout',
         meta: { requiresAuth: true, requiresSubscription: false },
-        component: () => import('../subscriptions-payment-management/presentation/views/SubscriptionCheckoutView.vue')
+        component: () => import('../contexts/subscriptions-payment-management/presentation/views/SubscriptionCheckoutView.vue')
     },
     {
         path: '/subscription-confirmation',
         name: 'subscription-confirmation',
         meta: { requiresAuth: true, requiresSubscription: false },
-        component: () => import('../subscriptions-payment-management/presentation/views/SubscriptionConfirmationView.vue')
+        component: () => import('../contexts/subscriptions-payment-management/presentation/views/SubscriptionConfirmationView.vue')
     },
     {
         path: '/dashboard',
@@ -73,7 +73,7 @@ const routes = [
         path: '/reports',
         name: 'reports',
         meta: { requiresAuth: true, requiresSubscription: true },
-        component: () => import('../features/analytics/reports/presentation/views/ReportsView.vue')
+        component: () => import('../contexts/analytics/reports/presentation/views/ReportsView.vue')
     },
     {
         path: '/devices',
@@ -105,7 +105,7 @@ const routes = [
             actionLabel: 'Add Payment Method',
             actionIcon: 'credit-card'
         },
-        component: () => import('../subscriptions-payment-management/presentation/views/SubscriptionPaymentManagementView.vue')
+        component: () => import('../contexts/subscriptions-payment-management/presentation/views/SubscriptionPaymentManagementView.vue')
     },
     {
         path: '/',

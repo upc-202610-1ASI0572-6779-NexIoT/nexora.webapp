@@ -111,7 +111,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { SubscriptionPaymentRepositoryImpl } from '@/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl.js';
+import { SubscriptionPaymentRepositoryImpl } from '../../../../subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl.js';
 
 const router = useRouter();
 const repo = new SubscriptionPaymentRepositoryImpl();

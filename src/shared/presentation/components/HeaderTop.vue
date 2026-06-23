@@ -64,13 +64,6 @@
         <span class="register-text">{{ actionLabel }}</span>
       </button>
 
-      <!-- User Profile Avatar -->
-      <button class="user-profile-btn" @click="$emit('open-profile')">
-        <div class="user-avatar-small">
-          <span v-if="user" class="user-initials-small">{{ user.initials }}</span>
-          <font-awesome-icon v-else icon="user" />
-        </div>
-      </button>
     </div>
   </header>
 </template>
@@ -82,7 +75,7 @@ import { useI18n } from '@/shared/presentation/i18n';
 import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 import apiClient from '@/shared/infrastructure/http/apiClient';
 
-defineEmits(['toggle-sidebar', 'open-profile']);
+defineEmits(['toggle-sidebar']);
 
 const route = useRoute();
 const router = useRouter();
@@ -435,35 +428,6 @@ const handleAction = () => {
 .breadcrumbs__separator {
   margin: 0 4px;
   color: #cbd5e1;
-}
-
-.user-profile-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.user-avatar-small {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, #f97316, #e66700);
-  border: 1.5px solid #eaeaea;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  color: #ffffff;
-  overflow: hidden;
-}
-
-.user-initials-small {
-  font-weight: 700;
 }
 
 /* ─── Notifications Dropdown ─── */

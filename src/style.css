@@ -64,3 +64,27 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5cad4;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8aeb8;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c5cad4 transparent;
+}

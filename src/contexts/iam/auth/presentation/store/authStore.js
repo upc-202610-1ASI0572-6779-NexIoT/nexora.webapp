@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { LoginUseCase } from '../../application/use-cases/LoginUseCase';
 import { AuthRepositoryImpl } from '../../infrastructure/repositories/AuthRepositoryImpl';
 import { SubscriptionBridgeService } from '../../../application/services/SubscriptionBridgeService';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 
 const loginUseCase = new LoginUseCase(new AuthRepositoryImpl());
 const subscriptionBridge = new SubscriptionBridgeService();
@@ -64,6 +65,33 @@ export const useAuthStore = defineStore('auth', {
         this.serverError = error;
         this.isAuthenticated = false;
         throw error;
+      }
+    },
+
+    async fetchUser() {
+      if (!this.token || this.user) return;
+
+      try {
+        const { data } = await apiClient.get('/api/v1/profiles/me');
+        if (data?.profile) {
+          const p = data.profile;
+          const firstName = p.firstName || '';
+          const lastName = p.lastName || '';
+          this.user = {
+            email: p.email,
+            firstName,
+            lastName,
+            isActive: p.isActive,
+            fullName: [firstName, lastName].filter(Boolean).join(' ') || p.email || 'User',
+            initials: (!firstName && !lastName)
+              ? (p.email ? p.email[0].toUpperCase() : '?')
+              : `${firstName[0]}${lastName[0]}`.toUpperCase(),
+          };
+        }
+      } catch (error) {
+        if (error.response?.status === 401) {
+          this.logout();
+        }
       }
     },
 

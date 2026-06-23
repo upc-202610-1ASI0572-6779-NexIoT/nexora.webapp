@@ -5,7 +5,7 @@
 
     <div class="confirmation-card">
       <div class="confirmation-icon">
-        <font-awesome-icon icon="check-circle" />
+        <font-awesome-icon icon="circle-check" />
       </div>
 
       <h1 class="confirmation-title">{{ t('subscription.confirmation.title') }}</h1>

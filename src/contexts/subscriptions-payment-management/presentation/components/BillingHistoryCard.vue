@@ -136,8 +136,10 @@ const handleExportExcel = () => {
   // Format filters for reporting
   let statusFilterText = filterStatus.value === 'Paid' ? t('subscription.billing.filters.paid') : 
                          filterStatus.value === 'Pending' ? t('subscription.billing.filters.pending') : 
-                         t('subscription.billing.filters.all');
-  let dateFilterText = `${filterStartDate.value || '—'} a ${filterEndDate.value || '—'}`;
+                         '(No aplicado)';
+  let dateFilterText = (!filterStartDate.value && !filterEndDate.value)
+    ? '(No aplicado)'
+    : `${filterStartDate.value || '—'} a ${filterEndDate.value || '—'}`;
 
   let tableHtml = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -176,7 +178,7 @@ const handleExportExcel = () => {
         <tr><td colspan="5" style="height: 10px;"></td></tr>
         <tr>
           <td style="font-weight: bold; color: #475569; font-size: 9pt;">Empresa:</td>
-          <td colspan="2" style="font-size: 9pt;">Nexora Technologies S.A.</td>
+          <td colspan="2" style="font-size: 9pt;">NexIoT</td>
           <td style="font-weight: bold; color: #475569; font-size: 9pt;">Cliente:</td>
           <td style="font-size: 9pt; font-weight: bold;">${user ? user.fullName : 'Cliente Nexora'}</td>
         </tr>

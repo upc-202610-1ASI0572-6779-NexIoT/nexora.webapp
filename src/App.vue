@@ -27,7 +27,6 @@
       <div class="main-content">
         <HeaderTop
           @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
-          @open-profile="isProfileOpen = true"
           @edit-profile="requestEditProfile"
         />
         <router-view />

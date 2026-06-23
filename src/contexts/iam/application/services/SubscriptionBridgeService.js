@@ -1,4 +1,4 @@
-import { SubscriptionPaymentRepositoryImpl } from '@/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
+import { SubscriptionPaymentRepositoryImpl } from '@/contexts/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
 
 export class SubscriptionBridgeService {
   constructor() {

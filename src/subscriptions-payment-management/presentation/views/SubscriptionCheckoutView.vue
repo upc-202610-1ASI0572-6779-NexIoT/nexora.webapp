@@ -7,7 +7,7 @@
       <font-awesome-icon icon="lock" class="checkout-float-icon checkout-float-icon--lock" />
       <font-awesome-icon icon="shield" class="checkout-float-icon checkout-float-icon--shield" />
       <font-awesome-icon icon="credit-card" class="checkout-float-icon checkout-float-icon--card" />
-      <font-awesome-icon icon="check-circle" class="checkout-float-icon checkout-float-icon--check" />
+      <font-awesome-icon icon="circle-check" class="checkout-float-icon checkout-float-icon--check" />
     </div>
 
     <div v-if="plan" class="checkout-container">

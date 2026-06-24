@@ -97,12 +97,20 @@ const cardBrandLabel = computed(() => {
 
 const displayNumber = computed(() => {
   if (!props.card) return '';
+  const num = props.card.fullNumber || '';
+  if (num.length >= 16) {
+    const formatted = num.replace(/\D/g, '').replace(/(.{4})/g, '$1  ').trim();
+    return `····  ····  ····  ${formatted.slice(-4)}`;
+  }
   const last = props.card.maskedNumber || props.card.lastFour || '0000';
   return `····  ····  ····  ${last}`;
 });
 
 const cardHolderName = computed(() => {
   if (!props.card) return t('subscription.payment.cardHolder');
+  if (props.card.firstName && props.card.lastName) {
+    return `${props.card.firstName} ${props.card.lastName}`;
+  }
   return props.card.holderName || t('subscription.payment.cardHolder');
 });
 

@@ -1,13 +1,16 @@
 export class PaymentMethod {
-  constructor({ brand, maskedNumber, lastFour, holderName, expiryMonth, expiryYear, expiresAt, isDefault }) {
+  constructor({ brand, maskedNumber, lastFour, fullNumber, holderName, expiryMonth, expiryYear, expiresAt, isDefault, firstName, lastName }) {
     this.brand = brand;
     this.maskedNumber = maskedNumber;
     this.lastFour = lastFour;
+    this.fullNumber = fullNumber;
     this.holderName = holderName;
     this.expiryMonth = expiryMonth;
     this.expiryYear = expiryYear;
     this.expiresAt = expiresAt;
     this.isDefault = isDefault;
+    this.firstName = firstName;
+    this.lastName = lastName;
   }
 
   isExpired() {

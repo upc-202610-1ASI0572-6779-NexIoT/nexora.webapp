@@ -251,14 +251,30 @@
       "subtotal": "Subtotal",
       "taxLabel": "IGV ({rate})",
       "secureCheckout": "CHECKOUT SEGURO",
-      "summaryHtml": "Estás a punto de activar el plan <strong>{planName}</strong> por <strong>${amount}</strong> al mes.",
-      "summaryNote": "Al hacer clic en \"Activar Suscripción\" aceptas los términos y condiciones del servicio.",
+      "cardHolder": "Titular de la tarjeta",
+      "cardNumber": "Número de tarjeta",
+      "expiryMonth": "Mes",
+      "expiryYear": "Año",
+      "cvv": "Código de seguridad",
+      "cardPlaceholderName": "NOMBRE DEL TITULAR",
+      "cardPlaceholderNumber": "1234 5678 9012 3456",
       "action": {
         "activate": "Activar Suscripción",
         "activating": "Activando suscripción..."
       },
       "loadPlanFailed": "No se pudieron cargar los detalles del plan.",
-      "activateFailed": "Ocurrió un error al activar la suscripción. Intenta nuevamente."
+      "activateFailed": "Ocurrió un error al activar la suscripción. Intenta nuevamente.",
+      "validation": {
+        "holderRequired": "El nombre del titular es obligatorio.",
+        "numberRequired": "El número de tarjeta es obligatorio.",
+        "numberInvalid": "Número de tarjeta inválido.",
+        "monthRequired": "El mes de vencimiento es obligatorio.",
+        "monthInvalid": "Mes inválido (01-12).",
+        "yearRequired": "El año de vencimiento es obligatorio.",
+        "yearExpired": "La tarjeta está vencida.",
+        "cvvRequired": "El código de seguridad es obligatorio.",
+        "cvvInvalid": "CVV inválido (3-4 dígitos)."
+      }
     },
     "empty": {
       "title": "Sin suscripción activa",

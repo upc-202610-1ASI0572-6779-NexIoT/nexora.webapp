@@ -14,8 +14,8 @@
                   <div class="chip-inner"></div>
                 </div>
                 <div class="credit-card__brand">
-                  <svg v-if="previewBrand === 'visa'" viewBox="0 0 100 30" class="card-brand-svg">
-                    <path fill="#ffffff" d="M45.5 23.4h-7.1l4.4-20.4h7.1l-4.4 20.4zm-16-13.1l-.7 3.6c2.1.6 4.5 1.6 5.7 3.2l-5-6.8zm15.7-7.3c-2.8-1.1-5.7-1.7-8.5-1.7-7.9 0-13.5 4.1-13.5 10 0 4.4 4 6.8 7 8.3 3.1 1.5 4.2 2.5 4.2 3.9 0 2.2-2.5 3.2-4.8 3.2-3.2 0-4.9-.5-7.5-1.6l-1-.5-.8 4.6c2.9 1.3 6 1.9 9.1 1.9 8.5 0 14-4 14.1-10.2 0-3.4-2.1-6-6.7-8.1-2.8-1.4-4.5-2.4-4.5-3.8 0-1.3 1.4-2.6 4.5-2.6 2.6-.1 4.5.5 5.9 1.1l.7.3.8-4.4zm27.4 20.4h5.5l-4.8-20.4h-5.1c-2.4 0-4.4 1.4-5.1 3.5l-9 16.9h6.3l1.3-3.4h7.7l.7 3.4h2.5zm-6.7-8.7l3.2-8.3 1.8 8.3h-5zm-47.5-11.7l-5.5 13.9-.7-3.6c-1.2-4.1-5-8.5-9.2-10.7l6 15.5h6.2l9.3-20.4h-6.1z"/>
+                  <svg v-if="previewBrand === 'visa'" viewBox="0 0 1000 324.68" class="card-brand-svg card-brand-svg--visa">
+                    <path fill="#ffffff" d="m651.19.5c-70.93,0-134.32,36.77-134.32,104.69,0,77.9,112.42,83.28,112.42,122.42,0,16.48-18.88,31.23-51.14,31.23-45.77,0-79.98-20.61-79.98-20.61l-14.64,68.55s39.41,17.41,91.73,17.41c77.55,0,138.58-38.57,138.58-107.66,0-82.32-112.89-87.54-112.89-123.86,0-12.91,15.5-27.05,47.66-27.05,36.29,0,65.89,14.99,65.89,14.99l14.33-66.2S696.61.5,651.18.5h0ZM2.22,5.5L.5,15.49s29.84,5.46,56.72,16.36c34.61,12.49,37.07,19.77,42.9,42.35l63.51,244.83h85.14L379.93,5.5h-84.94l-84.28,213.17-34.39-180.7c-3.15-20.68-19.13-32.48-38.68-32.48,0,0-135.41,0-135.41,0Zm411.87,0l-66.63,313.53h81L494.85,5.5h-80.76Zm451.76,0c-19.53,0-29.88,10.46-37.47,28.73l-118.67,284.8h84.94l16.43-47.47h103.48l9.99,47.47h74.95L934.12,5.5h-68.27Zm11.05,84.71l25.18,117.65h-67.45l42.28-117.65h0Z"/>
                   </svg>
                   <svg v-else-if="previewBrand === 'mastercard'" viewBox="0 0 50 30" class="card-brand-svg">
                     <circle cx="18" cy="15" r="11" fill="#eb001b"/>
@@ -56,37 +56,44 @@
         </div>
 
         <form class="edit-form" @submit.prevent="handleSave">
-          <div class="form-group">
+          <div class="form-group" :class="{ 'form-group--error': errors.holderName }">
             <label for="ed-holder">{{ t('subscription.payment.edit.holder') }}</label>
-            <input id="ed-holder" type="text" v-model="form.holderName" maxlength="100" required />
+            <input id="ed-holder" type="text" v-model="form.holderName" maxlength="100" required @blur="validate()" />
+            <span v-if="errors.holderName" class="form-error">{{ errors.holderName }}</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" :class="{ 'form-group--error': errors.fullNumber }">
             <label for="ed-number">{{ t('subscription.payment.edit.number') }}</label>
-            <input id="ed-number" type="text" v-model="form.fullNumber" maxlength="19" placeholder="4111 1111 1111 1111" required />
+            <input id="ed-number" type="text" inputmode="numeric" v-model="form.fullNumber" maxlength="19" placeholder="4111 1111 1111 1111" required @input="onNumberInput" @blur="validate()" />
+            <span v-if="errors.fullNumber" class="form-error">{{ errors.fullNumber }}</span>
           </div>
 
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" :class="{ 'form-group--error': errors.expiryMonth }">
               <label for="ed-month">{{ t('subscription.payment.edit.expiryMonth') }}</label>
-              <input id="ed-month" type="text" v-model="form.expiryMonth" maxlength="2" placeholder="MM" required />
+              <input id="ed-month" type="text" inputmode="numeric" v-model="form.expiryMonth" maxlength="2" placeholder="MM" required @input="onNumericInput('expiryMonth')" @blur="validate()" />
+              <span v-if="errors.expiryMonth" class="form-error">{{ errors.expiryMonth }}</span>
             </div>
-            <div class="form-group">
+            <div class="form-group" :class="{ 'form-group--error': errors.expiryYear }">
               <label for="ed-year">{{ t('subscription.payment.edit.expiryYear') }}</label>
-              <input id="ed-year" type="text" v-model="form.expiryYear" maxlength="2" placeholder="YY" required />
+              <input id="ed-year" type="text" inputmode="numeric" v-model="form.expiryYear" maxlength="2" placeholder="YY" required @input="onNumericInput('expiryYear')" @blur="validate()" />
+              <span v-if="errors.expiryYear" class="form-error">{{ errors.expiryYear }}</span>
             </div>
-            <div class="form-group">
+            <div class="form-group" :class="{ 'form-group--error': errors.cvv }">
               <label for="ed-cvv">{{ t('subscription.payment.edit.cvv') }}</label>
               <input 
                 id="ed-cvv" 
                 type="text" 
+                inputmode="numeric"
                 v-model="form.cvv" 
                 maxlength="4" 
                 placeholder="***" 
                 required
+                @input="onNumericInput('cvv')"
                 @focus="flipped = true" 
-                @blur="flipped = false" 
+                @blur="flipped = false; validate()" 
               />
+              <span v-if="errors.cvv" class="form-error">{{ errors.cvv }}</span>
             </div>
           </div>
 
@@ -105,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useI18n } from '@/shared/presentation/i18n';
 import { SubscriptionPaymentRepositoryImpl } from '../../infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
 
@@ -132,32 +139,42 @@ const form = reactive({
   cvv: props.card?.cvv || ''
 });
 
-const detectCardBrand = (num) => {
-  const cleanNumber = (num || '').replace(/\s+/g, '');
-  if (!cleanNumber) return 'unknown';
-  
-  if (/^4/.test(cleanNumber)) return 'visa';
-  if (/^(5[1-5]|2[2-7])/.test(cleanNumber)) return 'mastercard';
-  if (/^3[47]/.test(cleanNumber)) return 'amex';
-  if (/^(6011|622|64|65)/.test(cleanNumber)) return 'discover';
-  if (/^36/.test(cleanNumber)) return 'diners';
-  if (/^35/.test(cleanNumber)) return 'jcb';
-  
-  return 'unknown';
-};
+const errors = reactive({
+  holderName: '',
+  fullNumber: '',
+  expiryMonth: '',
+  expiryYear: '',
+  cvv: ''
+});
 
-watch(() => form.fullNumber, (newVal) => {
-  // Auto format card number with spaces every 4 digits
-  let formatted = (newVal || '').replace(/\D/g, '').match(/.{1,4}/g);
+function detectCardBrand(num) {
+  const clean = (num || '').replace(/\s+/g, '');
+  if (!clean) return 'unknown';
+  if (/^4/.test(clean)) return 'visa';
+  if (/^(5[1-5]|2[2-7])/.test(clean)) return 'mastercard';
+  if (/^3[47]/.test(clean)) return 'amex';
+  if (/^(6011|622|64|65)/.test(clean)) return 'discover';
+  if (/^36/.test(clean)) return 'diners';
+  if (/^35/.test(clean)) return 'jcb';
+  return 'unknown';
+}
+
+function onNumberInput() {
+  let formatted = (form.fullNumber || '').replace(/\D/g, '').match(/.{1,4}/g);
   if (formatted) {
     form.fullNumber = formatted.join(' ');
   }
-  
-  const brand = detectCardBrand(newVal);
+  const brand = detectCardBrand(form.fullNumber);
   if (brand !== 'unknown') {
     form.brand = brand.charAt(0).toUpperCase() + brand.slice(1);
   }
-});
+  errors.fullNumber = '';
+}
+
+function onNumericInput(field) {
+  form[field] = (form[field] || '').replace(/\D/g, '');
+  errors[field] = '';
+}
 
 const previewBrand = computed(() => (form.brand || '').toLowerCase());
 const previewBrandLabel = computed(() => form.brand || 'CARD');
@@ -177,17 +194,110 @@ const previewExpiry = computed(() => {
   return 'MM/YY';
 });
 
+function isValidLuhn(num) {
+  const digits = num.replace(/\D/g, '');
+  if (digits.length < 13 || digits.length > 19) return false;
+  let sum = 0;
+  let alternate = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let n = parseInt(digits[i], 10);
+    if (alternate) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    sum += n;
+    alternate = !alternate;
+  }
+  return sum % 10 === 0;
+}
+
+function validate() {
+  let valid = true;
+
+  if (!form.holderName.trim()) {
+    errors.holderName = t('subscription.checkout.validation.holderRequired');
+    valid = false;
+  } else {
+    errors.holderName = '';
+  }
+
+  const raw = form.fullNumber.replace(/\s+/g, '');
+  if (!raw) {
+    errors.fullNumber = t('subscription.checkout.validation.numberRequired');
+    valid = false;
+  } else if (!isValidLuhn(raw)) {
+    errors.fullNumber = t('subscription.checkout.validation.numberInvalid');
+    valid = false;
+  } else {
+    errors.fullNumber = '';
+  }
+
+  if (!form.expiryMonth) {
+    errors.expiryMonth = t('subscription.checkout.validation.monthRequired');
+    valid = false;
+  } else {
+    const m = parseInt(form.expiryMonth, 10);
+    if (m < 1 || m > 12 || form.expiryMonth.length !== 2) {
+      errors.expiryMonth = t('subscription.checkout.validation.monthInvalid');
+      valid = false;
+    } else {
+      errors.expiryMonth = '';
+    }
+  }
+
+  if (!form.expiryYear) {
+    errors.expiryYear = t('subscription.checkout.validation.yearRequired');
+    valid = false;
+  } else {
+    const now = new Date();
+    const currentYear = now.getFullYear() % 100;
+    const y = parseInt(form.expiryYear, 10);
+    if (form.expiryYear.length !== 2 || y < currentYear) {
+      errors.expiryYear = t('subscription.checkout.validation.yearExpired');
+      valid = false;
+    } else {
+      errors.expiryYear = '';
+    }
+  }
+
+  if (!form.cvv) {
+    errors.cvv = t('subscription.checkout.validation.cvvRequired');
+    valid = false;
+  } else {
+    const cvvRaw = form.cvv.replace(/\D/g, '');
+    if (cvvRaw.length < 3 || cvvRaw.length > 4) {
+      errors.cvv = t('subscription.checkout.validation.cvvInvalid');
+      valid = false;
+    } else {
+      errors.cvv = '';
+    }
+  }
+
+  return valid;
+}
+
 async function handleSave() {
+  if (!validate()) return;
+
   saving.value = true;
   try {
-    await repository.updatePaymentMethod(props.card.id, {
+    const data = {
       brand: form.brand,
       fullNumber: form.fullNumber.replace(/\s+/g, ''),
       expiryMonth: form.expiryMonth,
       expiryYear: form.expiryYear,
-      holderName: form.holderName,
+      holderName: form.holderName.trim(),
       cvv: form.cvv
-    });
+    };
+
+    if (props.card) {
+      await repository.updatePaymentMethod(data);
+    } else {
+      const created = await repository.createPaymentMethod(data);
+      if (created) {
+        localStorage.setItem('paymentMethod', JSON.stringify(created));
+      }
+    }
     emit('saved');
   } catch (err) {
     alert(t('subscription.payment.edit.errorSaving') + (err.message || 'Error'));
@@ -342,7 +452,12 @@ async function handleSave() {
 }
 
 .card-brand-svg {
-  width: 50px;
+  height: 24px;
+  width: auto;
+}
+
+.card-brand-svg--visa {
+  width: 60px;
   height: auto;
 }
 
@@ -483,6 +598,20 @@ async function handleSave() {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
+}
+
+.form-group--error input {
+  border-color: #ef4444;
+}
+
+.form-group--error input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 2px;
 }
 
 .form-actions {

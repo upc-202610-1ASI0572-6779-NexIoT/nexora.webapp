@@ -9,7 +9,7 @@ export const useSubscriptionPaymentStore = defineStore('subscription-payment', {
   state: () => ({
     subscription: null,
     plan: null,
-    paymentMethods: [],
+    paymentMethod: null,
     invoices: [],
     isLoading: false,
     error: null,
@@ -22,7 +22,7 @@ export const useSubscriptionPaymentStore = defineStore('subscription-payment', {
         const overview = await getSubscriptionPaymentOverviewUseCase.execute();
         this.subscription = overview.subscription;
         this.plan = overview.plan;
-        this.paymentMethods = overview.paymentMethods || [];
+        this.paymentMethod = overview.paymentMethod || null;
         this.invoices = overview.invoices || [];
       } catch (err) {
         this.error = err.code || 'SERVER_ERROR';

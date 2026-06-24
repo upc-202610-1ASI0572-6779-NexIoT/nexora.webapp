@@ -102,9 +102,7 @@ const currentPlan = computed(() => {
 });
 
 const savedCard = computed(() => {
-  const methods = subscriptionPaymentStore.paymentMethods;
-  if (!methods || methods.length === 0) return null;
-  return methods[0];
+  return subscriptionPaymentStore.paymentMethod || null;
 });
 
 const billingInvoices = computed(() => {

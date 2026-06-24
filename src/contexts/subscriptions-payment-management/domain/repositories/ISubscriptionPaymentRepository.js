@@ -11,15 +11,15 @@ export class ISubscriptionPaymentRepository {
     throw new Error('Method not implemented: activateSubscription');
   }
 
-  async getPaymentMethods() {
-    throw new Error('Method not implemented: getPaymentMethods');
+  async getPaymentMethod() {
+    throw new Error('Method not implemented: getPaymentMethod');
   }
 
   async getInvoices() {
     throw new Error('Method not implemented: getInvoices');
   }
 
-  async updatePaymentMethod(id, data) {
+  async updatePaymentMethod(data) {
     throw new Error('Method not implemented: updatePaymentMethod');
   }
 

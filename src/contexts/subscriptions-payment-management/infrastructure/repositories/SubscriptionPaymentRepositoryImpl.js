@@ -36,11 +36,18 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async activateSubscription(planId) {
+  async activateSubscription(planId, cardData = null) {
     try {
-      const { data } = await apiClient.post('/api/v1/subscriptions', {
-        subscriptionPlanId: planId,
-      });
+      const body = { subscriptionPlanId: planId };
+      if (cardData) {
+        body.brand = cardData.brand;
+        body.fullNumber = cardData.fullNumber;
+        body.expiryMonth = cardData.expiryMonth;
+        body.expiryYear = cardData.expiryYear;
+        body.holderName = cardData.holderName;
+        body.cvv = cardData.cvv;
+      }
+      const { data } = await apiClient.post('/api/v1/subscriptions', body);
       return {
         subscription: data.subscription,
         amountDue: data.amountDue,
@@ -63,12 +70,12 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async getPaymentMethods() {
+  async getPaymentMethod() {
     try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/payment-methods');
-      return data;
+      const { data } = await apiClient.get('/api/v1/subscriptions/payment-method');
+      return data.paymentMethod || null;
     } catch (err) {
-      return { paymentMethods: [] };
+      return null;
     }
   }
 
@@ -81,9 +88,27 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async updatePaymentMethod(id, data) {
+  async createPaymentMethod(data) {
     try {
-      const { data: response } = await apiClient.put(`/api/v1/subscriptions/payment-methods/${id}`, data);
+      const { data: response } = await apiClient.post('/api/v1/subscriptions/payment-methods', data);
+      return response;
+    } catch (err) {
+      const status = err.response?.status;
+      const body = err.response?.data;
+      const message = typeof body === 'string' ? body : body?.message || '';
+      if (status === 400) {
+        throw { code: 'VALIDATION_ERROR', message: message || 'Invalid data.' };
+      }
+      throw {
+        code: 'SERVER_ERROR',
+        message: message || 'Unable to create payment method.',
+      };
+    }
+  }
+
+  async updatePaymentMethod(data) {
+    try {
+      const { data: response } = await apiClient.put('/api/v1/subscriptions/payment-method', data);
       return response;
     } catch (err) {
       const status = err.response?.status;

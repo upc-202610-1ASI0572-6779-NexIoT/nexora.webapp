@@ -251,14 +251,30 @@
       "subtotal": "Subtotal",
       "taxLabel": "Tax ({rate})",
       "secureCheckout": "Secure Checkout",
-      "summaryHtml": "You are about to activate the <strong>{planName}</strong> plan for <strong>${amount}</strong> per month.",
-      "summaryNote": "By clicking \"Activate Subscription\" you agree to the service terms and conditions.",
+      "cardHolder": "Cardholder",
+      "cardNumber": "Card Number",
+      "expiryMonth": "Month",
+      "expiryYear": "Year",
+      "cvv": "Security Code",
+      "cardPlaceholderName": "CARDHOLDER NAME",
+      "cardPlaceholderNumber": "1234 5678 9012 3456",
       "action": {
         "activate": "Activate Subscription",
         "activating": "Activating subscription..."
       },
       "loadPlanFailed": "Failed to load plan details.",
-      "activateFailed": "An error occurred while activating subscription. Please try again."
+      "activateFailed": "An error occurred while activating subscription. Please try again.",
+      "validation": {
+        "holderRequired": "Cardholder name is required.",
+        "numberRequired": "Card number is required.",
+        "numberInvalid": "Invalid card number.",
+        "monthRequired": "Expiration month is required.",
+        "monthInvalid": "Invalid month (01-12).",
+        "yearRequired": "Expiration year is required.",
+        "yearExpired": "Card is expired.",
+        "cvvRequired": "Security code is required.",
+        "cvvInvalid": "Invalid CVV (3-4 digits)."
+      }
     },
     "empty": {
       "title": "No active subscription",

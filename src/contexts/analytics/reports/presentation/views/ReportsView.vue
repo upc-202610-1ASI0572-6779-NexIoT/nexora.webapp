@@ -1,11 +1,30 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useReportsStore } from '../store/reportsStore';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 
 const reportsStore = useReportsStore();
 
 onMounted(() => {
   reportsStore.fetchReportsData();
+});
+
+const maxChartValue = computed(() => {
+  const energyMax = reportsStore.chartData.energy.length > 0 ? Math.max(...reportsStore.chartData.energy) : 0;
+  const gasMax = reportsStore.chartData.gas.length > 0 ? Math.max(...reportsStore.chartData.gas) : 0;
+  const overallMax = Math.max(energyMax, gasMax);
+  const limit = Math.ceil(overallMax / 1000) * 1000;
+  return limit > 0 ? limit : 5000;
+});
+
+const gridValues = computed(() => {
+  const max = maxChartValue.value;
+  const step = max / 5;
+  const vals = [];
+  for (let i = 5; i >= 1; i--) {
+    vals.push(Math.round(step * i));
+  }
+  return vals;
 });
 
 const getStatusBadgeClass = (status) => {
@@ -19,6 +38,25 @@ const getStatusBadgeClass = (status) => {
 
 const getStatusText = (status) => {
   return status.replace('-', ' ').toUpperCase();
+};
+
+const handleExportPdf = async () => {
+  try {
+    const months = reportsStore.selectedMonths;
+    const response = await apiClient.get('/api/v1/reports/consumption', {
+      params: { months },
+      responseType: 'blob'
+    });
+    
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `consumption_report_${new Date().toISOString().split('T')[0]}.pdf`;
+    link.click();
+    window.URL.revokeObjectURL(link.href);
+  } catch (error) {
+    console.error('Failed to export consumption PDF report', error);
+  }
 };
 </script>
 
@@ -39,13 +77,9 @@ const getStatusText = (status) => {
         </div>
         
         <div class="view-header__actions">
-          <button class="button--outline">
+          <button class="button--outline" @click="handleExportPdf">
             <font-awesome-icon icon="file-pdf" />
             <span>EXPORT PDF</span>
-          </button>
-          <button class="button--solid-orange">
-            <font-awesome-icon icon="file-csv" />
-            <span>EXPORT CSV</span>
           </button>
         </div>
       </header>
@@ -135,16 +169,22 @@ const getStatusText = (status) => {
               </div>
             </div>
 
-            <select class="chart-filter">
-              <option>Last 6 Months</option>
-              <option>Last Year</option>
+            <select 
+              class="chart-filter" 
+              v-model="reportsStore.selectedMonths" 
+              @change="reportsStore.fetchReportsData()"
+            >
+              <option :value="3">Last 3 Months</option>
+              <option :value="6">Last 6 Months</option>
+              <option :value="12">Last Year</option>
+              <option :value="24">Last 2 Years</option>
             </select>
           </header>
 
           <div class="chart-canvas-container">
             <!-- Grid Lines Simulation -->
             <div class="chart-grid">
-              <div v-for="val in [5000, 4000, 3000, 2000, 1000]" :key="val" class="grid-line">
+              <div v-for="val in gridValues" :key="val" class="grid-line">
                 <span class="grid-label">{{ val }}</span>
               </div>
             </div>
@@ -155,21 +195,16 @@ const getStatusText = (status) => {
                 <div class="bar-pair">
                   <div 
                     class="bar bar--energy" 
-                    :style="{ height: (reportsStore.chartData.energy[index] / 5000) * 100 + '%' }"
+                    :style="{ height: (reportsStore.chartData.energy[index] / maxChartValue) * 100 + '%' }"
                   ></div>
                   <div 
                     class="bar bar--gas" 
-                    :style="{ height: (reportsStore.chartData.gas[index] / 5000) * 100 + '%' }"
+                    :style="{ height: (reportsStore.chartData.gas[index] / maxChartValue) * 100 + '%' }"
                   ></div>
                 </div>
                 <span class="month-label">{{ month }}</span>
               </div>
             </div>
-
-            <!-- Trend Line Simulation -->
-            <svg class="trend-line" viewBox="0 0 600 100" preserveAspectRatio="none">
-              <path d="M0,80 L100,60 L200,40 L300,50 L400,30 L500,20 L600,10" fill="none" stroke="#9ba8c9" stroke-width="2" stroke-dasharray="5,5" />
-            </svg>
           </div>
         </section>
       </div>
@@ -180,7 +215,7 @@ const getStatusText = (status) => {
         <section class="property-breakdown-panel">
           <header class="panel-header">
             <h3 class="panel-header__title">Property Breakdown</h3>
-            <a href="#" class="view-all-link">VIEW ALL PROPERTIES ></a>
+            <router-link :to="{ name: 'buildings' }" class="view-all-link">VIEW ALL PROPERTIES ></router-link>
           </header>
 
           <div class="table-container">
@@ -211,22 +246,7 @@ const getStatusText = (status) => {
           </div>
         </section>
 
-        <!-- Panel Derecho: Insights de IA -->
-        <aside class="ai-insights-card">
-          <header class="ai-insights-card__header">
-            <font-awesome-icon icon="lightbulb" class="lightbulb-icon" />
-            <h3 class="ai-insights-card__title">AI Insights</h3>
-          </header>
 
-          <div class="insights-list">
-            <div v-for="insight in reportsStore.aiInsights" :key="insight.id" :class="['insight-item', `insight-item--${insight.type}`]">
-              <h4 class="insight-item__title">{{ insight.title }}</h4>
-              <p class="insight-item__desc">{{ insight.description }}</p>
-            </div>
-          </div>
-
-          <button class="button--outline-fullwidth mt-auto">FULL AUDIT LOG</button>
-        </aside>
       </div>
     </template>
   </div>
@@ -527,6 +547,7 @@ const getStatusText = (status) => {
   align-items: center;
   gap: 10px;
   width: 100%;
+  height: 100%;
 }
 
 .bar-pair {
@@ -563,7 +584,7 @@ const getStatusText = (status) => {
 /* 3. Bottom Row */
 .analytics-bottom-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 

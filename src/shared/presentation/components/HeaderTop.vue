@@ -59,7 +59,7 @@
         </div>
       </div>
 
-      <button v-if="!globalBreadcrumbs && route.name !== 'property-registration' && route.name !== 'subscription' && route.name !== 'profile' && route.name !== 'alerts'" class="register-btn" @click="handleAction">
+      <button v-if="!globalBreadcrumbs && route.name !== 'property-registration' && route.name !== 'subscription' && route.name !== 'profile' && route.name !== 'alerts' && route.name !== 'reports'" class="register-btn" @click="handleAction">
         <font-awesome-icon :icon="actionIcon" class="register-icon" />
         <span class="register-text">{{ actionLabel }}</span>
       </button>

@@ -14,18 +14,20 @@ export const useReportsStore = defineStore('reports', {
       gas: []
     },
     propertyBreakdown: [],
-    aiInsights: [],
+    selectedMonths: 6,
     isLoading: false
   }),
   actions: {
-    async fetchReportsData() {
+    async fetchReportsData(months) {
+      if (months !== undefined) {
+        this.selectedMonths = months;
+      }
       this.isLoading = true;
       try {
-        const data = await getConsumptionReportUseCase.execute();
+        const data = await getConsumptionReportUseCase.execute(this.selectedMonths);
         this.consumption = data.consumption;
         this.chartData = data.chartData;
         this.propertyBreakdown = data.propertyBreakdown;
-        this.aiInsights = data.aiInsights;
       } finally {
         this.isLoading = false;
       }

@@ -5,8 +5,8 @@ export class GetConsumptionReportUseCase {
     this.reportRepository = reportRepository;
   }
 
-  async execute() {
-    const result = await this.reportRepository.getConsumptionSummary();
+  async execute(months) {
+    const result = await this.reportRepository.getConsumptionSummary(months);
     const event = new ReportGenerated('consumption', 'current');
     console.debug('[Domain Event]', event.name, event);
     return result;

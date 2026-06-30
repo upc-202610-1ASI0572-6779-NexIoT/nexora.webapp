@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useDashboardStore } from '../store/dashboardStore';
 import KpiCard from '../components/KpiCard.vue';
 import ConsumptionChart from '../components/ConsumptionChart.vue';
@@ -63,9 +63,20 @@ import AirQualityCard from '../components/AirQualityCard.vue';
 import SystemHealthCard from '../components/SystemHealthCard.vue';
 
 const dashboardStore = useDashboardStore();
+let pollInterval = null;
 
 onMounted(() => {
   dashboardStore.fetchStats();
+  // Poll every 3 seconds to match the ESP32 sampling rate
+  pollInterval = setInterval(() => {
+    dashboardStore.fetchStats();
+  }, 3000);
+});
+
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+  }
 });
 </script>
 

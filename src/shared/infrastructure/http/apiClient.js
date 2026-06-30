@@ -3,7 +3,7 @@ import axios from 'axios';
 // If VITE_API_URL is not set in your environment, fallback to the
 // backend URL used by the dev proxy. Adjust the fallback to match your API.
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://localhost:53225',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001',
   headers: { 'Content-Type': 'application/json' },
   // Most endpoints use Bearer token in Authorization header; disable cookies by default to avoid CORS credential issues in dev.
   withCredentials: false,
@@ -19,7 +19,7 @@ apiClient.interceptors.request.use((config) => {
   try {
     // eslint-disable-next-line no-console
     console.debug('[apiClient] Request', { url: config.url, baseURL: config.baseURL, hasAuth: !!config.headers.Authorization });
-  } catch (e) {}
+  } catch (e) { }
   return config;
 });
 

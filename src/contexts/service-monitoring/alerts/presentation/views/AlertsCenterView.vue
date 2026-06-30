@@ -148,33 +148,24 @@ const fetchAlerts = async (page = 1) => {
           status = 'CRITICAL';
         }
 
-        let sensorType = 'System';
+        let sensorType = alert.type;
         let ppmLevel = '-';
-        if (alert.type.includes('Gas')) {
-          sensorType = 'Gas Level';
-          ppmLevel = 'Gas Anomaly';
-        } else if (alert.type.includes('Overcurrent')) {
-          sensorType = 'Current Overload';
-          ppmLevel = 'Overload';
-        } else if (alert.type.includes('Voltage')) {
-          sensorType = 'Voltage Monitor';
-          ppmLevel = 'Instability';
-        } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {
-          sensorType = 'Security Motion';
+        if (alert.type.toLowerCase().includes('gas')) {
+          ppmLevel = alert.reading > 0 ? `${alert.reading.toFixed(1)} PPM` : 'Gas Anomaly';
+        } else if (alert.type.toLowerCase().includes('overcurrent') || alert.type.toLowerCase().includes('current')) {
+          ppmLevel = alert.reading > 0 ? `${alert.reading.toFixed(1)} A` : 'Overload';
+        } else if (alert.type.toLowerCase().includes('voltage')) {
+          ppmLevel = alert.reading === 0 ? 'Fault' : 'OK';
+        } else if (alert.type.toLowerCase().includes('intrus') || alert.type.toLowerCase().includes('motion')) {
           ppmLevel = 'Intrusion';
+        } else if (alert.reading > 0) {
+          ppmLevel = alert.reading.toFixed(1);
         }
 
         const date = new Date(alert.timestamp);
         const timestampFormatted = date.toISOString().replace('T', ' ').substring(0, 19);
 
-        let propertyId = 'Unassigned';
-        if (alert.deviceId.includes('voltage-safety-unit')) {
-          propertyId = 'Apt-402 (Elec)';
-        } else if (alert.deviceId.includes('gas-safety-unit')) {
-          propertyId = 'Apt-402 (Gas)';
-        } else {
-          propertyId = alert.deviceId;
-        }
+        let propertyId = alert.propertyName || 'Unassigned';
 
         return {
           id: alert.id,

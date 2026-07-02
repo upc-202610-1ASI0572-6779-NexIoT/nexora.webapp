@@ -46,6 +46,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
         amountDue: data.amountDue,
         dueDate: data.dueDate,
         invoiceId: data.invoiceId,
+        clientSecret: data.clientSecret,
       };
     } catch (err) {
       const status = err.response?.status;

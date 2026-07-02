@@ -68,6 +68,12 @@
               <p class="payment-form__summary-note">{{ t('subscription.checkout.summaryNote') }}</p>
             </div>
 
+            <div class="stripe-card-element-container">
+              <label for="card-element" class="stripe-label">{{ t('subscription.checkout.cardDetails') || 'Detalles de Tarjeta' }}</label>
+              <div id="card-element" class="stripe-card-input"></div>
+              <div id="card-errors" role="alert" class="stripe-error-text" v-if="cardError">{{ cardError }}</div>
+            </div>
+
             <button
               type="submit"
               class="payment-form__submit"
@@ -105,6 +111,7 @@ import { useI18n } from '@/shared/presentation/i18n';
 import { ActivateSubscriptionUseCase } from '../../application/use-cases/ActivateSubscriptionUseCase';
 import { SubscriptionPaymentRepositoryImpl } from '../../infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
 import { useAuthStore } from '../../../iam/auth/presentation/store/authStore';
+import { loadStripe } from '@stripe/stripe-js';
 
 const route = useRoute();
 const router = useRouter();
@@ -117,8 +124,14 @@ const activateUseCase = new ActivateSubscriptionUseCase(repo);
 const plan = ref(null);
 const isLoading = ref(false);
 const serverError = ref(null);
+const cardError = ref(null);
 
 const planId = route.query.planId ? Number(route.query.planId) : null;
+
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
+let stripe = null;
+let elements = null;
+let cardElement = null;
 
 onMounted(async () => {
   if (!planId) {
@@ -137,6 +150,38 @@ onMounted(async () => {
       return;
     }
     plan.value = found;
+
+    // Load Stripe elements
+    stripe = await loadStripe(stripePublicKey);
+    if (stripe) {
+      elements = stripe.elements();
+      cardElement = elements.create('card', {
+        style: {
+          base: {
+            color: '#32325d',
+            fontFamily: '"Outfit", "Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#aab7c4'
+            }
+          },
+          invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+          }
+        }
+      });
+      cardElement.mount('#card-element');
+      
+      cardElement.on('change', (event) => {
+        if (event.error) {
+          cardError.value = event.error.message;
+        } else {
+          cardError.value = null;
+        }
+      });
+    }
   } catch (err) {
     serverError.value = t('subscription.checkout.loadPlanFailed');
   }
@@ -150,11 +195,36 @@ const goBack = () => {
 };
 
 const handleSubmit = async () => {
+  if (!stripe || !cardElement) {
+    serverError.value = 'Stripe is not initialized.';
+    return;
+  }
+
   isLoading.value = true;
   serverError.value = null;
 
   try {
     const result = await activateUseCase.execute(planId);
+    if (!result.clientSecret) {
+      throw new Error('No client secret received from payment server.');
+    }
+
+    const confirmResult = await stripe.confirmCardPayment(result.clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: {
+          name: `${authStore.user?.firstName || ''} ${authStore.user?.lastName || ''}`.trim() || 'Landlord User',
+          email: authStore.user?.email || ''
+        }
+      }
+    });
+
+    if (confirmResult.error) {
+      serverError.value = confirmResult.error.message;
+      isLoading.value = false;
+      return;
+    }
+
     authStore.setSubscription(result.subscription);
     router.push({
       name: 'subscription-confirmation',
@@ -170,7 +240,7 @@ const handleSubmit = async () => {
     if (error && error.code === 'VALIDATION_ERROR') {
       serverError.value = error.message;
     } else {
-      serverError.value = t('subscription.checkout.activateFailed');
+      serverError.value = error.message || t('subscription.checkout.activateFailed');
     }
   } finally {
     isLoading.value = false;
@@ -650,5 +720,39 @@ const handleSubmit = async () => {
   .order-summary__perforation::after {
     display: none;
   }
+}
+
+.stripe-card-element-container {
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.stripe-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+.stripe-card-input {
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.stripe-card-input--focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.1);
+}
+
+.stripe-error-text {
+  color: #f56c6c;
+  font-size: 0.85rem;
+  margin-top: 4px;
 }
 </style>

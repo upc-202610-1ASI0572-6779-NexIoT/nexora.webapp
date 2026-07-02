@@ -180,17 +180,23 @@ const previewExpiry = computed(() => {
 async function handleSave() {
   saving.value = true;
   try {
-    await repository.updatePaymentMethod(props.card.id, {
+    const cardData = {
       brand: form.brand,
       fullNumber: form.fullNumber.replace(/\s+/g, ''),
       expiryMonth: form.expiryMonth,
       expiryYear: form.expiryYear,
       holderName: form.holderName,
       cvv: form.cvv
-    });
+    };
+
+    if (props.card && props.card.id) {
+      await repository.updatePaymentMethod(props.card.id, cardData);
+    } else {
+      await repository.addPaymentMethod(cardData);
+    }
     emit('saved');
   } catch (err) {
-    alert(t('subscription.payment.edit.errorSaving') + (err.message || 'Error'));
+    alert((t('subscription.payment.edit.errorSaving') || 'Error al guardar la tarjeta: ') + (err.message || 'Error'));
   } finally {
     saving.value = false;
   }

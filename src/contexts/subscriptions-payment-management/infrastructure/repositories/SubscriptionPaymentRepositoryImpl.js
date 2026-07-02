@@ -105,6 +105,26 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
+  async addPaymentMethod(data) {
+    try {
+      const { data: response } = await apiClient.post('/api/v1/subscriptions/payment-methods', data);
+      return response;
+    } catch (err) {
+      const status = err.response?.status;
+      const body = err.response?.data;
+      const message = typeof body === 'string' ? body : body?.message || '';
+
+      if (status === 400) {
+        throw { code: 'VALIDATION_ERROR', message: message || 'Invalid data.' };
+      }
+
+      throw {
+        code: 'SERVER_ERROR',
+        message: message || 'Unable to add payment method.',
+      };
+    }
+  }
+
   async cancelSubscription() {
     try {
       const { data } = await apiClient.put('/api/v1/subscriptions/status');

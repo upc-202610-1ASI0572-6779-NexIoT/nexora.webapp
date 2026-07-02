@@ -151,9 +151,9 @@ const handleClearErrors = () => {
 
 const handleLogin = async (credentials) => {
   try {
-    const data = await authStore.login(credentials);
+    await authStore.login(credentials);
 
-    const status = data.subscription?.status;
+    const status = authStore.subscription?.status;
 
     if (status && status.toLowerCase() === 'active') {
       router.push({ name: 'dashboard' });

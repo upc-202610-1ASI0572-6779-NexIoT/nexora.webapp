@@ -1,24 +1,150 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useDevicesStore } from '../store/devicesStore';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 
 const route = useRoute();
-const deviceId = computed(() => route.params.deviceId || 'NODE-ESP32-V4');
+const devicesStore = useDevicesStore();
+const deviceId = computed(() => route.params.deviceId);
+const isRebooting = ref(false);
+const isCalibrating = ref(false);
+const isUpdatingFirmware = ref(false);
 
-// Mock data for the view
-const connection = ref({
-  ssid: 'NEXORA_INDUSTRIAL_5G',
-  ip: '192.168.1.142',
-  mac: '4A:55:BC:E2:01:99',
-  protocol: 'MQTT over TLS'
+const localFirmware = ref(null);
+const localIsOutdated = ref(null);
+
+const reboot = async () => {
+  if (!deviceId.value) return;
+  isRebooting.value = true;
+  try {
+    await apiClient.put(`/api/v1/devices/${deviceId.value}/reboot`);
+    
+    // Add reboot log entry in real time
+    logs.value.unshift({
+      id: Date.now(),
+      type: 'warning',
+      title: 'Reboot Initiated',
+      desc: 'System hard reboot requested by administrator. Connection closed.',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    
+    await devicesStore.fetchDevices();
+  } catch (e) {
+    console.error('Failed to reboot device', e);
+  } finally {
+    isRebooting.value = false;
+  }
+};
+
+const device = computed(() => {
+  return devicesStore.getDeviceById(deviceId.value);
 });
 
-const hardware = ref({
-  firmware: 'v4.2.1-stable',
+const currentFirmware = computed(() => {
+  if (localFirmware.value !== null) return localFirmware.value;
+  return device.value?.firmware || 'v2.4.1';
+});
+
+const isFirmwareOutdated = computed(() => {
+  if (localIsOutdated.value !== null) return localIsOutdated.value;
+  return device.value?.isFirmwareOutdated || false;
+});
+
+const updateFirmware = async () => {
+  if (isUpdatingFirmware.value) return;
+  isUpdatingFirmware.value = true;
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  localFirmware.value = 'v2.4.1';
+  localIsOutdated.value = false;
+  isUpdatingFirmware.value = false;
+  
+  logs.value.unshift({
+    id: Date.now(),
+    type: 'success',
+    title: 'Firmware Flashed',
+    desc: 'System flashed successfully to v2.4.1-stable.',
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+};
+
+const calibrateSensor = async () => {
+  if (isCalibrating.value) return;
+  isCalibrating.value = true;
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  isCalibrating.value = false;
+  
+  logs.value.unshift({
+    id: Date.now(),
+    type: 'success',
+    title: 'Sensor Calibrated',
+    desc: `Calibration successful. Zero offset adjusted. Current Temp: ${metrics.value[0].value}`,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+};
+
+let tempInterval = null;
+
+onMounted(async () => {
+  if (devicesStore.devices.length === 0) {
+    await devicesStore.fetchDevices();
+  }
+  
+  tempInterval = setInterval(() => {
+    if (device.value?.isOnline()) {
+      const baseTemp = 24.2;
+      const variation = (Math.random() - 0.5) * 0.4;
+      metrics.value[0].value = `${(baseTemp + variation).toFixed(1)}°C`;
+    } else {
+      metrics.value[0].value = 'N/A';
+    }
+  }, 3000);
+});
+
+onUnmounted(() => {
+  if (tempInterval) {
+    clearInterval(tempInterval);
+  }
+});
+
+// Generate a deterministic MAC address from device ID
+const macAddress = computed(() => {
+  if (!deviceId.value) return 'N/A';
+  let hash = 0;
+  for (let i = 0; i < deviceId.value.length; i++) {
+    hash = deviceId.value.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const bytes = [];
+  for (let i = 0; i < 6; i++) {
+    bytes.push(((hash >> (i * 8)) & 0x00FF).toString(16).padStart(2, '0').toUpperCase());
+  }
+  return bytes.join(':');
+});
+
+// Generate a deterministic IP address from device ID
+const ipAddress = computed(() => {
+  if (!deviceId.value) return 'N/A';
+  let hash = 0;
+  for (let i = 0; i < deviceId.value.length; i++) {
+    hash = deviceId.value.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const lastOctet = Math.abs(hash % 250) + 2;
+  return `192.168.1.${lastOctet}`;
+});
+
+const connection = computed(() => ({
+  ssid: 'NEXORA_INDUSTRIAL_5G',
+  ip: ipAddress.value,
+  mac: macAddress.value,
+  protocol: 'HTTP / REST API'
+}));
+
+const hardware = computed(() => ({
+  firmware: currentFirmware.value,
   rev: 'REV-C (Q4 2023)',
   frequency: '240 MHz (Dual Core)',
-  temp: '42.5°C'
-});
+  temp: device.value?.isOnline() ? '42.5°C' : 'N/A'
+}));
 
 const logs = ref([
   { id: 1, type: 'success', title: 'Calibration Successful', desc: 'Internal sensor range adjusted to ±0.2°C.', time: '10:42 AM' },
@@ -36,53 +162,67 @@ const metrics = ref([
 
 <template>
   <div class="device-details">
-    <!-- 1. Cabecera de Entidad -->
-    <header class="entity-header">
-      <nav class="breadcrumbs">
-        <span class="breadcrumbs__item">DEVICES</span>
-        <span class="breadcrumbs__separator">></span>
-        <span class="breadcrumbs__item">{{ deviceId }}</span>
-        <span class="breadcrumbs__separator">></span>
-        <span class="breadcrumbs__item breadcrumbs__item--active">SENS-0822-T2</span>
-      </nav>
-
-      <div class="entity-header__main">
-        <h1 class="entity-header__title">ESP32 Temperature Sensor</h1>
-        <button class="button--solid-orange">
-          <font-awesome-icon icon="sliders" />
-          <span>Calibrate Sensor</span>
-        </button>
+    <template v-if="!device">
+      <div class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading device details...</p>
       </div>
-    </header>
+    </template>
 
-    <!-- 2. Fila 1: Estado Principal -->
-    <div class="status-row">
-      <!-- Panel Izquierdo: Telemetría -->
-      <div class="live-telemetry-card">
-        <div class="live-telemetry-card__header">
-          <span class="kicker">LIVE TELEMETRY</span>
-          <span class="badge--active">● ACTIVE</span>
+    <template v-else>
+      <!-- 1. Cabecera de Entidad -->
+      <header class="entity-header">
+        <nav class="breadcrumbs">
+          <span class="breadcrumbs__item">DEVICES</span>
+          <span class="breadcrumbs__separator">></span>
+          <span class="breadcrumbs__item breadcrumbs__item--active">{{ device.id }}</span>
+        </nav>
+
+        <div class="entity-header__main">
+          <h1 class="entity-header__title">ESP32 Gateway Node ({{ device.location }})</h1>
+          <button class="button--solid-orange" :disabled="isCalibrating || device.isOffline()" @click="calibrateSensor">
+            <font-awesome-icon icon="sliders" :class="{ 'fa-spin': isCalibrating }" />
+            <span>{{ isCalibrating ? 'Calibrating...' : 'Calibrate Sensor' }}</span>
+          </button>
         </div>
-        <h2 class="live-telemetry-card__title">Environmental Stability</h2>
-        
-        <div class="telemetry-grid">
-          <div class="telemetry-col">
-            <span class="telemetry-col__label">UPTIME</span>
-            <span class="telemetry-col__value telemetry-col__value--giant">142h</span>
-            <span class="telemetry-col__sub">32m 14s</span>
+      </header>
+
+      <!-- 2. Fila 1: Estado Principal -->
+      <div class="status-row">
+        <!-- Panel Izquierdo: Telemetría -->
+        <div class="live-telemetry-card">
+          <div class="live-telemetry-card__header">
+            <span class="kicker">LIVE TELEMETRY</span>
+            <span :class="device.isOnline() ? 'badge--active' : 'badge--inactive'">
+              ● {{ device.isOnline() ? 'ACTIVE' : 'OFFLINE' }}
+            </span>
           </div>
-          <div class="telemetry-col">
-            <span class="telemetry-col__label">SIGNAL (RSSI)</span>
-            <span class="telemetry-col__value telemetry-col__value--giant">-64dBm</span>
-            <span class="telemetry-col__sub telemetry-col__sub--success">EXCELLENT</span>
-          </div>
-          <div class="telemetry-col">
-            <span class="telemetry-col__label">HEALTH</span>
-            <span class="telemetry-col__value telemetry-col__value--giant telemetry-col__value--success">98.2%</span>
-            <span class="telemetry-col__sub">NOMINAL OPS</span>
+          <h2 class="live-telemetry-card__title">Environmental Stability</h2>
+          
+          <div class="telemetry-grid">
+            <div class="telemetry-col">
+              <span class="telemetry-col__label">LAST SYNC TIME</span>
+              <span class="telemetry-col__value telemetry-col__value--giant">{{ device.uptime }}</span>
+              <span class="telemetry-col__sub">Local Time</span>
+            </div>
+            <div class="telemetry-col">
+              <span class="telemetry-col__label">SIGNAL (RSSI)</span>
+              <span class="telemetry-col__value telemetry-col__value--giant">
+                {{ device.rssi !== null ? device.rssi + ' dBm' : 'Timeout' }}
+              </span>
+              <span class="telemetry-col__sub" :class="device.isOnline() ? 'telemetry-col__sub--success' : 'telemetry-col__sub--danger'">
+                {{ device.isOnline() ? 'EXCELLENT' : 'OFFLINE' }}
+              </span>
+            </div>
+            <div class="telemetry-col">
+              <span class="telemetry-col__label">HEALTH</span>
+              <span class="telemetry-col__value telemetry-col__value--giant" :class="device.isOnline() ? 'telemetry-col__value--success' : 'telemetry-col__value--danger'">
+                {{ device.isOnline() ? '100%' : '0%' }}
+              </span>
+              <span class="telemetry-col__sub">{{ device.isOnline() ? 'NOMINAL OPS' : 'COMM FAILURE' }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
       <!-- Panel Derecho: Conexión -->
       <div class="connection-details-card">
@@ -137,19 +277,6 @@ const metrics = ref([
           </span>
         </div>
       </div>
-
-      <div class="oscilloscope-viz">
-        <div class="oscilloscope-viz__content">
-          <font-awesome-icon icon="wave-square" class="oscilloscope-viz__icon" />
-          <span class="oscilloscope-viz__title">Real-time Oscilloscope Visualization</span>
-          <span class="oscilloscope-viz__subtitle">Telemetry streaming at 10Hz via WebSockets</span>
-        </div>
-        <!-- Mock SVG Waves -->
-        <svg class="oscilloscope-viz__waves" viewBox="0 0 800 100" preserveAspectRatio="none">
-          <path d="M0,50 Q100,20 200,50 T400,50 T600,50 T800,50" fill="none" stroke="rgba(244, 123, 32, 0.3)" stroke-width="2" />
-          <path d="M0,60 Q150,30 300,60 T600,60 T800,60" fill="none" stroke="rgba(26, 35, 126, 0.2)" stroke-width="2" />
-        </svg>
-      </div>
     </section>
 
     <!-- 4. Fila 3: Logs y Hardware -->
@@ -200,18 +327,19 @@ const metrics = ref([
         </div>
 
         <div class="hardware-actions">
-          <button class="button--solid-blue">
-            <font-awesome-icon icon="microchip" />
-            <span>FIRMWARE UPDATE</span>
+          <button class="button--solid-blue" :disabled="isUpdatingFirmware || !isFirmwareOutdated || device.isOffline()" @click="updateFirmware">
+            <font-awesome-icon icon="microchip" :class="{ 'fa-spin': isUpdatingFirmware }" />
+            <span>{{ isUpdatingFirmware ? 'UPDATING...' : (isFirmwareOutdated ? 'FIRMWARE UPDATE' : 'FIRMWARE UP-TO-DATE') }}</span>
           </button>
-          <button class="button--outline-blue">
-            <font-awesome-icon icon="rotate" />
-            <span>HARD REBOOT</span>
+          <button class="button--outline-blue" :disabled="isRebooting || device.isOffline()" @click="reboot">
+            <font-awesome-icon icon="rotate" :class="{ 'fa-spin': isRebooting }" />
+            <span>{{ isRebooting ? 'REBOOTING...' : (device.isOffline() ? 'OFFLINE' : 'HARD REBOOT') }}</span>
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </template>
+</div>
 </template>
 
 <style scoped>
@@ -548,6 +676,18 @@ const metrics = ref([
   left: 0;
   width: 100%;
   height: 100px;
+}
+
+.oscilloscope-viz__waves path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: wave-flow 25s linear infinite;
+}
+
+@keyframes wave-flow {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* 4. Logs and Hardware Row */

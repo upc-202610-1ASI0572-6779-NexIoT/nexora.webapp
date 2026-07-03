@@ -123,7 +123,7 @@
             <span :class="['status-badge', item.status.toLowerCase()]">{{ statusLabels[item.status] || item.status }}</span>
           </td>
           <td>
-            <div class="health-score">
+            <div v-if="item.healthScore !== null && item.healthScore !== undefined" class="health-score">
               <div class="progress-bar">
                 <div
                     class="progress-fill"
@@ -133,6 +133,7 @@
               </div>
               <span class="score-text">{{ item.healthScore }}%</span>
             </div>
+            <span v-else class="text-muted text-unlinked">Sin vincular</span>
           </td>
           <td>
             <router-link :to="`/buildings/${item.propertyCode}`" class="action-btn-icon" :title="t('buildings.inventory.actions.edit')">
@@ -233,7 +234,7 @@ const items = computed(() =>
         index: idx + 1,
         tenants: propertyTenants,
         displayTenants: propertyTenants.slice(0, 3),
-        healthScore: p.healthScore ?? Math.floor(Math.random() * 40) + 60
+        healthScore: (p.healthScore !== undefined && p.healthScore !== null) ? p.healthScore : null
       };
     })
 );
@@ -332,8 +333,9 @@ function handleClickOutside(e) {
   }
 }
 
-onMounted(async () => {
-  document.addEventListener('click', handleClickOutside);
+let pollInterval = null;
+
+const refreshData = async () => {
   try {
     properties.value = await propertyRepo.getAll();
   } catch {
@@ -351,10 +353,19 @@ onMounted(async () => {
   } catch {
     tenantsByProperty.value = {};
   }
+};
+
+onMounted(async () => {
+  document.addEventListener('click', handleClickOutside);
+  await refreshData();
+  pollInterval = setInterval(refreshData, 5000);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+  if (pollInterval) {
+    clearInterval(pollInterval);
+  }
 });
 </script>
 

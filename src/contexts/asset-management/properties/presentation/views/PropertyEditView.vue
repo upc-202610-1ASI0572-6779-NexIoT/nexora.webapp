@@ -76,6 +76,62 @@ const loadTenants = async () => {
   }
 };
 
+const allDevices = ref([]);
+const devicesLoading = ref(false);
+const selectedDeviceToLink = ref('');
+const linkingDevice = ref(false);
+const linkError = ref('');
+
+const loadDevices = async () => {
+  if (!propertyId.value) return;
+  devicesLoading.value = true;
+  try {
+    const { data } = await apiClient.get('/api/v1/devices');
+    allDevices.value = data;
+  } catch (err) {
+    console.error('Failed to load devices', err);
+  } finally {
+    devicesLoading.value = false;
+  }
+};
+
+const linkDevice = async () => {
+  if (!selectedDeviceToLink.value) return;
+  linkingDevice.value = true;
+  linkError.value = '';
+  try {
+    await apiClient.put(`/api/v1/devices/${selectedDeviceToLink.value}/assign`, {
+      propertyId: Number(propertyId.value)
+    });
+    selectedDeviceToLink.value = '';
+    await loadDevices();
+  } catch (err) {
+    linkError.value = 'Failed to link device.';
+  } finally {
+    linkingDevice.value = false;
+  }
+};
+
+const unlinkDevice = async (deviceId) => {
+  if (!confirm('Are you sure you want to unlink this device?')) return;
+  try {
+    await apiClient.put(`/api/v1/devices/${deviceId}/assign`, {
+      propertyId: null
+    });
+    await loadDevices();
+  } catch (err) {
+    alert('Failed to unlink device.');
+  }
+};
+
+const linkedDevices = computed(() => {
+  return allDevices.value.filter(d => d.propertyId === Number(propertyId.value));
+});
+
+const availableDevices = computed(() => {
+  return allDevices.value.filter(d => !d.propertyId);
+});
+
 onMounted(async () => {
   try {
     property.value = await propertyRepo.getByCode(propertyCode);
@@ -96,6 +152,7 @@ onMounted(async () => {
       globalBreadcrumbs.value = breadcrumbs.value;
     }
     await loadTenants();
+    await loadDevices();
   } catch (err) {
     error.value = err.response?.status === 404
       ? t('buildings.errors.notFound') || 'Property not found.'
@@ -438,19 +495,60 @@ const handleDeleteTenant = async (tenantId) => {
             </div>
           </div>
 
-          <div class="form-card form-card--mockup">
+          <div class="form-card">
             <header class="form-card__header">
               <div class="form-card__title-group">
                 <font-awesome-icon icon="network-wired" class="form-card__icon" />
-                <h3 class="form-card__title">{{ t('buildings.form.deviceLink.title') }}</h3>
+                <h3 class="form-card__title">Linked Devices</h3>
               </div>
-              <span class="badge badge--soon">{{ t('common.comingSoon') }}</span>
             </header>
 
             <div class="form-card__body">
-              <div class="mockup-placeholder">
-                <font-awesome-icon icon="microchip" class="mockup-placeholder__icon" />
-                <p class="mockup-placeholder__text">{{ t('buildings.mockups.deviceLink') }}</p>
+              <div v-if="devicesLoading" class="devices-loading-placeholder">
+                <div class="loading-spinner"></div>
+                <p>Loading devices...</p>
+              </div>
+              <div v-else>
+                <!-- Linked Devices List -->
+                <div v-if="linkedDevices.length > 0" class="linked-devices-list">
+                  <div v-for="dev in linkedDevices" :key="dev.id" class="linked-device-item">
+                    <div class="device-item-info">
+                      <font-awesome-icon icon="microchip" class="device-item-icon" />
+                      <div>
+                        <span class="device-item-id">{{ dev.id }}</span>
+                        <span class="device-item-status" :class="dev.connectionStatus.toLowerCase()">{{ dev.connectionStatus }}</span>
+                      </div>
+                    </div>
+                    <button class="unlink-btn" @click="unlinkDevice(dev.id)">
+                      <font-awesome-icon icon="trash-can" />
+                      <span>Unlink</span>
+                    </button>
+                  </div>
+                </div>
+                <div v-else class="empty-devices-placeholder">
+                  <p class="text-muted">No devices linked to this property yet.</p>
+                </div>
+
+                <!-- Link New Device Form -->
+                <div class="link-device-form">
+                  <h4 class="link-device-form__title">Link New Device</h4>
+                  <div class="link-device-form__row">
+                    <select v-model="selectedDeviceToLink" class="form-input">
+                      <option value="">Select available device...</option>
+                      <option v-for="dev in availableDevices" :key="dev.id" :value="dev.id">
+                        {{ dev.id }}
+                      </option>
+                    </select>
+                    <button 
+                      class="button--solid-orange" 
+                      :disabled="!selectedDeviceToLink || linkingDevice" 
+                      @click="linkDevice"
+                    >
+                      {{ linkingDevice ? 'Linking...' : 'Link' }}
+                    </button>
+                  </div>
+                  <p v-if="linkError" class="text-danger error-msg">{{ linkError }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -1356,5 +1454,127 @@ const handleDeleteTenant = async (tenantId) => {
   color: #e53e3e;
   font-size: 0.8rem;
   margin: 8px 0;
+}
+
+/* Devices Panel Styles */
+.devices-loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px;
+  color: #64748b;
+}
+
+.linked-devices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.linked-device-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.device-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.device-item-icon {
+  font-size: 1.25rem;
+  color: #f97316;
+}
+
+.device-item-id {
+  display: block;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.device-item-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.device-item-status.online {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.device-item-status.offline,
+.device-item-status.comm-failure {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.unlink-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: transparent;
+  border: 1px solid #fee2e2;
+  color: #ef4444;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.unlink-btn:hover {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.empty-devices-placeholder {
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.link-device-form {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+}
+
+.link-device-form__title {
+  margin: 0 0 12px 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.link-device-form__row {
+  display: flex;
+  gap: 12px;
+}
+
+.link-device-form__row select {
+  flex: 1;
+}
+
+.error-msg {
+  font-size: 0.8rem;
+  margin-top: 6px;
 }
 </style>

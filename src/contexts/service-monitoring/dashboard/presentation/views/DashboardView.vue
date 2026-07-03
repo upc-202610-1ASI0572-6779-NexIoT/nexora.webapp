@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useDashboardStore } from '../store/dashboardStore';
 import KpiCard from '../components/KpiCard.vue';
 import ConsumptionChart from '../components/ConsumptionChart.vue';
@@ -64,8 +64,19 @@ import SystemHealthCard from '../components/SystemHealthCard.vue';
 
 const dashboardStore = useDashboardStore();
 
+let dashboardPollInterval = null;
+
 onMounted(() => {
   dashboardStore.fetchStats();
+  dashboardPollInterval = setInterval(() => {
+    dashboardStore.fetchStats();
+  }, 5000);
+});
+
+onUnmounted(() => {
+  if (dashboardPollInterval) {
+    clearInterval(dashboardPollInterval);
+  }
 });
 </script>
 

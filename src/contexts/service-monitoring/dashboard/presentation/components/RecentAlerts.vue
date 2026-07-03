@@ -93,6 +93,8 @@ const alerts = computed(() => {
   display: flex;
   flex-direction: column;
   flex: 1;
+  max-height: 380px;
+  overflow-y: auto;
 }
 
 .alert-item {

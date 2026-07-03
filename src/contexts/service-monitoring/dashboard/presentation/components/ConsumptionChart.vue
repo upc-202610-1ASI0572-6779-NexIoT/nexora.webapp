@@ -3,23 +3,34 @@
     <div class="chart-header-row">
       <div class="chart-header-text">
         <h3 class="chart-title">Resource Consumption</h3>
-        <p class="chart-subtitle">Live Gas (PPM) and Electricity (Amps) telemetry over last 24h</p>
+        <p class="chart-subtitle">Live Gas (PPM) and Electricity (Amps) telemetry trends</p>
       </div>
       <div class="chart-toggle">
-        <button class="toggle-btn active">24 HOURS</button>
-        <button class="toggle-btn">7 DAYS</button>
+        <button 
+          class="toggle-btn" 
+          :class="{ active: currentRange === '24h' }"
+          @click="toggleRange('24h')"
+        >24 HOURS</button>
+        <button 
+          class="toggle-btn"
+          :class="{ active: currentRange === '7d' }"
+          @click="toggleRange('7d')"
+        >7 DAYS</button>
       </div>
     </div>
     <div class="chart-body">
-      <div class="chart-scroll-wrapper">
+      <div class="chart-scroll-wrapper" v-if="chartDataReady">
         <Bar :data="chartData" :options="chartOptions" :style="{ width: '620px', height: '260px' }" />
+      </div>
+      <div v-else class="chart-loading-placeholder">
+        Loading consumption trends...
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { Bar } from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -30,26 +41,53 @@ import {
   CategoryScale,
   LinearScale
 } from 'chart.js';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
+const currentRange = ref('24h');
+const chartDataReady = ref(false);
+
 const chartData = ref({
-  labels: ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'],
-  datasets: [
-    {
-      label: 'Gas Level (PPM)',
-      backgroundColor: '#fdb173',
-      borderRadius: 4,
-      data: [12, 14, 15, 14, 18, 12, 14, 15]
-    },
-    {
-      label: 'Electricity Load (Amps)',
-      backgroundColor: '#1a3673',
-      borderRadius: 4,
-      data: [5.2, 5.8, 6.4, 6.1, 7.2, 6.8, 8.1, 6.5]
-    }
-  ]
+  labels: [],
+  datasets: []
 });
+
+const loadChartData = async () => {
+  try {
+    const res = await apiClient.get('/api/v1/analytics/live-consumption', {
+      params: { range: currentRange.value }
+    });
+    if (res.data) {
+      chartData.value = {
+        labels: res.data.labels,
+        datasets: [
+          {
+            label: 'Gas Level (PPM)',
+            backgroundColor: '#fdb173',
+            borderRadius: 4,
+            data: res.data.gas
+          },
+          {
+            label: 'Electricity Load (Amps)',
+            backgroundColor: '#1a3673',
+            borderRadius: 4,
+            data: res.data.electricity
+          }
+        ]
+      };
+      chartDataReady.value = true;
+    }
+  } catch (e) {
+    console.error('Failed to load consumption chart data', e);
+  }
+};
+
+const toggleRange = (range) => {
+  currentRange.value = range;
+  chartDataReady.value = false;
+  loadChartData();
+};
 
 const chartOptions = ref({
   responsive: false,
@@ -84,6 +122,19 @@ const chartOptions = ref({
         drawBorder: false
       }
     }
+  }
+});
+
+let chartPollInterval = null;
+
+onMounted(() => {
+  loadChartData();
+  chartPollInterval = setInterval(loadChartData, 5000);
+});
+
+onUnmounted(() => {
+  if (chartPollInterval) {
+    clearInterval(chartPollInterval);
   }
 });
 </script>
@@ -202,5 +253,14 @@ const chartOptions = ref({
 
 .chart-body::-webkit-scrollbar-thumb:hover {
   background: #999;
+}
+
+.chart-loading-placeholder {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
 }
 </style>

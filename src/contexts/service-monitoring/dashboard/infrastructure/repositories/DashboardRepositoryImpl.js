@@ -6,6 +6,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
   async getStats() {
     let electricityKwh = 0.0;
     let gasPpm = 0;
+    let rawWater = 0.0;
     let airQualityStatus = 'Good';
     let devicesOnline = 2;
     let totalDevices = 2;
@@ -28,13 +29,37 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
       // 2. Fetch latest telemetry for gas safety unit
       const resGas = await apiClient.get('/api/v1/telemetries/latest?deviceId=gas-safety-unit-apt-402');
       if (resGas.data) {
-        gasPpm = resGas.data.gasReading;
+        gasPpm = parseFloat(resGas.data.gasReading.toFixed(3));
         airQualityStatus = gasPpm > 300 ? 'Critical' : (gasPpm > 100 ? 'Poor' : (gasPpm > 50 ? 'Moderate' : 'Good'));
       }
     } catch (e) {
       console.debug('Failed to fetch gas telemetry, using mock fallback', e);
       gasPpm = 14;
       airQualityStatus = 'Good';
+    }
+
+    try {
+      // 2.5. Fetch latest telemetry for water safety unit
+      const resWater = await apiClient.get('/api/v1/telemetries/latest?deviceId=water-safety-unit-apt-402');
+      if (resWater.data) {
+        rawWater = parseFloat(resWater.data.waterReading.toFixed(3));
+      }
+    } catch (e) {
+      console.debug('Failed to fetch water telemetry, using mock fallback', e);
+      rawWater = 0.0;
+    }
+
+    try {
+      // 2.7. Fetch dynamic device status
+      const resDevices = await apiClient.get('/api/v1/devices');
+      if (resDevices.data) {
+        totalDevices = resDevices.data.length;
+        devicesOnline = resDevices.data.filter(d => d.connectionStatus === 'Online').length;
+      }
+    } catch (e) {
+      console.debug('Failed to fetch devices, using mock fallback', e);
+      devicesOnline = 2;
+      totalDevices = 2;
     }
 
     let propertiesCount = 4;
@@ -122,7 +147,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
       alerts: activeAlerts,
       health: healthScore,
       rawGas: gasPpm,
-      rawWater: 0.0,
+      rawWater: rawWater,
       rawElectricity: electricityKwh,
       voltageOk: voltageOk
     };

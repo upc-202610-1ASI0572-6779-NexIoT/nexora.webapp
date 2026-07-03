@@ -273,6 +273,11 @@
       "statusLabel": "Status",
       "statusActive": "Active",
       "goToDashboard": "Go to Dashboard"
+    },
+    "security": {
+      "verifyTitle": "Confirm Identity",
+      "verifyDesc": "Please enter your password to view your subscription details.",
+      "invalidPassword": "Incorrect password. Please try again."
     }
   },
    "tenantProfile": {

@@ -4,7 +4,7 @@
 
     <div class="credit-card-box">
       <div class="credit-card-wrapper" @mouseenter="flipped = true" @mouseleave="flipped = false">
-        <div class="credit-card" :class="{ 'credit-card--empty': !card, 'flipped': flipped }">
+        <div class="credit-card" :class="{ 'credit-card--empty': !card, 'flipped': flipped }" @click="$emit('update-card')">
           <div class="credit-card__front">
             <div class="credit-card__chip">
               <div class="chip-inner"></div>
@@ -156,8 +156,16 @@ const cardCvv = computed(() => {
   transform-origin: center center;
 }
 
+.credit-card:hover {
+  transform: scale(1.03);
+}
+
 .credit-card.flipped {
   transform: rotateY(180deg);
+}
+
+.credit-card.flipped:hover {
+  transform: rotateY(180deg) scale(1.03);
 }
 
 .credit-card__front,

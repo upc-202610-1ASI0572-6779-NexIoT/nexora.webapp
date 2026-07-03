@@ -128,7 +128,7 @@ const cardError = ref(null);
 
 const planId = route.query.planId ? Number(route.query.planId) : null;
 
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder';
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51OpP1xJ2u3u4v5w6x7y8z9a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u';
 let stripe = null;
 let elements = null;
 let cardElement = null;

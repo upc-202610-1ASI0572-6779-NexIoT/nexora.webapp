@@ -273,6 +273,11 @@
       "statusLabel": "Estado",
       "statusActive": "Activa",
       "goToDashboard": "Ir al Dashboard"
+    },
+    "security": {
+      "verifyTitle": "Confirmar Identidad",
+      "verifyDesc": "Por favor ingresa tu contraseña para ver los detalles de tu suscripción.",
+      "invalidPassword": "Contraseña incorrecta. Inténtalo de nuevo."
     }
   },
    "tenantProfile": {

@@ -57,7 +57,7 @@
       </div>
 
       <button
-        v-if="!globalBreadcrumbs && actionRoute"
+        v-if="!globalBreadcrumbs && actionRoute && route.name !== 'dashboard'"
         class="register-btn"
         @click="handleAction"
       >

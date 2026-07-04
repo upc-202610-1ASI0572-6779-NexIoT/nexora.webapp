@@ -124,10 +124,9 @@ const fieldErrors = computed(() => {
   if (!error) return {};
 
   switch (error.code) {
-    case 'USER_NOT_FOUND':
-      return { email: error.message };
-    case 'INVALID_PASSWORD':
-      return { password: error.message };
+    case 'INVALID_CREDENTIALS':
+    case 'FORBIDDEN_ACCESS':
+      return {};
     default:
       return {};
   }

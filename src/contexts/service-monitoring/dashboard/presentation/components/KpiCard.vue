@@ -98,6 +98,7 @@ const colorClass = computed(() => {
   align-items: baseline;
   gap: 4px;
   margin-bottom: 4px;
+  min-width: 0;
 }
 
 .kpi-value {
@@ -105,6 +106,10 @@ const colorClass = computed(() => {
   font-weight: 700;
   font-family: var(--font-titles, sans-serif);
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .kpi-value-sub {

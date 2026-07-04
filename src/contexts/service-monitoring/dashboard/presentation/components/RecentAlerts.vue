@@ -23,10 +23,7 @@
     </div>
     
     <div class="alerts-footer">
-      Monitoring 1,240 data points in real time
-      <button class="fab-button">
-        <font-awesome-icon icon="plus" />
-      </button>
+      <span class="footer-text">Real-time monitoring active</span>
     </div>
   </div>
 </template>
@@ -178,40 +175,17 @@ const alerts = computed(() => {
   font-size: 0.8rem;
   color: #7f8c8d;
   text-align: center;
-  position: relative;
   background-color: #fcfcfc;
   border-radius: 0 0 4px 4px;
 }
 
-.fab-button {
-  position: absolute;
-  right: 24px;
-  bottom: -16px; /* Let it overflow a bit or sit on the edge? The design shows it at the bottom right of the card, perhaps slightly overlapping. Let's position it at the bottom edge. */
-  bottom: 24px;
-  width: 48px;
-  height: 48px;
-  border-radius: 8px; /* Slightly rounded corners */
-  background-color: #e67e22; /* Primary orange */
-  color: white;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.footer-text {
+  font-style: italic;
 }
 
-/* Responsiveness */
 @media (max-width: 480px) {
   .alerts-header, .alert-item, .alerts-footer {
     padding: 16px;
-  }
-  .fab-button {
-    right: 16px;
-    bottom: 16px;
-    width: 40px;
-    height: 40px;
   }
 }
 </style>

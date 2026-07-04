@@ -1,11 +1,14 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import { useDevicesStore } from '../store/devicesStore';
+import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 import apiClient from '@/shared/infrastructure/http/apiClient';
 
 const route = useRoute();
 const devicesStore = useDevicesStore();
+const authStore = useAuthStore();
+const globalBreadcrumbs = inject('globalBreadcrumbs', null);
 const deviceId = computed(() => route.params.deviceId);
 const isRebooting = ref(false);
 const isCalibrating = ref(false);
@@ -28,6 +31,7 @@ const reboot = async () => {
       desc: 'System hard reboot requested by administrator. Connection closed.',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
+    saveLogs();
     
     await devicesStore.fetchDevices();
   } catch (e) {
@@ -66,6 +70,7 @@ const updateFirmware = async () => {
     desc: 'System flashed successfully to v2.4.1-stable.',
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   });
+  saveLogs();
 };
 
 const calibrateSensor = async () => {
@@ -81,29 +86,137 @@ const calibrateSensor = async () => {
     desc: `Calibration successful. Zero offset adjusted. Current Temp: ${metrics.value[0].value}`,
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   });
+  saveLogs();
 };
 
 let tempInterval = null;
 
+const updateTelemetry = async () => {
+  if (!deviceId.value) return;
+  try {
+    const { data } = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${deviceId.value}`);
+    const newMetrics = [];
+    const devIdLower = deviceId.value.toLowerCase();
+
+    // 1. Gas Reading
+    if (data && (data.gasReading > 0 || devIdLower.includes('gas'))) {
+      newMetrics.push({
+        label: 'GAS LEVEL',
+        value: `${data.gasReading.toFixed(1)} PPM`,
+        trend: data.gasReading > 100 ? 'HIGH ALERT' : 'NOMINAL',
+        trendColor: data.gasReading > 100 ? 'red' : 'green'
+      });
+    }
+
+    // 2. Water Reading
+    if (data && (data.waterReading > 0 || devIdLower.includes('water'))) {
+      newMetrics.push({
+        label: 'WATER FLOW',
+        value: `${data.waterReading.toFixed(2)} L/m`,
+        trend: data.waterReading > 15 ? 'HIGH FLOW' : 'ACTIVE',
+        trendColor: data.waterReading > 15 ? 'red' : 'green'
+      });
+    }
+
+    // 3. Electricity / Current Reading
+    if (data && (data.electricityReading > 0 || devIdLower.includes('voltage') || devIdLower.includes('electricity') || devIdLower.includes('current'))) {
+      newMetrics.push({
+        label: 'ENERGY CONSUMPTION',
+        value: `${data.electricityReading.toFixed(1)} kWh`,
+        trend: data.electricityReading > 15 ? 'OVERLOAD' : 'NOMINAL',
+        trendColor: data.electricityReading > 15 ? 'red' : 'green'
+      });
+      newMetrics.push({
+        label: 'VOLTAGE SAFETY',
+        value: data.voltageOk ? 'NOMINAL' : 'ALERT',
+        trend: data.voltageOk ? 'VOLTAGE OK' : 'VOLTAGE DROP',
+        trendColor: data.voltageOk ? 'green' : 'red'
+      });
+    }
+
+    // 4. Presence / Motion
+    if (data && data.presenceReading) {
+      newMetrics.push({
+        label: 'MOTION SENSOR',
+        value: 'ACTIVE',
+        trend: 'PRESENCE DETECTED',
+        trendColor: 'red'
+      });
+    }
+
+    // Add generic device metrics if none of the above are pushed
+    if (newMetrics.length === 0) {
+      newMetrics.push({
+        label: 'DEVICE STATUS',
+        value: device.value?.isOnline() ? 'ONLINE' : 'OFFLINE',
+        trend: 'NOMINAL',
+        trendColor: device.value?.isOnline() ? 'green' : 'red'
+      });
+    }
+
+    // Fill remaining cards (up to 4) dynamically with real device properties or stable metrics
+    while (newMetrics.length < 4) {
+      if (newMetrics.length === 1) {
+        newMetrics.push({
+          label: 'SIGNAL STRENGTH',
+          value: device.value?.rssi !== null && device.value?.rssi !== undefined ? `${device.value.rssi} dBm` : '-45 dBm',
+          trend: device.value?.isOnline() ? 'EXCELLENT' : 'DISCONNECTED',
+          trendColor: device.value?.isOnline() ? 'green' : 'red'
+        });
+      } else if (newMetrics.length === 2) {
+        newMetrics.push({
+          label: 'RAM USAGE',
+          value: device.value?.isOnline() ? '124KB' : 'N/A',
+          trend: 'STABLE',
+          trendColor: 'gray'
+        });
+      } else {
+        newMetrics.push({
+          label: 'PACKET LOSS',
+          value: device.value?.isOnline() ? '0.02%' : 'N/A',
+          trend: 'OPTIMAL',
+          trendColor: 'green'
+        });
+      }
+    }
+
+    metrics.value = newMetrics;
+
+  } catch (e) {
+    console.debug('Failed to fetch real-time telemetry, falling back to dynamic simulated metrics', e);
+    const baseTemp = 24.2;
+    const variation = (Math.random() - 0.5) * 0.4;
+    const currentTemp = `${(baseTemp + variation).toFixed(1)}°C`;
+    metrics.value = [
+      { label: 'AVG TEMP', value: device.value?.isOnline() ? currentTemp : 'N/A', trend: '~0.4', trendColor: 'green' },
+      { label: 'SIGNAL STRENGTH', value: device.value?.rssi !== null && device.value?.rssi !== undefined ? `${device.value.rssi} dBm` : '-45 dBm', trend: device.value?.isOnline() ? 'EXCELLENT' : 'DISCONNECTED', trendColor: device.value?.isOnline() ? 'green' : 'red' },
+      { label: 'RAM USAGE', value: device.value?.isOnline() ? '124KB' : 'N/A', trend: 'STABLE', trendColor: 'gray' },
+      { label: 'PACKET LOSS', value: device.value?.isOnline() ? '0.02%' : 'N/A', trend: 'OPTIMAL', trendColor: 'green' }
+    ];
+  }
+};
+
 onMounted(async () => {
+  if (!authStore.user) {
+    await authStore.fetchUser();
+  }
   if (devicesStore.devices.length === 0) {
     await devicesStore.fetchDevices();
   }
   
-  tempInterval = setInterval(() => {
-    if (device.value?.isOnline()) {
-      const baseTemp = 24.2;
-      const variation = (Math.random() - 0.5) * 0.4;
-      metrics.value[0].value = `${(baseTemp + variation).toFixed(1)}°C`;
-    } else {
-      metrics.value[0].value = 'N/A';
-    }
+  await updateTelemetry();
+  
+  tempInterval = setInterval(async () => {
+    await updateTelemetry();
   }, 3000);
 });
 
 onUnmounted(() => {
   if (tempInterval) {
     clearInterval(tempInterval);
+  }
+  if (globalBreadcrumbs) {
+    globalBreadcrumbs.value = null;
   }
 });
 
@@ -146,11 +259,64 @@ const hardware = computed(() => ({
   temp: device.value?.isOnline() ? '42.5°C' : 'N/A'
 }));
 
-const logs = ref([
-  { id: 1, type: 'success', title: 'Calibration Successful', desc: 'Internal sensor range adjusted to ±0.2°C.', time: '10:42 AM' },
-  { id: 2, type: 'warning', title: 'Fringe Signal Detected', desc: 'RSSI dropped below -75dBm for 12 seconds.', time: '09:15 AM' },
-  { id: 3, type: 'info', title: 'Routine Heartbeat', desc: 'System status report sent to main gateway.', time: '08:00 AM' }
+const getDynamicTime = (minutesAgo) => {
+  const date = new Date(Date.now() - minutesAgo * 60 * 1000);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const getDefaultLogs = () => [
+  { id: 1, type: 'success', title: 'Calibration Successful', desc: 'Internal sensor range adjusted to ±0.2°C.', time: getDynamicTime(10) },
+  { id: 2, type: 'warning', title: 'Fringe Signal Detected', desc: 'RSSI dropped below -75dBm for 12 seconds.', time: getDynamicTime(90) },
+  { id: 3, type: 'info', title: 'Routine Heartbeat', desc: 'System status report sent to main gateway.', time: getDynamicTime(240) }
+];
+
+const logs = ref([]);
+const showAllLogs = ref(false);
+
+const displayedLogs = computed(() => {
+  return showAllLogs.value ? logs.value : logs.value.slice(0, 3);
+});
+
+const currentUserId = computed(() => authStore.user?.email || 'guest');
+
+const storageKey = computed(() => {
+  return `device_logs_${currentUserId.value}_${deviceId.value}`;
+});
+
+const loadLogs = () => {
+  if (!deviceId.value) return;
+  const stored = localStorage.getItem(storageKey.value);
+  if (stored) {
+    try {
+      logs.value = JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to parse logs from localStorage', e);
+      logs.value = getDefaultLogs();
+    }
+  } else {
+    logs.value = getDefaultLogs();
+    localStorage.setItem(storageKey.value, JSON.stringify(logs.value));
+  }
+};
+
+const saveLogs = () => {
+  if (!deviceId.value) return;
+  localStorage.setItem(storageKey.value, JSON.stringify(logs.value));
+};
+
+const breadcrumbs = computed(() => [
+  { label: 'Devices', route: '/devices' },
+  { label: deviceId.value || 'Device Details', route: `/devices/${deviceId.value}` }
 ]);
+
+watch(storageKey, () => {
+  loadLogs();
+  showAllLogs.value = false; // Reset collapse state when switching devices or users
+  updateTelemetry(); // Fetch immediately when changing devices
+  if (globalBreadcrumbs) {
+    globalBreadcrumbs.value = breadcrumbs.value;
+  }
+}, { immediate: true });
 
 const metrics = ref([
   { label: 'AVG TEMP', value: '24.2°C', trend: '~0.4', trendDir: 'up', trendColor: 'green' },
@@ -173,7 +339,7 @@ const metrics = ref([
       <!-- 1. Cabecera de Entidad -->
       <header class="entity-header">
         <nav class="breadcrumbs">
-          <span class="breadcrumbs__item">DEVICES</span>
+          <router-link to="/devices" class="breadcrumbs__item breadcrumbs__item--link">DEVICES</router-link>
           <span class="breadcrumbs__separator">></span>
           <span class="breadcrumbs__item breadcrumbs__item--active">{{ device.id }}</span>
         </nav>
@@ -286,7 +452,7 @@ const metrics = ref([
         <span class="kicker">SYSTEM EVENT LOGS</span>
         
         <div class="log-list">
-          <div v-for="log in logs" :key="log.id" class="log-item">
+          <div v-for="log in displayedLogs" :key="log.id" class="log-item">
             <div :class="['log-item__icon-box', `log-item__icon-box--${log.type}`]">
               <font-awesome-icon v-if="log.type === 'success'" icon="circle-check" />
               <font-awesome-icon v-if="log.type === 'warning'" icon="triangle-exclamation" />
@@ -300,7 +466,9 @@ const metrics = ref([
           </div>
         </div>
 
-        <button class="button--outline-fullwidth">VIEW ALL LOGS</button>
+        <button class="button--outline-fullwidth" @click="showAllLogs = !showAllLogs">
+          {{ showAllLogs ? 'COLLAPSE LOGS' : 'VIEW ALL LOGS' }}
+        </button>
       </div>
 
       <!-- Panel Derecho: Hardware Profile -->
@@ -380,6 +548,17 @@ const metrics = ref([
 }
 
 .breadcrumbs__item--active {
+  color: #1a237e;
+}
+
+.breadcrumbs__item--link {
+  color: #718096;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.breadcrumbs__item--link:hover {
   color: #1a237e;
 }
 

@@ -92,13 +92,15 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
             icon = 'exclamation-circle';
           }
 
+          const alertReading = alert.reading !== null && alert.reading !== undefined ? alert.reading : 0;
+
           if (alert.type.includes('Gas')) {
             typeLabel = 'GAS';
-            desc = `High gas readings (${gasPpm} PPM) detected on device ${alert.deviceId}.`;
+            desc = `High gas readings (${alertReading.toFixed(3)} PPM) detected on device ${alert.deviceId}.`;
           } else if (alert.type.includes('Overcurrent') || alert.type.includes('Voltage')) {
             typeLabel = 'VOLTAGE';
             desc = alert.type === 'Overcurrent Detected'
-              ? `High current draw (${electricityKwh.toFixed(1)} A) detected on device ${alert.deviceId}.`
+              ? `High current draw (${alertReading.toFixed(1)} A) detected on device ${alert.deviceId}.`
               : `Grid instability or voltage drop detected on device ${alert.deviceId}.`;
             icon = 'bolt';
           } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {

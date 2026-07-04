@@ -24,9 +24,6 @@
     
     <div class="alerts-footer">
       Monitoring 1,240 data points in real time
-      <button class="fab-button">
-        <font-awesome-icon icon="plus" />
-      </button>
     </div>
   </div>
 </template>

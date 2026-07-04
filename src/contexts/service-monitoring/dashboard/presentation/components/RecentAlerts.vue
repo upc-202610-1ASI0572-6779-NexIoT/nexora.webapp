@@ -2,7 +2,7 @@
   <div class="alerts-container">
     <div class="alerts-header">
       <h3>Recent Alerts</h3>
-      <span class="view-all">VIEW ALL</span>
+      <router-link to="/alerts" class="view-all">VIEW ALL</router-link>
     </div>
     
     <div class="alerts-list">

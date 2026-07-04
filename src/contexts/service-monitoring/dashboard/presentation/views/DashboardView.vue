@@ -16,6 +16,7 @@
       <KpiCard
         title="GAS LEVEL"
         :value="displayGas"
+        valueIcon="fire-flame-curved"
         subtitle="Optimal range (<50 PPM)"
         :colorType="gasColor"
         icon="fire-flame-curved"

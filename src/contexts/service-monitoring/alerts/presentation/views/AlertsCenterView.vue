@@ -145,18 +145,23 @@ const fetchAlerts = async (page = 1) => {
 
         let sensorType = 'System';
         let ppmLevel = '-';
+        const val = alert.reading !== undefined && alert.reading !== null ? alert.reading : 0;
+
         if (alert.type.includes('Gas')) {
           sensorType = 'Gas Level';
-          ppmLevel = 'Gas Anomaly';
+          ppmLevel = `${val.toFixed(1)} Ppm`;
         } else if (alert.type.includes('Overcurrent')) {
           sensorType = 'Current Overload';
-          ppmLevel = 'Overload';
+          ppmLevel = `${val.toFixed(2)} kWh`;
         } else if (alert.type.includes('Voltage')) {
           sensorType = 'Voltage Monitor';
-          ppmLevel = 'Instability';
+          ppmLevel = val === 0 ? 'Instable' : '220V Ok';
         } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {
           sensorType = 'Security Motion';
           ppmLevel = 'Intrusion';
+        } else if (alert.type.includes('Water') || alert.type.includes('Leak')) {
+          sensorType = 'Water Flow';
+          ppmLevel = `${val.toFixed(1)} Lpm`;
         }
 
         const date = new Date(alert.timestamp);
@@ -167,6 +172,8 @@ const fetchAlerts = async (page = 1) => {
           propertyId = 'Apt-402 (Elec)';
         } else if (alert.deviceId.includes('gas-safety-unit')) {
           propertyId = 'Apt-402 (Gas)';
+        } else if (alert.deviceId.includes('water-safety-unit')) {
+          propertyId = 'Apt-402 (Water)';
         } else {
           propertyId = alert.deviceId;
         }

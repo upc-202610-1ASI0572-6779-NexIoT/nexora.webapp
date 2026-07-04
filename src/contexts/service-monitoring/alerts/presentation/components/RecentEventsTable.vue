@@ -54,7 +54,7 @@
           <th>Timestamp</th>
           <th>Property ID</th>
           <th>Sensor Type</th>
-          <th>PPM Level</th>
+          <th>Reading</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>

@@ -63,15 +63,93 @@
           </div>
 
           <form class="payment-form" novalidate @submit.prevent="handleSubmit">
-            <div class="payment-form__summary">
-              <p v-html="t('subscription.checkout.summaryHtml', { planName: plan.name, amount: totalAmount.toFixed(2) })"></p>
-              <p class="payment-form__summary-note">{{ t('subscription.checkout.summaryNote') }}</p>
+            <div class="card-preview-area">
+              <div class="credit-card-box">
+                <div class="credit-card" :class="{ 'flipped': cardFlipped }">
+                  <div class="credit-card__front">
+                    <div class="credit-card__chip">
+                      <div class="chip-inner"></div>
+                    </div>
+                    <div class="credit-card__brand">
+                      <svg v-if="previewBrand === 'visa'" viewBox="0 0 100 30" class="card-brand-svg">
+                        <path fill="#ffffff" d="M45.5 23.4h-7.1l4.4-20.4h7.1l-4.4 20.4zm-16-13.1l-.7 3.6c2.1.6 4.5 1.6 5.7 3.2l-5-6.8zm15.7-7.3c-2.8-1.1-5.7-1.7-8.5-1.7-7.9 0-13.5 4.1-13.5 10 0 4.4 4 6.8 7 8.3 3.1 1.5 4.2 2.5 4.2 3.9 0 2.2-2.5 3.2-4.8 3.2-3.2 0-4.9-.5-7.5-1.6l-1-.5-.8 4.6c2.9 1.3 6 1.9 9.1 1.9 8.5 0 14-4 14.1-10.2 0-3.4-2.1-6-6.7-8.1-2.8-1.4-4.5-2.4-4.5-3.8 0-1.3 1.4-2.6 4.5-2.6 2.6-.1 4.5.5 5.9 1.1l.7.3.8-4.4zm27.4 20.4h5.5l-4.8-20.4h-5.1c-2.4 0-4.4 1.4-5.1 3.5l-9 16.9h6.3l1.3-3.4h7.7l.7 3.4h2.5zm-6.7-8.7l3.2-8.3 1.8 8.3h-5zm-47.5-11.7l-5.5 13.9-.7-3.6c-1.2-4.1-5-8.5-9.2-10.7l6 15.5h6.2l9.3-20.4h-6.1z"/>
+                      </svg>
+                      <svg v-else-if="previewBrand === 'mastercard'" viewBox="0 0 50 30" class="card-brand-svg">
+                        <circle cx="18" cy="15" r="11" fill="#eb001b"/>
+                        <circle cx="32" cy="15" r="11" fill="#f79e1b"/>
+                      </svg>
+                      <svg v-else-if="previewBrand === 'amex'" viewBox="0 0 50 30" class="card-brand-svg">
+                        <rect width="50" height="30" rx="4" fill="#007bc1"/>
+                        <text x="25" y="19" fill="#ffffff" font-family="Arial, sans-serif" font-size="9px" font-weight="bold" text-anchor="middle" letter-spacing="1">AMEX</text>
+                      </svg>
+                      <span v-else class="card-brand-text">{{ previewBrandLabel }}</span>
+                    </div>
+                    <div class="credit-card__number">{{ previewNumber }}</div>
+                    <div class="credit-card__footer">
+                      <div class="credit-card__holder">
+                        <span class="card-label">{{ t('subscription.payment.cardHolder') }}</span>
+                        <span class="card-value">{{ previewHolder || t('subscription.payment.placeholderName') }}</span>
+                      </div>
+                      <div class="credit-card__expiry">
+                        <span class="card-label">{{ t('subscription.payment.expires') }}</span>
+                        <span class="card-value">{{ previewExpiry }}</span>
+                      </div>
+                    </div>
+                    <div class="credit-card__network">
+                      <svg viewBox="0 0 30 20" class="contactless-icon">
+                        <path fill="rgba(255,255,255,0.3)" d="M8 10c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm-4 0c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6zm-4 0c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10S0 15.5 0 10z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="credit-card__back">
+                    <div class="credit-card__magstripe"></div>
+                    <div class="credit-card__signature">
+                      <div class="credit-card__cvv">{{ checkoutForm.cvv || '***' }}</div>
+                    </div>
+                    <div class="credit-card__back-text">{{ t('subscription.payment.securityCode') }}</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="stripe-card-element-container">
-              <label for="card-element" class="stripe-label">{{ t('subscription.checkout.cardDetails') || 'Detalles de Tarjeta' }}</label>
-              <div id="card-element" class="stripe-card-input"></div>
-              <div id="card-errors" role="alert" class="stripe-error-text" v-if="cardError">{{ cardError }}</div>
+            <div class="checkout-form-group" :class="{ 'checkout-form-group--error': errors.holder }">
+              <label for="ch-holder">{{ t('subscription.payment.edit.holder') }}</label>
+              <input id="ch-holder" type="text" v-model="checkoutForm.holderName" maxlength="100" required @input="errors.holder = ''" />
+              <span v-if="errors.holder" class="checkout-field-error">{{ errors.holder }}</span>
+            </div>
+
+            <div class="checkout-form-group" :class="{ 'checkout-form-group--error': errors.number }">
+              <label for="ch-number">{{ t('subscription.payment.edit.number') }}</label>
+              <input id="ch-number" type="text" v-model="checkoutForm.fullNumber" maxlength="19" placeholder="4111 1111 1111 1111" required @input="errors.number = ''" />
+              <span v-if="errors.number" class="checkout-field-error">{{ errors.number }}</span>
+            </div>
+
+            <div class="checkout-form-row">
+              <div class="checkout-form-group" :class="{ 'checkout-form-group--error': errors.month }">
+                <label for="ch-month">{{ t('subscription.payment.edit.expiryMonth') }}</label>
+                <input id="ch-month" type="text" v-model="checkoutForm.expiryMonth" maxlength="2" placeholder="MM" required @input="errors.month = ''" />
+                <span v-if="errors.month" class="checkout-field-error">{{ errors.month }}</span>
+              </div>
+              <div class="checkout-form-group" :class="{ 'checkout-form-group--error': errors.year }">
+                <label for="ch-year">{{ t('subscription.payment.edit.expiryYear') }}</label>
+                <input id="ch-year" type="text" v-model="checkoutForm.expiryYear" maxlength="2" placeholder="YY" required @input="errors.year = ''" />
+                <span v-if="errors.year" class="checkout-field-error">{{ errors.year }}</span>
+              </div>
+              <div class="checkout-form-group" :class="{ 'checkout-form-group--error': errors.cvv }">
+                <label for="ch-cvv">{{ t('subscription.payment.edit.cvv') }}</label>
+                <input
+                  id="ch-cvv"
+                  type="text"
+                  v-model="checkoutForm.cvv"
+                  maxlength="4"
+                  placeholder="***"
+                  required
+                  @focus="cardFlipped = true"
+                  @blur="cardFlipped = false"
+                  @input="errors.cvv = ''"
+                />
+                <span v-if="errors.cvv" class="checkout-field-error">{{ errors.cvv }}</span>
+              </div>
             </div>
 
             <button
@@ -95,8 +173,8 @@
       <footer class="checkout-footer">
         <p class="checkout-footer__copy">NexIoT &copy; 2025 Todos los derechos reservados.</p>
         <nav class="checkout-footer__links">
-          <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/privacy_policy.html" class="checkout-footer__link" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
-          <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/terms_conditions.html" class="checkout-footer__link" target="_blank" rel="noopener noreferrer">Términos de Servicio</a>
+          <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/privacy_policy.html" class="checkout-footer__link" target="_blank" rel="noopener noreferrer">Pol&iacute;tica de Privacidad</a>
+          <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/terms_conditions.html" class="checkout-footer__link" target="_blank" rel="noopener noreferrer">T&eacute;rminos de Servicio</a>
           <a href="https://www.pcisecuritystandards.org/" class="checkout-footer__link" target="_blank" rel="noopener noreferrer">PCI Compliance</a>
         </nav>
       </footer>
@@ -105,13 +183,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, reactive, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '@/shared/presentation/i18n';
 import { ActivateSubscriptionUseCase } from '../../application/use-cases/ActivateSubscriptionUseCase';
 import { SubscriptionPaymentRepositoryImpl } from '../../infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
 import { useAuthStore } from '../../../iam/auth/presentation/store/authStore';
-import { loadStripe } from '@stripe/stripe-js';
 
 const route = useRoute();
 const router = useRouter();
@@ -124,14 +201,84 @@ const activateUseCase = new ActivateSubscriptionUseCase(repo);
 const plan = ref(null);
 const isLoading = ref(false);
 const serverError = ref(null);
-const cardError = ref(null);
+const cardFlipped = ref(false);
 
 const planId = route.query.planId ? Number(route.query.planId) : null;
 
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51OpP1xJ2u3u4v5w6x7y8z9a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u';
-let stripe = null;
-let elements = null;
-let cardElement = null;
+const checkoutForm = reactive({
+  brand: 'Visa',
+  holderName: '',
+  fullNumber: '',
+  expiryMonth: '',
+  expiryYear: '',
+  cvv: ''
+});
+
+const errors = reactive({
+  holder: '',
+  number: '',
+  month: '',
+  year: '',
+  cvv: ''
+});
+
+function isValidLuhn(num) {
+  const digits = (num || '').replace(/\D/g, '');
+  if (!digits) return false;
+  let sum = 0;
+  let alternate = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (alternate) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    alternate = !alternate;
+  }
+  return sum % 10 === 0;
+}
+
+const detectCardBrand = (num) => {
+  const cleanNumber = (num || '').replace(/\s+/g, '');
+  if (!cleanNumber) return 'unknown';
+  if (/^4/.test(cleanNumber)) return 'visa';
+  if (/^(5[1-5]|2[2-7])/.test(cleanNumber)) return 'mastercard';
+  if (/^3[47]/.test(cleanNumber)) return 'amex';
+  if (/^(6011|622|64|65)/.test(cleanNumber)) return 'discover';
+  if (/^36/.test(cleanNumber)) return 'diners';
+  if (/^35/.test(cleanNumber)) return 'jcb';
+  return 'unknown';
+};
+
+watch(() => checkoutForm.fullNumber, (newVal) => {
+  const formatted = (newVal || '').replace(/\D/g, '').match(/.{1,4}/g);
+  if (formatted) {
+    checkoutForm.fullNumber = formatted.join(' ');
+  }
+  const brand = detectCardBrand(newVal);
+  if (brand !== 'unknown') {
+    checkoutForm.brand = brand.charAt(0).toUpperCase() + brand.slice(1);
+  }
+});
+
+const previewBrand = computed(() => (checkoutForm.brand || '').toLowerCase());
+const previewBrandLabel = computed(() => checkoutForm.brand || 'CARD');
+
+const previewNumber = computed(() => {
+  const n = checkoutForm.fullNumber || '';
+  if (!n) return '\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7';
+  return n;
+});
+
+const previewHolder = computed(() => checkoutForm.holderName || '');
+
+const previewExpiry = computed(() => {
+  if (checkoutForm.expiryMonth && checkoutForm.expiryYear) {
+    return `${checkoutForm.expiryMonth}/${checkoutForm.expiryYear}`;
+  }
+  return 'MM/YY';
+});
 
 onMounted(async () => {
   if (!planId) {
@@ -151,36 +298,8 @@ onMounted(async () => {
     }
     plan.value = found;
 
-    // Load Stripe elements
-    stripe = await loadStripe(stripePublicKey);
-    if (stripe) {
-      elements = stripe.elements();
-      cardElement = elements.create('card', {
-        style: {
-          base: {
-            color: '#32325d',
-            fontFamily: '"Outfit", "Helvetica Neue", Helvetica, sans-serif',
-            fontSmoothing: 'antialiased',
-            fontSize: '16px',
-            '::placeholder': {
-              color: '#aab7c4'
-            }
-          },
-          invalid: {
-            color: '#fa755a',
-            iconColor: '#fa755a'
-          }
-        }
-      });
-      cardElement.mount('#card-element');
-      
-      cardElement.on('change', (event) => {
-        if (event.error) {
-          cardError.value = event.error.message;
-        } else {
-          cardError.value = null;
-        }
-      });
+    if (authStore.user) {
+      checkoutForm.holderName = `${authStore.user.firstName || ''} ${authStore.user.lastName || ''}`.trim();
     }
   } catch (err) {
     serverError.value = t('subscription.checkout.loadPlanFailed');
@@ -194,37 +313,78 @@ const goBack = () => {
   router.push({ name: 'plan-selection' });
 };
 
-const handleSubmit = async () => {
-  if (!stripe || !cardElement) {
-    serverError.value = 'Stripe is not initialized.';
-    return;
+function validate() {
+  let valid = true;
+  errors.holder = '';
+  errors.number = '';
+  errors.month = '';
+  errors.year = '';
+  errors.cvv = '';
+
+  if (!checkoutForm.holderName.trim()) {
+    errors.holder = t('subscription.validation.holderRequired');
+    valid = false;
   }
+
+  const cleanNumber = checkoutForm.fullNumber.replace(/\s+/g, '');
+  if (!cleanNumber) {
+    errors.number = t('subscription.validation.numberRequired');
+    valid = false;
+  } else if (!isValidLuhn(cleanNumber)) {
+    errors.number = t('subscription.validation.numberInvalid');
+    valid = false;
+  }
+
+  const month = parseInt(checkoutForm.expiryMonth, 10);
+  if (!checkoutForm.expiryMonth) {
+    errors.month = t('subscription.validation.monthRequired');
+    valid = false;
+  } else if (isNaN(month) || month < 1 || month > 12) {
+    errors.month = t('subscription.validation.monthInvalid');
+    valid = false;
+  }
+
+  const fullYear = checkoutForm.expiryYear ? (checkoutForm.expiryYear.length === 2 ? 2000 + parseInt(checkoutForm.expiryYear, 10) : parseInt(checkoutForm.expiryYear, 10)) : null;
+  if (!checkoutForm.expiryYear) {
+    errors.year = t('subscription.validation.yearRequired');
+    valid = false;
+  } else if (fullYear) {
+    const now = new Date();
+    const expiryDate = new Date(fullYear, month);
+    if (expiryDate < now) {
+      errors.year = t('subscription.validation.yearExpired');
+      valid = false;
+    }
+  }
+
+  if (!checkoutForm.cvv) {
+    errors.cvv = t('subscription.validation.cvvRequired');
+    valid = false;
+  } else if (!/^\d{3,4}$/.test(checkoutForm.cvv)) {
+    errors.cvv = t('subscription.validation.cvvInvalid');
+    valid = false;
+  }
+
+  return valid;
+}
+
+const handleSubmit = async () => {
+  if (!validate()) return;
 
   isLoading.value = true;
   serverError.value = null;
 
   try {
-    const result = await activateUseCase.execute(planId);
-    if (!result.clientSecret) {
-      throw new Error('No client secret received from payment server.');
-    }
+    const cardData = {
+      brand: checkoutForm.brand,
+      fullNumber: checkoutForm.fullNumber.replace(/\s+/g, ''),
+      expiryMonth: checkoutForm.expiryMonth,
+      expiryYear: checkoutForm.expiryYear,
+      holderName: checkoutForm.holderName,
+      cvv: checkoutForm.cvv
+    };
 
-    const confirmResult = await stripe.confirmCardPayment(result.clientSecret, {
-      payment_method: {
-        card: cardElement,
-        billing_details: {
-          name: `${authStore.user?.firstName || ''} ${authStore.user?.lastName || ''}`.trim() || 'Landlord User',
-          email: authStore.user?.email || ''
-        }
-      }
-    });
-
-    if (confirmResult.error) {
-      serverError.value = confirmResult.error.message;
-      isLoading.value = false;
-      return;
-    }
-
+    const result = await activateUseCase.execute(planId, cardData);
     authStore.setSubscription(result.subscription);
     router.push({
       name: 'subscription-confirmation',
@@ -545,28 +705,256 @@ const handleSubmit = async () => {
   gap: 1.5rem;
 }
 
-.payment-form__summary {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 24px;
+.card-preview-area {
+  display: flex;
+  justify-content: center;
 }
 
-.payment-form__summary p {
+.credit-card-box {
+  width: 100%;
+  max-width: 320px;
+  perspective: 1000px;
+  aspect-ratio: 1.586 / 1;
+}
+
+.credit-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  transform-origin: center center;
+}
+
+.credit-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.credit-card__front,
+.credit-card__back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.credit-card__front {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+  overflow: hidden;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 1;
+}
+
+.credit-card__front::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.credit-card__front::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.credit-card__back {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+  transform: rotateY(180deg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.credit-card__chip {
+  width: 36px;
+  height: 26px;
+  background: linear-gradient(135deg, #ffd54f, #ffb300);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.chip-inner {
+  width: 26px;
+  height: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.credit-card__brand {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+
+.card-brand-svg {
+  width: 50px;
+  height: auto;
+}
+
+.card-brand-text {
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.credit-card__number {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  font-family: 'Courier New', monospace;
+  margin-top: auto;
+  padding-bottom: 6px;
+}
+
+.credit-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.credit-card__holder,
+.credit-card__expiry {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-label {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.card-value {
+  font-size: 0.75rem;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.credit-card__network {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+}
+
+.contactless-icon {
+  width: 22px;
+  height: auto;
+}
+
+.credit-card__magstripe {
+  width: 100%;
+  height: 38px;
+  background: #111111;
+  margin-top: 24px;
+}
+
+.credit-card__signature {
+  margin: 14px 20px 0;
+  height: 30px;
+  background: #f2f2f2;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 10px;
+}
+
+.credit-card__cvv {
+  font-family: 'Courier New', monospace;
   font-size: 0.95rem;
+  font-weight: 600;
+  color: #111111;
+  font-style: italic;
+}
+
+.credit-card__back-text {
+  text-align: right;
+  margin: 4px 20px 0;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.checkout-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkout-form-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.checkout-form-group input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
   color: #1f2937;
-  line-height: 1.6;
-  margin: 0;
+  transition: border-color 0.2s;
+  background: #ffffff;
 }
 
-.payment-form__summary strong {
-  color: var(--secondary-color);
+.checkout-form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
 }
 
-.payment-form__summary-note {
-  margin-top: 12px !important;
-  font-size: 0.82rem !important;
-  color: #64748b !important;
+.checkout-form-group--error input {
+  border-color: #ef4444;
+}
+
+.checkout-form-group--error input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.checkout-field-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 2px;
+}
+
+.checkout-form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .payment-form__submit {
@@ -720,39 +1108,9 @@ const handleSubmit = async () => {
   .order-summary__perforation::after {
     display: none;
   }
-}
 
-.stripe-card-element-container {
-  margin: 24px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  text-align: left;
-}
-
-.stripe-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--secondary-color);
-}
-
-.stripe-card-input {
-  padding: 14px 16px;
-  background: white;
-  border: 1px solid #dcdfe6;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.stripe-card-input--focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.1);
-}
-
-.stripe-error-text {
-  color: #f56c6c;
-  font-size: 0.85rem;
-  margin-top: 4px;
+  .checkout-form-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

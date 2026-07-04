@@ -28,8 +28,12 @@ export class SubscriptionPaymentRepositoryImpl {
       ],
       paymentMethod: {
         brand: 'visa',
-        maskedNumber: '•••• •••• •••• 2422',
-        expiresAt: '12/26'
+        maskedNumber: '\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 2422',
+        expiresAt: '12/26',
+        holderName: 'John Doe',
+        expiryMonth: '12',
+        expiryYear: '26',
+        lastFour: '2422'
       },
       accountManager: {
         name: 'Sarah Jenkins',
@@ -47,5 +51,29 @@ export class SubscriptionPaymentRepositoryImpl {
       paymentMethod: SubscriptionPaymentMapper.paymentMethodToDomain(this.rawSubscriptionPayment.paymentMethod),
       accountManager: SubscriptionPaymentMapper.accountManagerToDomain(this.rawSubscriptionPayment.accountManager)
     };
+  }
+
+  async activateSubscription(planId, cardData = null) {
+    return { subscription: { id: 1, planId }, amountDue: 0, invoiceId: 1 };
+  }
+
+  async getPaymentMethod() {
+    return this.rawSubscriptionPayment.paymentMethod;
+  }
+
+  async getInvoices() {
+    return { invoices: [] };
+  }
+
+  async createPaymentMethod(data) {
+    return data;
+  }
+
+  async updatePaymentMethod(data) {
+    return data;
+  }
+
+  async cancelSubscription() {
+    return { message: 'Cancelled' };
   }
 }

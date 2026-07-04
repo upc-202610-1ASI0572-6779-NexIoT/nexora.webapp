@@ -236,6 +236,17 @@
         "errorSaving": "Error al guardar: "
       }
     },
+    "validation": {
+      "holderRequired": "El nombre del titular es obligatorio.",
+      "numberRequired": "El número de tarjeta es obligatorio.",
+      "numberInvalid": "Número de tarjeta inválido.",
+      "monthRequired": "El mes de vencimiento es obligatorio.",
+      "monthInvalid": "Mes de vencimiento inválido.",
+      "yearRequired": "El año de vencimiento es obligatorio.",
+      "yearExpired": "La tarjeta ha vencido.",
+      "cvvRequired": "El código de seguridad es obligatorio.",
+      "cvvInvalid": "Código de seguridad inválido."
+    },
     "actions": {
       "viewPlans": "Ver Planes",
       "changePlan": "Cambiar Plan",
@@ -251,8 +262,6 @@
       "subtotal": "Subtotal",
       "taxLabel": "IGV ({rate})",
       "secureCheckout": "CHECKOUT SEGURO",
-      "summaryHtml": "Estás a punto de activar el plan <strong>{planName}</strong> por <strong>${amount}</strong> al mes.",
-      "summaryNote": "Al hacer clic en \"Activar Suscripción\" aceptas los términos y condiciones del servicio.",
       "action": {
         "activate": "Activar Suscripción",
         "activating": "Activando suscripción..."

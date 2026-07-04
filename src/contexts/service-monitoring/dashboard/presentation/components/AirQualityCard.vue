@@ -2,14 +2,14 @@
   <div class="bottom-card">
     <h3 class="card-title">Gas & Water Status</h3>
     <div class="aqi-content" v-if="dashboardStore.stats">
-      <div class="aqi-score" :style="{ borderColor: dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71' }">
-        <div class="score-value" :style="{ color: dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71', fontSize: '1.2rem' }">
-          {{ dashboardStore.stats.rawGas > 100 ? 'LEAK' : 'SAFE' }}
+      <div class="aqi-score" :style="{ borderColor: hasGasData && dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71' }">
+        <div class="score-value" :style="{ color: hasGasData && dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71' }">
+          {{ hasGasData && dashboardStore.stats.rawGas > 100 ? 'LEAK' : hasGasData ? 'SAFE' : '--' }}
         </div>
       </div>
       <div class="aqi-details">
-        <div class="detail-item">Methane Gas Level:<br><strong>{{ dashboardStore.stats.rawGas }} PPM</strong></div>
-        <div class="detail-item">Water Flow Rate:<br><strong>{{ dashboardStore.stats.rawWater }} Lpm</strong></div>
+        <div class="detail-item">Methane Gas Level:<br><strong>{{ hasGasData ? dashboardStore.stats.rawGas + ' PPM' : '-- PPM' }}</strong></div>
+        <div class="detail-item">Water Flow Rate:<br><strong>{{ hasWaterData ? dashboardStore.stats.rawWater + ' Lpm' : '-- Lpm' }}</strong></div>
         <div class="detail-item">Alert Threshold:<br><strong>100 PPM</strong></div>
       </div>
     </div>
@@ -17,8 +17,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useDashboardStore } from '../store/dashboardStore';
 const dashboardStore = useDashboardStore();
+
+const hasGasData = computed(() => dashboardStore.stats?.rawGas !== null && dashboardStore.stats?.rawGas !== undefined);
+const hasWaterData = computed(() => dashboardStore.stats?.rawWater !== null && dashboardStore.stats?.rawWater !== undefined);
 </script>
 
 <style scoped>

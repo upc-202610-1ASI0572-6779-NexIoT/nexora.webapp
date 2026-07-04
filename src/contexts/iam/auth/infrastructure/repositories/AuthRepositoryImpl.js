@@ -6,7 +6,7 @@ import { IAuthRepository } from '../../../domain/repositories/IAuthRepository';
 export class AuthRepositoryImpl extends IAuthRepository {
   async login(email, password) {
     try {
-      const { data } = await apiClient.post('/api/v1/authentication/signin', {
+      const { data } = await apiClient.post('/api/v1/auth/login/web', {
         email,
         password,
       });
@@ -14,32 +14,24 @@ export class AuthRepositoryImpl extends IAuthRepository {
       return {
         token: data.token,
         user: AuthMapper.toDomain(data),
-        subscription: data.subscription || null,
+        subscription: null,
       };
     } catch (err) {
       const status = err.response?.status;
       const body = err.response?.data;
 
-      if (status === 423) {
-        throw {
-          code: 'ACCOUNT_LOCKED',
-          message: body?.message || 'Account is locked. Please try again later.',
-        };
-      }
-
       if (status === 403) {
         throw {
-          code: 'USER_INACTIVE',
-          message: body?.message || 'This account has been deactivated.',
+          code: 'FORBIDDEN_ACCESS',
+          message: body?.message || 'This platform is for landlords only.',
         };
       }
 
-      if (status === 401 || status === 404) {
-        const msg = body?.message || 'Invalid email or password.';
-        const code = msg.toLowerCase().includes('password')
-          ? 'INVALID_PASSWORD'
-          : 'USER_NOT_FOUND';
-        throw { code, message: msg };
+      if (status === 401) {
+        throw {
+          code: 'INVALID_CREDENTIALS',
+          message: body?.message || 'Invalid email or password.',
+        };
       }
 
       if (status === 429) {
@@ -59,12 +51,12 @@ export class AuthRepositoryImpl extends IAuthRepository {
   async register(registrationData) {
     try {
       const payload = RegisterMapper.toApiPayload(registrationData);
-      const { data } = await apiClient.post('/api/v1/authentication/signup', payload);
+      const { data } = await apiClient.post('/api/v1/auth/register/landlords', payload);
 
       return {
         token: data.token,
         user: AuthMapper.toDomain(data),
-        subscription: data.subscription || null,
+        subscription: null,
       };
     } catch (err) {
       const status = err.response?.status;
@@ -72,7 +64,7 @@ export class AuthRepositoryImpl extends IAuthRepository {
       const message = typeof body === 'string' ? body : body?.message || '';
 
       if (status === 400) {
-        if (message.toLowerCase().includes('already exists')) {
+        if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('ya registrado')) {
           throw { code: 'EMAIL_TAKEN', message };
         }
         throw { code: 'VALIDATION_ERROR', message: message || 'Invalid registration data.' };
@@ -95,7 +87,7 @@ export class AuthRepositoryImpl extends IAuthRepository {
   async changePassword(email, currentPassword, newPassword) {
     // email parameter is accepted for compatibility with use-cases but not used by the API
     try {
-      const { data } = await apiClient.post('/api/v1/authentication/change-password', {
+      const { data } = await apiClient.post('/api/v1/auth/change-password', {
         currentPassword,
         newPassword,
       });

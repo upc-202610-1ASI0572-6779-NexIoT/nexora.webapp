@@ -595,7 +595,7 @@ const handleExportPdf = async () => {
   align-items: flex-end;
   gap: 4px;
   height: 100%;
-  width: 45px;
+  width: auto;
 }
 
 .bar {
@@ -603,9 +603,9 @@ const handleExportPdf = async () => {
   transition: height 0.5s ease;
 }
 
-.bar--energy { width: 14px; background-color: #1a237e; }
-.bar--gas { width: 10px; background-color: #f47b20; }
-.bar--water { width: 10px; background-color: #06b6d4; }
+.bar--energy { width: 12px; background-color: #1a237e; }
+.bar--gas { width: 12px; background-color: #f47b20; }
+.bar--water { width: 12px; background-color: #06b6d4; }
 
 .month-label {
   font-size: 0.75rem;

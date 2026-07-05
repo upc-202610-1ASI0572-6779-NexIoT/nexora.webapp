@@ -21,11 +21,13 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
           name: d.name,
           location: d.propertyName || 'Unassigned',
           status: isOnline ? 'online' : 'comm-failure',
-          rssi: isOnline ? (d.rssi || -45) : null,
-          firmware: d.firmwareVersion || 'v2.4.1',
+          rssi: isOnline ? d.rssi : null,
+          firmware: d.firmwareVersion || 'N/A',
           uptime: uptimeStr,
           isFirmwareOutdated: d.isFirmwareOutdated,
-          propertyId: d.propertyId
+          propertyId: d.propertyId,
+          macAddress: d.macAddress,
+          lastSyncAt: d.lastSyncAt
         });
       });
     } catch (e) {

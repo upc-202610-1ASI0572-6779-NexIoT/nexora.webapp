@@ -14,6 +14,28 @@ const isRebooting = ref(false);
 const isCalibrating = ref(false);
 const isUpdatingFirmware = ref(false);
 
+const relativeLastSync = ref('Never');
+let syncInterval = null;
+
+const updateRelativeLastSync = () => {
+  if (!device.value?.lastSyncAt) {
+    relativeLastSync.value = 'Never';
+    return;
+  }
+  const diffMs = Date.now() - new Date(device.value.lastSyncAt).getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  if (diffSecs < 0) {
+    relativeLastSync.value = 'Just now';
+  } else if (diffSecs < 5) {
+    relativeLastSync.value = 'Just now';
+  } else if (diffSecs < 60) {
+    relativeLastSync.value = `${diffSecs} seconds ago`;
+  } else {
+    const diffMins = Math.floor(diffSecs / 60);
+    relativeLastSync.value = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  }
+};
+
 const localFirmware = ref(null);
 const localIsOutdated = ref(null);
 
@@ -159,7 +181,7 @@ const updateTelemetry = async () => {
       if (newMetrics.length === 1) {
         newMetrics.push({
           label: 'SIGNAL STRENGTH',
-          value: device.value?.rssi !== null && device.value?.rssi !== undefined ? `${device.value.rssi} dBm` : '-45 dBm',
+          value: device.value?.rssi !== null && device.value?.rssi !== undefined ? `${device.value.rssi} dBm` : 'N/A',
           trend: device.value?.isOnline() ? 'EXCELLENT' : 'DISCONNECTED',
           trendColor: device.value?.isOnline() ? 'green' : 'red'
         });
@@ -189,7 +211,7 @@ const updateTelemetry = async () => {
     const currentTemp = `${(baseTemp + variation).toFixed(1)}°C`;
     metrics.value = [
       { label: 'AVG TEMP', value: device.value?.isOnline() ? currentTemp : 'N/A', trend: '~0.4', trendColor: 'green' },
-      { label: 'SIGNAL STRENGTH', value: device.value?.rssi !== null && device.value?.rssi !== undefined ? `${device.value.rssi} dBm` : '-45 dBm', trend: device.value?.isOnline() ? 'EXCELLENT' : 'DISCONNECTED', trendColor: device.value?.isOnline() ? 'green' : 'red' },
+      { label: 'SIGNAL STRENGTH', value: device.value?.rssi !== null && device.value?.rssi !== undefined ? `${device.value.rssi} dBm` : 'N/A', trend: device.value?.isOnline() ? 'EXCELLENT' : 'DISCONNECTED', trendColor: device.value?.isOnline() ? 'green' : 'red' },
       { label: 'RAM USAGE', value: device.value?.isOnline() ? '124KB' : 'N/A', trend: 'STABLE', trendColor: 'gray' },
       { label: 'PACKET LOSS', value: device.value?.isOnline() ? '0.02%' : 'N/A', trend: 'OPTIMAL', trendColor: 'green' }
     ];
@@ -205,33 +227,32 @@ onMounted(async () => {
   }
   
   await updateTelemetry();
+  updateRelativeLastSync();
   
   tempInterval = setInterval(async () => {
     await updateTelemetry();
   }, 3000);
+
+  syncInterval = setInterval(() => {
+    updateRelativeLastSync();
+  }, 1000);
 });
 
 onUnmounted(() => {
   if (tempInterval) {
     clearInterval(tempInterval);
   }
+  if (syncInterval) {
+    clearInterval(syncInterval);
+  }
   if (globalBreadcrumbs) {
     globalBreadcrumbs.value = null;
   }
 });
 
-// Generate a deterministic MAC address from device ID
+// Return the real MAC address from backend or N/A if null
 const macAddress = computed(() => {
-  if (!deviceId.value) return 'N/A';
-  let hash = 0;
-  for (let i = 0; i < deviceId.value.length; i++) {
-    hash = deviceId.value.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const bytes = [];
-  for (let i = 0; i < 6; i++) {
-    bytes.push(((hash >> (i * 8)) & 0x00FF).toString(16).padStart(2, '0').toUpperCase());
-  }
-  return bytes.join(':');
+  return device.value?.macAddress || 'N/A';
 });
 
 // Generate a deterministic IP address from device ID
@@ -417,7 +438,7 @@ const metrics = ref([
           <font-awesome-icon icon="rotate" class="sync-icon" />
           <div class="sync-texts">
             <span class="sync-label">LAST SYNC</span>
-            <span class="sync-value">2 seconds ago</span>
+            <span class="sync-value">{{ relativeLastSync }}</span>
           </div>
         </footer>
       </div>
@@ -427,11 +448,6 @@ const metrics = ref([
     <section class="analytics-card">
       <header class="analytics-card__header">
         <h3 class="analytics-card__title">High-Density Sensor Analytics</h3>
-        <div class="segmented-control">
-          <button class="segmented-control__btn">1H</button>
-          <button class="segmented-control__btn segmented-control__btn--active">24H</button>
-          <button class="segmented-control__btn">7D</button>
-        </div>
       </header>
 
       <div class="metrics-grid">

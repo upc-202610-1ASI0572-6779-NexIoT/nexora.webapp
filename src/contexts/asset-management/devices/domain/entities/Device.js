@@ -4,7 +4,7 @@ import { FirmwareVersion } from '../../../domain/value-objects/FirmwareVersion';
 import { Location } from '../../../domain/value-objects/Location';
 
 export class Device {
-  constructor({ id, name, location, status, rssi, firmware, uptime, isFirmwareOutdated, propertyId }) {
+  constructor({ id, name, location, status, rssi, firmware, uptime, isFirmwareOutdated, propertyId, macAddress, lastSyncAt }) {
     this.id = id;
     this.name = name || id;
     this.propertyId = propertyId;
@@ -18,6 +18,8 @@ export class Device {
     this.location = this._location.toString();
     this.uptime = uptime;
     this.isFirmwareOutdated = isFirmwareOutdated;
+    this.macAddress = macAddress || 'N/A';
+    this.lastSyncAt = lastSyncAt;
   }
 
   get statusVO() {

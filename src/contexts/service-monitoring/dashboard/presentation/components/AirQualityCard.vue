@@ -2,14 +2,14 @@
   <div class="bottom-card">
     <h3 class="card-title">Gas & Water Status</h3>
     <div class="aqi-content" v-if="dashboardStore.stats">
-      <div class="aqi-score" :style="{ borderColor: hasGasData && dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71' }">
-        <div class="score-value" :style="{ color: hasGasData && dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71' }">
-          {{ hasGasData && dashboardStore.stats.rawGas > 100 ? 'LEAK' : hasGasData ? 'SAFE' : '--' }}
+      <div class="aqi-score" :style="{ borderColor: getScoreColor }">
+        <div class="score-value" :style="{ color: getScoreColor, fontSize: '1.2rem' }">
+          {{ getScoreText }}
         </div>
       </div>
       <div class="aqi-details">
-        <div class="detail-item">Methane Gas Level:<br><strong>{{ hasGasData ? dashboardStore.stats.rawGas + ' PPM' : '-- PPM' }}</strong></div>
-        <div class="detail-item">Water Flow Rate:<br><strong>{{ hasWaterData ? dashboardStore.stats.rawWater + ' Lpm' : '-- Lpm' }}</strong></div>
+        <div class="detail-item">Methane Gas Level:<br><strong>{{ getGasText }}</strong></div>
+        <div class="detail-item">Water Flow Rate:<br><strong>{{ getWaterText }}</strong></div>
         <div class="detail-item">Alert Threshold:<br><strong>100 PPM</strong></div>
       </div>
     </div>
@@ -21,8 +21,31 @@ import { computed } from 'vue';
 import { useDashboardStore } from '../store/dashboardStore';
 const dashboardStore = useDashboardStore();
 
-const hasGasData = computed(() => dashboardStore.stats?.rawGas !== null && dashboardStore.stats?.rawGas !== undefined);
-const hasWaterData = computed(() => dashboardStore.stats?.rawWater !== null && dashboardStore.stats?.rawWater !== undefined);
+const getScoreColor = computed(() => {
+  if (!dashboardStore.stats || !dashboardStore.stats.gasLinked) return '#7f8c8d';
+  return dashboardStore.stats.rawGas > 100 ? '#e74c3c' : '#2ecc71';
+});
+
+const getScoreText = computed(() => {
+  if (!dashboardStore.stats) return '...';
+  if (!dashboardStore.stats.gasLinked) return 'N/A';
+  if (dashboardStore.stats.rawGas === null) return 'S/REP';
+  return dashboardStore.stats.rawGas > 100 ? 'LEAK' : 'SAFE';
+});
+
+const getGasText = computed(() => {
+  if (!dashboardStore.stats) return '...';
+  if (!dashboardStore.stats.gasLinked) return 'Sin vincular';
+  if (dashboardStore.stats.rawGas === null) return 'Sin reportes';
+  return `${dashboardStore.stats.rawGas} PPM`;
+});
+
+const getWaterText = computed(() => {
+  if (!dashboardStore.stats) return '...';
+  if (!dashboardStore.stats.waterLinked) return 'Sin vincular';
+  if (dashboardStore.stats.rawWater === null) return 'Sin reportes';
+  return `${dashboardStore.stats.rawWater} Lpm`;
+});
 </script>
 
 <style scoped>

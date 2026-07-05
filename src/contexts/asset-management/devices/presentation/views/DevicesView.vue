@@ -1,20 +1,127 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useDevicesStore } from '../store/devicesStore';
 import KpiCard from '@/contexts/service-monitoring/dashboard/presentation/components/KpiCard.vue';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 
 const devicesStore = useDevicesStore();
 const activeFilter = ref('All Assets');
+const currentPage = ref(1);
+const pageSize = 5;
+
+let devicesPollInterval = null;
 
 onMounted(() => {
   devicesStore.fetchDevices();
+  devicesPollInterval = setInterval(() => {
+    devicesStore.fetchDevices();
+  }, 5000);
 });
+
+onUnmounted(() => {
+  if (devicesPollInterval) {
+    clearInterval(devicesPollInterval);
+  }
+});
+
+const rebootDevice = async (id) => {
+  try {
+    await apiClient.put(`/api/v1/devices/${id}/reboot`);
+    devicesStore.fetchDevices(); // refresh immediately
+  } catch (e) {
+    console.error('Failed to reboot device', e);
+  }
+};
+
+const showSearch = ref(false);
+const searchQuery = ref('');
+
+const toggleSearch = () => {
+  showSearch.value = !showSearch.value;
+  if (!showSearch.value) {
+    searchQuery.value = '';
+  }
+};
+
+const filteredDevices = computed(() => {
+  let list = devicesStore.devices || [];
+  if (activeFilter.value === 'All Assets') {
+    list = list.filter(d => d.propertyId);
+  } else if (activeFilter.value === 'Online') {
+    list = list.filter(d => d.isOnline() && d.propertyId);
+  } else if (activeFilter.value === 'Offline') {
+    list = list.filter(d => d.isOffline() && d.propertyId);
+  } else if (activeFilter.value === 'Needs Maintenance') {
+    list = list.filter(d => d.needsUpdate() && d.propertyId);
+  } else if (activeFilter.value === 'Unassigned') {
+    list = list.filter(d => !d.propertyId);
+  }
+
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    list = list.filter(d => 
+      d.id.toLowerCase().includes(q) || 
+      d.location.toLowerCase().includes(q)
+    );
+  }
+  return list;
+});
+
+const paginatedDevices = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  const end = start + pageSize;
+  return filteredDevices.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredDevices.value.length / pageSize) || 1;
+});
+
+// Reset page when filter changes
+const setFilter = (filterName) => {
+  activeFilter.value = filterName;
+  currentPage.value = 1;
+};
+
+const exportInventory = () => {
+  const list = filteredDevices.value;
+  if (list.length === 0) {
+    alert('No devices to export.');
+    return;
+  }
+
+  const headers = ['DEVICE ID', 'SITE LOCATION', 'STATUS', 'WI-FI RSSI', 'FIRMWARE', 'UPTIME'];
+  const rows = list.map(d => [
+    d.id,
+    d.location,
+    d.getStatusLabel(),
+    d.rssi !== null ? `${d.rssi} dBm` : 'Timeout',
+    d.firmware,
+    d.uptime
+  ]);
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(val => `"${val}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `nexora_device_fleet_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 const filters = [
   { name: 'All Assets', icon: 'microchip' },
   { name: 'Online', icon: 'circle-check' },
   { name: 'Needs Maintenance', icon: 'triangle-exclamation' },
-  { name: 'Offline', icon: 'circle-info' }
+  { name: 'Offline', icon: 'circle-info' },
+  { name: 'Unassigned', icon: 'folder-open' }
 ];
 
 const getRssiIcon = (rssi) => {
@@ -55,7 +162,7 @@ const getStatusText = (status) => {
 <template>
   <div class="devices-view">
     <!-- Loading State -->
-    <div v-if="devicesStore.isLoading" class="loading-overlay">
+    <div v-if="devicesStore.isLoading && devicesStore.devices.length === 0" class="loading-overlay">
       <div class="spinner"></div>
       <p>Scanning IoT fleet...</p>
     </div>
@@ -65,7 +172,7 @@ const getStatusText = (status) => {
       <header class="fleet-header">
         <div class="fleet-header__titles">
           <h1 class="fleet-header__title">Device Fleet Overview</h1>
-          <p class="fleet-header__subtitle">Monitoring 1,248 ESP32 Gateway nodes across 12 properties.</p>
+          <p class="fleet-header__subtitle">Monitoring {{ devicesStore.devices.length }} ESP32 Gateway nodes.</p>
         </div>
         
         <div class="segmented-control">
@@ -73,7 +180,7 @@ const getStatusText = (status) => {
             v-for="filter in filters" 
             :key="filter.name"
             :class="['segmented-control__btn', { 'segmented-control__btn--active': activeFilter === filter.name }]"
-            @click="activeFilter = filter.name"
+            @click="setFilter(filter.name)"
           >
             <font-awesome-icon :icon="filter.icon" class="segmented-control__icon" />
             {{ filter.name }}
@@ -120,9 +227,24 @@ const getStatusText = (status) => {
         <div class="inventory-panel__header">
           <h2 class="inventory-panel__title">ESP32 Gateway Fleet</h2>
           <div class="inventory-panel__actions">
-            <button class="icon-button"><font-awesome-icon icon="filter" /></button>
-            <button class="icon-button"><font-awesome-icon icon="download" /></button>
+            <button class="icon-button" :class="{ 'icon-button--active': showSearch }" @click="toggleSearch">
+              <font-awesome-icon icon="filter" />
+            </button>
+            <button class="icon-button" @click="exportInventory">
+              <font-awesome-icon icon="download" />
+            </button>
           </div>
+        </div>
+
+        <!-- Real-time Search Bar -->
+        <div v-if="showSearch" class="search-bar-container">
+          <font-awesome-icon icon="search" class="search-icon" />
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="Search by Device ID or Site Location..." 
+            class="search-input"
+          />
         </div>
 
         <div class="table-container">
@@ -139,10 +261,11 @@ const getStatusText = (status) => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="device in devicesStore.devices" :key="device.id">
+              <tr v-for="device in paginatedDevices" :key="device.id">
                 <td :class="['data-table__id', { 'data-table__id--error': device.isOffline() }]">
                   <router-link :to="{ name: 'device-details', params: { deviceId: device.id } }" class="device-link">
-                    {{ device.id }}
+                    {{ device.name }}
+                    <span class="serial-badge" style="display:block; font-size:0.75rem; color:#718096; font-weight:normal;">{{ device.id }}</span>
                   </router-link>
                 </td>
                 <td>{{ device.location }}</td>
@@ -168,13 +291,15 @@ const getStatusText = (status) => {
                 <td>{{ device.uptime }}</td>
                 <td class="data-table__actions">
                   <template v-if="device.isOffline()">
-                    <button class="button--danger-small">Reboot</button>
+                    <button class="button--danger-small" @click="rebootDevice(device.id)">Reboot</button>
                   </template>
                   <template v-else-if="device.status === 'update-pending'">
-                    <a href="#" class="action-link">Flash</a>
+                    <a href="#" class="action-link" @click.prevent>Flash</a>
                   </template>
                   <template v-else>
-                    <a href="#" class="action-link">Manage</a>
+                    <router-link :to="{ name: 'device-details', params: { deviceId: device.id } }" class="action-link">
+                      Manage
+                    </router-link>
                   </template>
                 </td>
               </tr>
@@ -184,54 +309,30 @@ const getStatusText = (status) => {
 
         <div class="inventory-panel__footer">
           <div class="pagination">
-            <span class="pagination__info">Showing 1 to 5 of 1,248 entries</span>
+            <span class="pagination__info">
+              Showing {{ filteredDevices.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredDevices.length) }} of {{ filteredDevices.length }} entries
+            </span>
             <div class="pagination__controls">
-              <button class="pagination__btn" disabled><font-awesome-icon icon="chevron-left" /></button>
-              <button class="pagination__btn pagination__btn--active">1</button>
-              <button class="pagination__btn">2</button>
-              <button class="pagination__btn">3</button>
-              <button class="pagination__btn"><font-awesome-icon icon="chevron-right" /></button>
+              <button class="pagination__btn" :disabled="currentPage === 1 || totalPages === 1" @click="currentPage--">
+                <font-awesome-icon icon="chevron-left" />
+              </button>
+              <button 
+                v-for="page in totalPages" 
+                :key="page" 
+                class="pagination__btn" 
+                :class="{ 'pagination__btn--active': currentPage === page }"
+                :disabled="totalPages === 1"
+                @click="currentPage = page"
+              >
+                {{ page }}
+              </button>
+              <button class="pagination__btn" :disabled="currentPage === totalPages || totalPages === 1" @click="currentPage++">
+                <font-awesome-icon icon="chevron-right" />
+              </button>
             </div>
           </div>
         </div>
       </section>
-
-      <!-- 4. Bottom Widgets -->
-      <div class="bottom-widgets">
-        <!-- Widget Izquierdo: Mapa -->
-        <div class="map-widget">
-          <div class="map-widget__badge">Fleet Geo-Distribution</div>
-          <div class="map-widget__placeholder">
-            <font-awesome-icon icon="map-pin" class="map-widget__icon" />
-            <p>Fleet visualization loading...</p>
-          </div>
-        </div>
-
-        <!-- Widget Derecho: Firmware Mix -->
-        <div class="firmware-widget">
-          <h3 class="firmware-widget__title">Firmware Version Mix</h3>
-          
-          <div class="firmware-widget__list">
-            <div v-for="item in devicesStore.firmwareMix" :key="item.version" class="progress-row">
-              <div class="progress-row__labels">
-                <span class="progress-row__version" :class="{ 'text-warning': item.variant === 'legacy' }">
-                  {{ item.version }}
-                </span>
-                <span class="progress-row__percentage">{{ item.percentage }}%</span>
-              </div>
-              <div class="progress-bar">
-                <div 
-                  class="progress-bar__fill" 
-                  :class="`progress-bar__fill--${item.variant}`"
-                  :style="{ width: item.percentage + '%' }"
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <button class="button--outline-primary w-full mt-auto">Force Update Global Fleet</button>
-        </div>
-      </div>
     </template>
   </div>
 </template>
@@ -385,6 +486,43 @@ const getStatusText = (status) => {
   background-color: #f7fafc;
 }
 
+.icon-button--active {
+  background-color: #1a237e !important;
+  color: white !important;
+  border-color: #1a237e !important;
+}
+
+.search-bar-container {
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #edf2f7;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-icon {
+  color: #a0aec0;
+  font-size: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  outline: none;
+  transition: all 0.2s;
+  background: white;
+}
+
+.search-input:focus {
+  border-color: #1a237e;
+  box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.15);
+}
+
 .table-container {
   overflow-x: auto;
 }
@@ -484,6 +622,22 @@ const getStatusText = (status) => {
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.button--secondary-small {
+  background-color: #f1f3f9;
+  color: #1a237e;
+  border: 1px solid #dcdfe6;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button--secondary-small:hover {
+  background-color: #e2e8f0;
 }
 
 /* Pagination */

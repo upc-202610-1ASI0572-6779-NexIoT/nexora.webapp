@@ -18,12 +18,16 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
         
         return new Device({
           id: d.id,
+          name: d.name,
           location: d.propertyName || 'Unassigned',
           status: isOnline ? 'online' : 'comm-failure',
-          rssi: isOnline ? -45 : null,
-          firmware: 'v2.4.1',
+          rssi: isOnline ? d.rssi : null,
+          firmware: d.firmwareVersion || 'N/A',
           uptime: uptimeStr,
-          isFirmwareOutdated: false
+          isFirmwareOutdated: d.isFirmwareOutdated,
+          propertyId: d.propertyId,
+          macAddress: d.macAddress,
+          lastSyncAt: d.lastSyncAt
         });
       });
     } catch (e) {
@@ -39,25 +43,20 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
 
   async getKPIs() {
     try {
-      const devices = await this.getAll();
-      const total = devices.length;
-      const online = devices.filter(d => d.isOnline()).length;
-      const offline = total - online;
-      
-      const opStatus = total > 0 ? `${Math.round((online / total) * 100)}%` : '100%';
-      
+      const { data } = await apiClient.get('/api/v1/devices/kpis');
       return {
-        operationalStatus: opStatus,
-        gatewayLoad: total > 0 ? '42' : '0',
-        activeAlerts: offline.toString(),
-        firmwareDrift: '0.00'
+        operationalStatus: data.operationalStatus,
+        gatewayLoad: data.gatewayLoad,
+        activeAlerts: data.activeAlerts,
+        firmwareDrift: data.firmwareDrift
       };
     } catch (e) {
+      console.error('Failed to fetch real KPIs, using default fallback', e);
       return {
-        operationalStatus: '0%',
-        gatewayLoad: '0',
+        operationalStatus: '100%',
+        gatewayLoad: '0.00',
         activeAlerts: '0',
-        firmwareDrift: '0.00'
+        firmwareDrift: '0'
       };
     }
   }

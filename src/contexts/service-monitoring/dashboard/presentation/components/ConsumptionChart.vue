@@ -3,18 +3,147 @@
     <div class="chart-header-row">
       <div class="chart-header-text">
         <h3 class="chart-title">Resource Consumption</h3>
-        <p class="chart-subtitle">Gas (PPM) and Electricity (Amps) telemetry over time</p>
+        <p class="chart-subtitle">Live Gas (PPM), Electricity (Amps) and Water (Lpm) telemetry trends</p>
+      </div>
+      <div class="chart-toggle">
+        <button 
+          class="toggle-btn" 
+          :class="{ active: currentRange === '24h' }"
+          @click="toggleRange('24h')"
+        >24 HOURS</button>
+        <button 
+          class="toggle-btn"
+          :class="{ active: currentRange === '7d' }"
+          @click="toggleRange('7d')"
+        >7 DAYS</button>
       </div>
     </div>
     <div class="chart-body">
-      <div class="chart-empty">
-        <font-awesome-icon icon="chart-line" class="chart-empty-icon" />
-        <p class="chart-empty-text">Historical telemetry data will appear here once collected from your devices.</p>
-        <p class="chart-empty-hint">Live readings are shown in the KPIs above.</p>
+      <div class="chart-scroll-wrapper" v-if="chartDataReady">
+        <Bar :data="chartData" :options="chartOptions" :style="{ width: '620px', height: '260px' }" />
+      </div>
+      <div v-else class="chart-loading-placeholder">
+        Loading consumption trends...
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Bar } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js';
+import apiClient from '@/shared/infrastructure/http/apiClient';
+
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+
+const currentRange = ref('24h');
+const chartDataReady = ref(false);
+
+const chartData = ref({
+  labels: [],
+  datasets: []
+});
+
+const loadChartData = async () => {
+  try {
+    const res = await apiClient.get('/api/v1/analytics/live-consumption', {
+      params: { range: currentRange.value }
+    });
+    if (res.data) {
+      chartData.value = {
+        labels: res.data.labels,
+        datasets: [
+          {
+            label: 'Gas Level (PPM)',
+            backgroundColor: '#fdb173',
+            borderRadius: 4,
+            data: res.data.gas
+          },
+          {
+            label: 'Electricity Load (Amps)',
+            backgroundColor: '#1a3673',
+            borderRadius: 4,
+            data: res.data.electricity
+          },
+          {
+            label: 'Water Flow (Lpm)',
+            backgroundColor: '#3498db',
+            borderRadius: 4,
+            data: res.data.water
+          }
+        ]
+      };
+      chartDataReady.value = true;
+    }
+  } catch (e) {
+    console.error('Failed to load consumption chart data', e);
+  }
+};
+
+const toggleRange = (range) => {
+  currentRange.value = range;
+  chartDataReady.value = false;
+  loadChartData();
+};
+
+const chartOptions = ref({
+  responsive: false,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        font: { family: 'sans-serif', size: 11, weight: 'bold' }
+      }
+    },
+    tooltip: {
+      backgroundColor: '#2f2f2f',
+      titleFont: { family: 'sans-serif' },
+      bodyFont: { family: 'sans-serif' },
+      padding: 12
+    }
+  },
+  scales: {
+    y: {
+      display: true,
+      beginAtZero: true,
+      grid: {
+        color: '#f0f0f0',
+        drawBorder: false
+      }
+    },
+    x: {
+      display: true,
+      grid: {
+        display: false,
+        drawBorder: false
+      }
+    }
+  }
+});
+
+let chartPollInterval = null;
+
+onMounted(() => {
+  loadChartData();
+  chartPollInterval = setInterval(loadChartData, 5000);
+});
+
+onUnmounted(() => {
+  if (chartPollInterval) {
+    clearInterval(chartPollInterval);
+  }
+});
+</script>
 
 <style scoped>
 .chart-container {
@@ -26,8 +155,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-width: 0;
-  overflow: hidden;
+  min-width: 0;     /* prevents expanding beyond grid track */
+  overflow: hidden; /* clips the chart, forces .chart-body to scroll */
 }
 
 .chart-header-row {
@@ -56,41 +185,49 @@
   margin: 0;
 }
 
+.chart-toggle {
+  display: flex;
+  background-color: #f8f9fc;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #7f8c8d;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggle-btn.active {
+  background-color: #e2e8f0;
+  color: #2c3e50;
+}
+
 .chart-body {
+  overflow-x: auto;
+  overflow-y: hidden;
   border-top: 1px solid #eaeaea;
-  padding-top: 32px;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-bottom: 1px solid #eaeaea;
+  padding-top: 16px;
+  padding-bottom: 22px; /* space for scrollbar */
 }
 
-.chart-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 8px;
-  color: #94a3b8;
+.chart-scroll-wrapper {
+  width: 620px;  /* must match :style width on <Bar> */
+  height: 260px; /* must match :style height on <Bar> */
 }
 
-.chart-empty-icon {
-  font-size: 2rem;
-  color: #cbd5e1;
-  margin-bottom: 8px;
-}
-
-.chart-empty-text {
-  font-size: 0.9rem;
-  margin: 0;
-  max-width: 320px;
-  line-height: 1.5;
-}
-
-.chart-empty-hint {
-  font-size: 0.8rem;
-  margin: 0;
-  color: #b0bcc9;
+/* Responsiveness */
+@media (max-width: 768px) {
+  .chart-header-row {
+    flex-direction: column;
+    gap: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -99,8 +236,37 @@
     width: 100%;
     min-width: 0;
   }
+  
   .chart-body {
-    min-height: 160px;
+    min-height: 200px;
   }
+}
+
+/* Custom Scrollbar for the chart */
+.chart-body::-webkit-scrollbar {
+  height: 6px;
+}
+
+.chart-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.chart-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.chart-body::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.chart-loading-placeholder {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
 }
 </style>

@@ -1,9 +1,13 @@
 <script setup>
-import { reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AppBreadcrumbs from '@/shared/presentation/components/AppBreadcrumbs.vue';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 
 const router = useRouter();
+const isSubmitting = ref(false);
+const errorMsg = ref('');
+const properties = ref([]);
 
 const formData = reactive({
   name: '',
@@ -12,7 +16,7 @@ const formData = reactive({
   propertyId: '',
   macAddress: '',
   firmware: 'v1.0.0',
-  protocol: 'mqtt'
+  protocol: 'http'
 });
 
 const breadcrumbs = [
@@ -20,17 +24,56 @@ const breadcrumbs = [
   { label: 'New Registration', route: '/devices/new' }
 ];
 
-const handleRegisterDevice = () => {
-  // Logic to save device
-  console.log('Registering device:', formData);
-  router.push('/devices');
+const loadProperties = async () => {
+  try {
+    const { data } = await apiClient.get('/api/v1/properties');
+    properties.value = data;
+  } catch (err) {
+    console.error('Failed to load properties', err);
+  }
 };
 
-const properties = [
-  { id: 1, name: 'Skyline Industrial Hub' },
-  { id: 2, name: 'Eco-Park Complex' },
-  { id: 3, name: 'Downtown Tech Center' }
-];
+const handleRegisterDevice = async () => {
+  if (!formData.name.trim()) {
+    errorMsg.value = 'Device Alias / Name is required.';
+    return;
+  }
+  if (!formData.serialNumber.trim()) {
+    errorMsg.value = 'Serial Number (S/N) is required.';
+    return;
+  }
+  if (!formData.macAddress.trim()) {
+    errorMsg.value = 'MAC Address is required.';
+    return;
+  }
+
+  const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$/;
+  if (!macRegex.test(formData.macAddress.trim())) {
+    errorMsg.value = 'Invalid MAC Address format. Example: AA:BB:CC:DD:EE:FF or AABBCCDDEEFF.';
+    return;
+  }
+  
+  isSubmitting.value = true;
+  errorMsg.value = '';
+  try {
+    await apiClient.post('/api/v1/devices', {
+      id: formData.serialNumber.trim(),
+      name: formData.name.trim(),
+      propertyId: formData.propertyId ? Number(formData.propertyId) : null,
+      macAddress: formData.macAddress.trim().replace(/-/g, ':').toUpperCase()
+    });
+    router.push('/devices');
+  } catch (err) {
+    console.error('Failed to register device', err);
+    errorMsg.value = err.response?.data || 'Failed to register device. The serial number or MAC Address may already exist.';
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+onMounted(() => {
+  loadProperties();
+});
 </script>
 
 <template>
@@ -75,10 +118,8 @@ const properties = [
               </div>
               <div class="form-group">
                 <label class="form-label">DEVICE TYPE</label>
-                <select v-model="formData.type" class="form-input">
+                <select v-model="formData.type" class="form-input" disabled>
                   <option value="gateway">IoT Gateway (ESP32)</option>
-                  <option value="sensor">Sensor Node</option>
-                  <option value="actuator">Actuator Control</option>
                 </select>
               </div>
             </div>
@@ -98,7 +139,7 @@ const properties = [
             <div class="form-group">
               <label class="form-label">ASSIGN TO PROPERTY</label>
               <select v-model="formData.propertyId" class="form-input">
-                <option value="" disabled>Select a property...</option>
+                <option value="">Unassigned (Register and link later)</option>
                 <option v-for="prop in properties" :key="prop.id" :value="prop.id">
                   {{ prop.name }}
                 </option>
@@ -117,9 +158,7 @@ const properties = [
               </div>
               <div class="form-group">
                 <label class="form-label">COMMS PROTOCOL</label>
-                <select v-model="formData.protocol" class="form-input">
-                  <option value="mqtt">MQTT over TLS</option>
-                  <option value="ws">WebSockets</option>
+                <select v-model="formData.protocol" class="form-input" disabled>
                   <option value="http">HTTP Rest API</option>
                 </select>
               </div>
@@ -161,7 +200,10 @@ const properties = [
 
         <!-- Action Panel -->
         <div class="action-panel-card">
-          <button class="button--solid-orange button--large" @click="handleRegisterDevice">Register Device</button>
+          <div v-if="errorMsg" class="error-message-box">{{ errorMsg }}</div>
+          <button class="button--solid-orange button--large" :disabled="isSubmitting" @click="handleRegisterDevice">
+            {{ isSubmitting ? 'Registering...' : 'Register Device' }}
+          </button>
           <button class="button--outline-blue button--large">Provision via QR</button>
           <button class="button--text-only" @click="$router.back()">DISCARD CHANGES</button>
         </div>
@@ -459,5 +501,17 @@ const properties = [
   font-size: 0.8rem;
   color: #1e40af;
   line-height: 1.4;
+}
+
+.error-message-box {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+  text-align: center;
 }
 </style>

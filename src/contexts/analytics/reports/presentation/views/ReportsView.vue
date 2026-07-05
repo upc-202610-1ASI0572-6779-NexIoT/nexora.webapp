@@ -12,7 +12,8 @@ onMounted(() => {
 const maxChartValue = computed(() => {
   const energyMax = reportsStore.chartData.energy.length > 0 ? Math.max(...reportsStore.chartData.energy) : 0;
   const gasMax = reportsStore.chartData.gas.length > 0 ? Math.max(...reportsStore.chartData.gas) : 0;
-  const overallMax = Math.max(energyMax, gasMax);
+  const waterMax = (reportsStore.chartData.water && reportsStore.chartData.water.length > 0) ? Math.max(...reportsStore.chartData.water) : 0;
+  const overallMax = Math.max(energyMax, gasMax, waterMax);
   const limit = Math.ceil(overallMax / 1000) * 1000;
   return limit > 0 ? limit : 5000;
 });
@@ -25,6 +26,14 @@ const gridValues = computed(() => {
     vals.push(Math.round(step * i));
   }
   return vals;
+});
+
+const barWidth = computed(() => {
+  const count = reportsStore.chartData.months ? reportsStore.chartData.months.length : 0;
+  if (count <= 1) return '55px';
+  if (count <= 3) return '35px';
+  if (count <= 6) return '20px';
+  return '10px';
 });
 
 const getStatusBadgeClass = (status) => {
@@ -43,11 +52,11 @@ const getStatusText = (status) => {
 const handleExportPdf = async () => {
   try {
     const months = reportsStore.selectedMonths;
-    const response = await apiClient.get('/api/v1/reports/consumption/export', {
+    const response = await apiClient.get('/api/v1/reports/consumption-pdf', {
       params: { months },
       responseType: 'blob'
     });
-    
+
     const blob = new Blob([response.data], { type: 'application/pdf' });
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
@@ -65,115 +74,109 @@ const handleExportPdf = async () => {
     <!-- Loading State -->
     <div v-if="reportsStore.isLoading" class="loading-overlay">
       <div class="spinner"></div>
-      <p>Loading Analytics...</p>
+      <p>Loading reports and insights...</p>
     </div>
 
-    <template v-else-if="reportsStore.consumption">
-      <!-- 1. Cabecera de la Vista -->
+    <template v-else>
+      <!-- 1. Header -->
       <header class="view-header">
-        <div class="view-header__titles">
-          <h1 class="view-header__title">Consumption Reports</h1>
-          <p class="view-header__subtitle">Analytical overview of resource utilization across all registered properties.</p>
+        <div>
+          <h2 class="view-header__title">Consumption & Sustainability</h2>
+          <p class="view-header__subtitle">Analyze property efficiency, identify leakage anomalies, and manage resources.</p>
         </div>
-        
         <div class="view-header__actions">
           <button class="button--outline" @click="handleExportPdf">
             <font-awesome-icon icon="file-pdf" />
-            <span>EXPORT PDF</span>
+            EXPORT PDF
           </button>
         </div>
       </header>
 
-      <!-- 2. Fila 1: KPIs y Gráfico Combinado -->
+      <!-- 2. Fila 1: KPIs y Gráfico Comparativo -->
       <div class="analytics-top-row">
-        <!-- Panel Izquierdo: Resumen de Consumo -->
-        <aside class="consumption-summary">
-          <!-- Energía -->
-          <div class="kpi-card">
+        <!-- Resumen Rápido -->
+        <div class="consumption-summary">
+          <!-- Tarjeta de Costos -->
+          <div class="kpi-card kpi-card--solid-blue">
             <div class="kpi-card__header">
+              <span class="kpi-card__label">ESTIMATED COST</span>
+              <span class="trend-badge trend-badge--success">-3.2% vs last period</span>
+            </div>
+            <div class="kpi-card__value-row">
+              <span class="kpi-card__value">${{ reportsStore.consumptionSummary.estimatedCost }}</span>
+              <span class="kpi-card__unit">USD</span>
+            </div>
+            <div class="kpi-card__footer">
+              <div class="budget-info">
+                <span>Monthly Budget Plan</span>
+                <span>82% used</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar__fill" style="width: 82%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Luz -->
+          <div v-if="reportsStore.hasElectricityLinked" class="kpi-card">
+            <div class="kpi-card__header">
+              <span class="kpi-card__label">TOTAL ENERGY</span>
               <div class="kpi-card__icon-box kpi-card__icon-box--orange">
                 <font-awesome-icon icon="bolt" />
               </div>
-              <span :class="['trend-badge', `trend-badge--${reportsStore.consumption.energy.trendVariant}`]">
-                {{ reportsStore.consumption.energy.trend }}
-              </span>
             </div>
-            <div class="kpi-card__body">
-              <span class="kpi-card__label">ENERGY CONSUMPTION</span>
-              <div class="kpi-card__value-row">
-                <span class="kpi-card__value">{{ reportsStore.consumption.energy.value }}</span>
-                <span class="kpi-card__unit">{{ reportsStore.consumption.energy.unit }}</span>
-              </div>
-              <span class="kpi-card__subtitle">Current Billing Period</span>
+            <div class="kpi-card__value-row">
+              <span class="kpi-card__value">{{ reportsStore.consumptionSummary.totalElectricity }}</span>
+              <span class="kpi-card__unit">kWh</span>
             </div>
+            <span class="kpi-card__subtitle">Across all active properties</span>
           </div>
 
-          <!-- Gas -->
-          <div class="kpi-card">
+          <!-- Tarjeta de Gas -->
+          <div v-if="reportsStore.hasGasLinked" class="kpi-card">
             <div class="kpi-card__header">
-              <div class="kpi-card__icon-box kpi-card__icon-box--orange">
-                <font-awesome-icon icon="droplet" />
+              <span class="kpi-card__label">TOTAL GAS</span>
+              <div class="kpi-card__icon-box kpi-card__icon-box--blue">
+                <font-awesome-icon icon="fire-flame-curved" />
               </div>
-              <span :class="['trend-badge', `trend-badge--${reportsStore.consumption.gas.trendVariant}`]">
-                {{ reportsStore.consumption.gas.trend }}
-              </span>
             </div>
-            <div class="kpi-card__body">
-              <span class="kpi-card__label">GAS CONSUMPTION</span>
-              <div class="kpi-card__value-row">
-                <span class="kpi-card__value">{{ reportsStore.consumption.gas.value }}</span>
-                <span class="kpi-card__unit">{{ reportsStore.consumption.gas.unit }}</span>
-              </div>
-              <span class="kpi-card__subtitle">Current Billing Period</span>
+            <div class="kpi-card__value-row">
+              <span class="kpi-card__value">{{ reportsStore.consumptionSummary.totalGas }}</span>
+              <span class="kpi-card__unit">m³</span>
             </div>
+            <span class="kpi-card__subtitle">Aggregated gas consumption</span>
           </div>
+        </div>
 
-          <!-- Costos -->
-          <div class="kpi-card kpi-card--solid-blue">
-            <div class="kpi-card__body">
-              <div class="kpi-card__title-row">
-                <font-awesome-icon icon="dollar-sign" />
-                <span class="kpi-card__label">PROJECTED COSTS</span>
-              </div>
-              <span class="kpi-card__value">${{ reportsStore.consumption.projectedCosts.value }}</span>
-              
-              <div class="kpi-card__footer">
-                <div class="budget-info">
-                  <span>Budget Limit</span>
-                  <span>${{ reportsStore.consumption.projectedCosts.budgetLimit }}</span>
-                </div>
-                <div class="progress-bar">
-                  <div 
-                    class="progress-bar__fill" 
-                    :style="{ width: reportsStore.consumption.projectedCosts.budgetPercent + '%' }"
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        <!-- Panel Derecho: Gráfico Comparativo -->
+        <!-- Gráfico Comparativo -->
         <section class="comparative-chart-card">
           <header class="chart-header">
-            <h2 class="chart-header__title">Comparative Consumption Analytics</h2>
-            
+            <div>
+              <h3 class="chart-header__title">Comparative Resource Usage</h3>
+              <p class="view-header__subtitle">Compare consumption across selected timeline.</p>
+            </div>
+
             <div class="chart-header__legend">
-              <div class="legend-item">
-                <span class="dot dot--orange"></span>
-                <span>Gas (m³)</span>
-              </div>
-              <div class="legend-item">
+              <div v-if="reportsStore.hasElectricityLinked" class="legend-item">
                 <span class="dot dot--blue"></span>
                 <span>Energy (kWh)</span>
               </div>
+              <div v-if="reportsStore.hasGasLinked" class="legend-item">
+                <span class="dot dot--orange"></span>
+                <span>Gas (m³)</span>
+              </div>
+              <div v-if="reportsStore.hasWaterLinked" class="legend-item">
+                <span class="dot dot--cyan"></span>
+                <span>Water (m³)</span>
+              </div>
             </div>
 
-            <select 
-              class="chart-filter" 
-              v-model="reportsStore.selectedMonths" 
-              @change="reportsStore.fetchReportsData()"
+            <select
+                class="chart-filter"
+                v-model="reportsStore.selectedMonths"
+                @change="reportsStore.fetchReportsData()"
             >
+              <option :value="1">Last Month</option>
               <option :value="3">Last 3 Months</option>
               <option :value="6">Last 6 Months</option>
               <option :value="12">Last Year</option>
@@ -193,13 +196,20 @@ const handleExportPdf = async () => {
             <div class="chart-bars">
               <div v-for="(month, index) in reportsStore.chartData.months" :key="month" class="bar-group">
                 <div class="bar-pair">
-                  <div 
-                    class="bar bar--energy" 
-                    :style="{ height: (reportsStore.chartData.energy[index] / maxChartValue) * 100 + '%' }"
+                  <div
+                      v-if="reportsStore.hasElectricityLinked"
+                      class="bar bar--energy"
+                      :style="{ height: (reportsStore.chartData.energy[index] / maxChartValue) * 100 + '%', width: barWidth }"
                   ></div>
-                  <div 
-                    class="bar bar--gas" 
-                    :style="{ height: (reportsStore.chartData.gas[index] / maxChartValue) * 100 + '%' }"
+                  <div
+                      v-if="reportsStore.hasGasLinked"
+                      class="bar bar--gas"
+                      :style="{ height: (reportsStore.chartData.gas[index] / maxChartValue) * 100 + '%', width: barWidth }"
+                  ></div>
+                  <div
+                      v-if="reportsStore.hasWaterLinked"
+                      class="bar bar--water"
+                      :style="{ height: (reportsStore.chartData.water[index] / maxChartValue) * 100 + '%', width: barWidth }"
                   ></div>
                 </div>
                 <span class="month-label">{{ month }}</span>
@@ -221,32 +231,32 @@ const handleExportPdf = async () => {
           <div class="table-container">
             <table class="data-table--minimal">
               <thead>
-                <tr>
-                  <th>PROPERTY NAME</th>
-                  <th>LOCATION</th>
-                  <th>ENERGY (kWh)</th>
-                  <th>GAS (m³)</th>
-                  <th>STATUS</th>
-                </tr>
+              <tr>
+                <th>PROPERTY NAME</th>
+                <th>LOCATION</th>
+                <th v-if="reportsStore.hasElectricityLinked">ENERGY (kWh)</th>
+                <th v-if="reportsStore.hasGasLinked">GAS (m³)</th>
+                <th v-if="reportsStore.hasWaterLinked">WATER (m³)</th>
+                <th>STATUS</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-for="prop in reportsStore.propertyBreakdown" :key="prop.id">
-                  <td class="cell--name">{{ prop.name }}</td>
-                  <td class="cell--location">{{ prop.location }}</td>
-                  <td>{{ prop.energy }}</td>
-                  <td>{{ prop.gas }}</td>
-                  <td>
+              <tr v-for="prop in reportsStore.propertyBreakdown" :key="prop.id">
+                <td class="cell--name">{{ prop.name }}</td>
+                <td class="cell--location">{{ prop.location }}</td>
+                <td v-if="reportsStore.hasElectricityLinked">{{ prop.energy }}</td>
+                <td v-if="reportsStore.hasGasLinked">{{ prop.gas }}</td>
+                <td v-if="reportsStore.hasWaterLinked">{{ prop.water }}</td>
+                <td>
                     <span :class="['badge', getStatusBadgeClass(prop.status)]">
                       {{ getStatusText(prop.status) }}
                     </span>
-                  </td>
-                </tr>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
         </section>
-
-
       </div>
     </template>
   </div>
@@ -356,6 +366,11 @@ const handleExportPdf = async () => {
   color: #f47b20;
 }
 
+.kpi-card__icon-box--blue {
+  background-color: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
+}
+
 .trend-badge {
   font-size: 0.7rem;
   font-weight: 800;
@@ -449,6 +464,8 @@ const handleExportPdf = async () => {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 25px;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -486,6 +503,7 @@ const handleExportPdf = async () => {
 
 .dot--orange { background-color: #f47b20; }
 .dot--blue { background-color: #1a237e; }
+.dot--cyan { background-color: #06b6d4; }
 
 .chart-filter {
   background-color: #f7fafc;
@@ -499,7 +517,8 @@ const handleExportPdf = async () => {
 }
 
 .chart-canvas-container {
-  height: 350px;
+  flex: 1;
+  min-height: 350px;
   margin-top: 30px;
   position: relative;
   display: flex;
@@ -555,16 +574,18 @@ const handleExportPdf = async () => {
   align-items: flex-end;
   gap: 4px;
   height: 100%;
-  width: 30px;
+  width: auto;
 }
 
 .bar {
   border-radius: 2px 2px 0 0;
   transition: height 0.5s ease;
+  min-height: 3px;
 }
 
-.bar--energy { width: 18px; background-color: #1a237e; }
-.bar--gas { width: 10px; background-color: #f47b20; }
+.bar--energy { width: 12px; background-color: #1a237e; }
+.bar--gas { width: 12px; background-color: #f47b20; }
+.bar--water { width: 12px; background-color: #06b6d4; }
 
 .month-label {
   font-size: 0.75rem;

@@ -7,34 +7,34 @@
 
     <div v-else-if="dashboardStore.stats" class="kpis-row">
       <KpiCard
-        title="ACTIVE THREATS"
-        :value="String(countAlerts).padStart(2, '0')"
-        subtitle="Critical incidents active"
-        colorType="danger"
-        icon="triangle-exclamation"
+          title="ACTIVE THREATS"
+          :value="String(countAlerts).padStart(2, '0')"
+          subtitle="Critical incidents active"
+          colorType="danger"
+          icon="triangle-exclamation"
       />
       <KpiCard
-        title="GAS LEVEL"
-        :value="displayGas"
-        valueIcon="fire-flame-curved"
-        subtitle="Optimal range (<50 PPM)"
-        :colorType="gasColor"
-        icon="fire-flame-curved"
+          title="GAS LEVEL"
+          :value="displayGas"
+          valueIcon="fire-flame-curved"
+          subtitle="Optimal range (<50 PPM)"
+          :colorType="gasColor"
+          icon="fire-flame-curved"
       />
       <KpiCard
-        title="DEVICES ONLINE"
-        :value="displayDevices"
-        subtitle="System uptime"
-        colorType="default"
-        icon="signal"
+          title="DEVICES ONLINE"
+          :value="displayDevices"
+          subtitle="System uptime"
+          colorType="default"
+          icon="signal"
       />
       <KpiCard
-        title="VOLTAGE GATEWAY"
-        :value="displayVoltage"
-        valueSuffix=" A"
-        subtitle="Active consumption load"
-        colorType="primary"
-        icon="bolt"
+          title="VOLTAGE GATEWAY"
+          :value="displayVoltage"
+          valueSuffix=" A"
+          subtitle="Active consumption load"
+          colorType="primary"
+          icon="bolt"
       />
     </div>
 
@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useDashboardStore } from '../store/dashboardStore';
 import KpiCard from '../components/KpiCard.vue';
 import ConsumptionChart from '../components/ConsumptionChart.vue';
@@ -69,17 +69,17 @@ import SystemHealthCard from '../components/SystemHealthCard.vue';
 const dashboardStore = useDashboardStore();
 
 const countAlerts = computed(() =>
-  dashboardStore.stats?.kpis?.activeLeaks ?? 0
+    dashboardStore.stats?.kpis?.activeLeaks ?? 0
 );
 
 const displayGas = computed(() =>
-  dashboardStore.stats?.kpis?.airQuality ?? '--'
+    dashboardStore.stats?.kpis?.airQuality ?? '--'
 );
 
 const gasColor = computed(() => {
   const raw = dashboardStore.stats?.rawGas;
   if (raw === null || raw === undefined) return 'default';
-  return raw > 100 ? 'danger' : raw > 50 ? 'primary' : 'success';
+  return raw > 100 ? 'danger' : raw > 50 ? 'warning' : 'success';
 });
 
 const displayDevices = computed(() => {
@@ -94,8 +94,19 @@ const displayVoltage = computed(() => {
   return val !== null && val !== undefined ? val : '--';
 });
 
+let dashboardPollInterval = null;
+
 onMounted(() => {
   dashboardStore.fetchStats();
+  dashboardPollInterval = setInterval(() => {
+    dashboardStore.fetchStats();
+  }, 5000);
+});
+
+onUnmounted(() => {
+  if (dashboardPollInterval) {
+    clearInterval(dashboardPollInterval);
+  }
 });
 </script>
 
@@ -136,7 +147,6 @@ onMounted(() => {
   grid-template-columns: 2fr 1fr;
   gap: 24px;
   width: 100%;
-  align-items: start;
 }
 
 .left-column {

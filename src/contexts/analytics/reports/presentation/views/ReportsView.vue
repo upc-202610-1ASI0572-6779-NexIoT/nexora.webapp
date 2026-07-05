@@ -601,6 +601,7 @@ const handleExportPdf = async () => {
 .bar {
   border-radius: 2px 2px 0 0;
   transition: height 0.5s ease;
+  min-height: 3px;
 }
 
 .bar--energy { width: 12px; background-color: #1a237e; }

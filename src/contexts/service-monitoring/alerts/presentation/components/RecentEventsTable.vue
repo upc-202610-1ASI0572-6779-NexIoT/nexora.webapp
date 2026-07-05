@@ -52,7 +52,7 @@
       <thead>
         <tr>
           <th>Timestamp</th>
-          <th>Property ID</th>
+          <th>Device ID</th>
           <th>Sensor Type</th>
           <th>Reading</th>
           <th>Status</th>

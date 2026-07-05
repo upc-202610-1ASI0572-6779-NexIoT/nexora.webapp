@@ -167,16 +167,7 @@ const fetchAlerts = async (page = 1) => {
         const date = new Date(alert.timestamp);
         const timestampFormatted = date.toISOString().replace('T', ' ').substring(0, 19);
 
-        let propertyId = 'Unassigned';
-        if (alert.deviceId.includes('voltage-safety-unit')) {
-          propertyId = 'Apt-402 (Elec)';
-        } else if (alert.deviceId.includes('gas-safety-unit')) {
-          propertyId = 'Apt-402 (Gas)';
-        } else if (alert.deviceId.includes('water-safety-unit')) {
-          propertyId = 'Apt-402 (Water)';
-        } else {
-          propertyId = alert.deviceId;
-        }
+        let propertyId = alert.deviceId;
 
         return {
           id: alert.id,

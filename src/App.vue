@@ -30,16 +30,18 @@
           @open-profile="isProfileOpen = true"
           @edit-profile="requestEditProfile"
         />
-        <router-view />
-        <footer class="global-footer">
-          <div class="footer-left">
-            <span>&copy; 2026 Nexora. Todos los derechos reservados.</span>
-          </div>
-          <div class="footer-right">
-            <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/terms_conditions.html" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a>
-            <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/privacy_policy.html" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
-          </div>
-        </footer>
+        <div class="main-content-scrollable">
+          <router-view />
+          <footer v-if="route.name !== 'property-edit' && route.name !== 'property-registration'" class="global-footer">
+            <div class="footer-left">
+              <span>&copy; 2026 Nexora. Todos los derechos reservados.</span>
+            </div>
+            <div class="footer-right">
+              <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/terms_conditions.html" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a>
+              <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/privacy_policy.html" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
 
@@ -114,9 +116,17 @@ const isFullPageRoute = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content-scrollable {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
-  min-width: 0;
 }
 
 .sidebar-overlay {

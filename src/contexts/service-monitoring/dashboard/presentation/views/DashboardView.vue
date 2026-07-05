@@ -99,8 +99,10 @@ let dashboardPollInterval = null;
 onMounted(() => {
   dashboardStore.fetchStats();
   dashboardPollInterval = setInterval(() => {
-    dashboardStore.fetchStats();
-  }, 5000);
+    if (!document.hidden) {
+      dashboardStore.fetchStats();
+    }
+  }, 15000);
 });
 
 onUnmounted(() => {

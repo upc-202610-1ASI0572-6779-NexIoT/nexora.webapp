@@ -388,6 +388,7 @@ onMounted(() => {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 700;
+  color: white;
 }
 
 .asset-preview-card__location {

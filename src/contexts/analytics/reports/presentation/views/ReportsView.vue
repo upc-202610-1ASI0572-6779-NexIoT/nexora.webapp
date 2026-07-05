@@ -52,7 +52,7 @@ const getStatusText = (status) => {
 const handleExportPdf = async () => {
   try {
     const months = reportsStore.selectedMonths;
-    const response = await apiClient.get('/api/v1/reports/consumption-pdf', {
+    const response = await apiClient.get('/api/v1/reports/consumption/export', {
       params: { months },
       responseType: 'blob'
     });
@@ -103,16 +103,16 @@ const handleExportPdf = async () => {
               <span class="trend-badge trend-badge--success">-3.2% vs last period</span>
             </div>
             <div class="kpi-card__value-row">
-              <span class="kpi-card__value">${{ reportsStore.consumptionSummary.estimatedCost }}</span>
+              <span class="kpi-card__value">${{ reportsStore.consumptionSummary.estimatedCost.toFixed(2) }}</span>
               <span class="kpi-card__unit">USD</span>
             </div>
             <div class="kpi-card__footer">
               <div class="budget-info">
                 <span>Monthly Budget Plan</span>
-                <span>82% used</span>
+                <span>{{ Math.round(reportsStore.consumptionSummary.budgetPercent) }}% used</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-bar__fill" style="width: 82%"></div>
+                <div class="progress-bar__fill" :style="{ width: reportsStore.consumptionSummary.budgetPercent + '%' }"></div>
               </div>
             </div>
           </div>

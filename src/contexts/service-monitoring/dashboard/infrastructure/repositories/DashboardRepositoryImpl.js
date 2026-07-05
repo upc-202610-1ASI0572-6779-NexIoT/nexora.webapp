@@ -216,7 +216,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
         let activeAlerts = [];
         try {
-            const resAlerts = await apiClient.get('/api/v1/alerts?limit=10');
+            const resAlerts = await apiClient.get('/api/v1/alerts?resolved=false&pageSize=10');
             if (resAlerts.data) {
                 activeAlerts = resAlerts.data.map(alert => {
                     let type = 'info';
@@ -246,6 +246,10 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
                     } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {
                         typeLabel = 'SECURITY';
                         desc = `Unscheduled motion detected inside property associated with device ${alert.deviceId}.`;
+                    } else if (alert.type.includes('Water') || alert.type.includes('Agua') || alert.type.includes('Fuga')) {
+                        typeLabel = 'WATER';
+                        desc = `High water flow rate / leak detected on device ${alert.deviceId}.`;
+                        icon = 'droplet';
                     }
 
                     const date = new Date(alert.timestamp);
@@ -275,6 +279,9 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
         }
         if (voltageOk === false) {
             healthScore -= 25.0;
+        }
+        if (activeAlerts.some(a => a.typeLabel === 'WATER')) {
+            healthScore -= 20.0;
         }
         healthScore = Math.max(50.0, healthScore);
 

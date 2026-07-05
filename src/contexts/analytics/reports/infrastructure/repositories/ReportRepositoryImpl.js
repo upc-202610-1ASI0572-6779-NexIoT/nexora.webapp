@@ -4,7 +4,7 @@ import apiClient from '@/shared/infrastructure/http/apiClient';
 
 export class ReportRepositoryImpl extends IReportRepository {
   async getConsumptionSummary(months = 6) {
-    const { data } = await apiClient.get('/api/v1/analytics/consumption-summary', {
+    const { data } = await apiClient.get('/api/v1/analytics/consumption', {
       params: { months }
     });
     return {

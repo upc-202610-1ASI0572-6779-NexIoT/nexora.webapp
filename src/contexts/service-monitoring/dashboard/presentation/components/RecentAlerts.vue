@@ -3,7 +3,6 @@
     <div class="alerts-header">
       <h3>Recent Alerts</h3>
       <router-link to="/alerts" class="view-all">VIEW ALL</router-link>
-      <router-link to="/alerts" class="view-all" style="text-decoration: none;">VIEW ALL</router-link>
     </div>
     
     <div class="alerts-list">

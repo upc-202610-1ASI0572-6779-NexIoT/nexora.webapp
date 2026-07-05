@@ -698,7 +698,7 @@ const handleDeleteTenant = async (tenantId) => {
 
 <style scoped>
 .edit-view {
-  min-height: 100%;
+  min-height: calc(100vh - 72px - 50px);
   background-color: #f5f6f8;
 }
 

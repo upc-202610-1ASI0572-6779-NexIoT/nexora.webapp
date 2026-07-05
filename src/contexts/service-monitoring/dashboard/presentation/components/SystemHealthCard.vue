@@ -4,22 +4,26 @@
     <div class="health-content" v-if="dashboardStore.stats">
       <div class="health-row">
         <span class="row-label">Grid Stability</span>
-        <span :class="['row-value', dashboardStore.stats.voltageOk ? 'badge-active' : 'badge-danger']">
-          {{ dashboardStore.stats.voltageOk ? 'STABLE' : 'ANOMALY' }}
+        <span :class="['row-value', hasVoltageData && dashboardStore.stats.voltageOk ? 'badge-active' : 'badge-neutral']">
+          {{ hasVoltageData ? (dashboardStore.stats.voltageOk ? 'STABLE' : 'ANOMALY') : '--' }}
         </span>
       </div>
-      <div class="health-divider" :style="{ backgroundColor: dashboardStore.stats.voltageOk ? '#2ecc71' : '#e74c3c' }"></div>
+      <div class="health-divider" :style="{ backgroundColor: hasVoltageData ? (dashboardStore.stats.voltageOk ? '#2ecc71' : '#e74c3c') : '#64748b' }"></div>
       <div class="health-row">
         <span class="row-label">Current Load</span>
-        <span class="row-value">{{ dashboardStore.stats.rawElectricity }} A</span>
+        <span class="row-value">{{ hasElectricityData ? dashboardStore.stats.rawElectricity + ' A' : '-- A' }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useDashboardStore } from '../store/dashboardStore';
 const dashboardStore = useDashboardStore();
+
+const hasVoltageData = computed(() => dashboardStore.stats?.voltageOk !== null && dashboardStore.stats?.voltageOk !== undefined);
+const hasElectricityData = computed(() => dashboardStore.stats?.rawElectricity !== null && dashboardStore.stats?.rawElectricity !== undefined);
 </script>
 
 <style scoped>
@@ -74,13 +78,13 @@ const dashboardStore = useDashboardStore();
   border: 1px solid #2ecc71;
 }
 
-.badge-danger {
-  background-color: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
+.badge-neutral {
+  background-color: rgba(100, 116, 139, 0.2);
+  color: #cbd5e1;
   padding: 4px 12px;
   border-radius: 4px;
   font-size: 0.8rem;
-  border: 1px solid #e74c3c;
+  border: 1px solid #64748b;
 }
 
 .health-divider {

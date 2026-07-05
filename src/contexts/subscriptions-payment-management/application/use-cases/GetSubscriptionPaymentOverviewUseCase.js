@@ -5,13 +5,12 @@ export class GetSubscriptionPaymentOverviewUseCase {
 
   async execute() {
     const subscription = await this.subscriptionPaymentRepository.getCurrentSubscription();
-    let paymentMethods = [];
+    let paymentMethod = null;
     let invoices = [];
 
     if (subscription) {
       try {
-        const pmResult = await this.subscriptionPaymentRepository.getPaymentMethods();
-        paymentMethods = pmResult.paymentMethods || [];
+        paymentMethod = await this.subscriptionPaymentRepository.getPaymentMethod();
       } catch {}
       try {
         const invResult = await this.subscriptionPaymentRepository.getInvoices();
@@ -22,7 +21,7 @@ export class GetSubscriptionPaymentOverviewUseCase {
     return {
       subscription,
       plan: subscription?.plan || null,
-      paymentMethods,
+      paymentMethod,
       invoices
     };
   }

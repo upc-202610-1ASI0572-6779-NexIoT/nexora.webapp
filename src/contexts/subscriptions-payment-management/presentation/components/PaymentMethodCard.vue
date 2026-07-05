@@ -4,7 +4,7 @@
 
     <div class="credit-card-box">
       <div class="credit-card-wrapper" @mouseenter="flipped = true" @mouseleave="flipped = false">
-        <div class="credit-card" :class="{ 'credit-card--empty': !card, 'flipped': flipped }">
+        <div class="credit-card" :class="{ 'credit-card--empty': !card, 'flipped': flipped }" @click="$emit('update-card')">
           <div class="credit-card__front">
             <div class="credit-card__chip">
               <div class="chip-inner"></div>
@@ -97,12 +97,20 @@ const cardBrandLabel = computed(() => {
 
 const displayNumber = computed(() => {
   if (!props.card) return '';
+  if (props.card.fullNumber && props.card.fullNumber.length >= 16) {
+    const cleaned = props.card.fullNumber.replace(/\s+/g, '');
+    const lastFour = cleaned.slice(-4);
+    return `\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  ${lastFour}`;
+  }
   const last = props.card.maskedNumber || props.card.lastFour || '0000';
-  return `····  ····  ····  ${last}`;
+  return `\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  ${last}`;
 });
 
 const cardHolderName = computed(() => {
   if (!props.card) return t('subscription.payment.cardHolder');
+  if (props.card.firstName && props.card.lastName) {
+    return `${props.card.firstName} ${props.card.lastName}`;
+  }
   return props.card.holderName || t('subscription.payment.cardHolder');
 });
 
@@ -156,8 +164,16 @@ const cardCvv = computed(() => {
   transform-origin: center center;
 }
 
+.credit-card:hover {
+  transform: scale(1.03);
+}
+
 .credit-card.flipped {
   transform: rotateY(180deg);
+}
+
+.credit-card.flipped:hover {
+  transform: rotateY(180deg) scale(1.03);
 }
 
 .credit-card__front,

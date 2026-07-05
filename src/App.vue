@@ -31,6 +31,15 @@
           @edit-profile="requestEditProfile"
         />
         <router-view />
+        <footer class="global-footer">
+          <div class="footer-left">
+            <span>&copy; 2026 Nexora. Todos los derechos reservados.</span>
+          </div>
+          <div class="footer-right">
+            <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/terms_conditions.html" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a>
+            <a href="https://upc-202610-1asi0572-6779-nexiot.github.io/nexora.website/privacy_policy.html" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
+          </div>
+        </footer>
       </div>
     </div>
 
@@ -123,5 +132,51 @@ const isFullPageRoute = computed(() => {
 .sidebar-overlay.is-active {
   opacity: 1;
   pointer-events: auto;
+}
+
+.global-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 32px;
+  background-color: white;
+  border-top: 1px solid #eaeaea;
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.footer-left span {
+  white-space: nowrap;
+}
+
+.footer-right {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-right a {
+  color: #1a3673;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.footer-right a:hover {
+  color: #e67e22;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .global-footer {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    text-align: center;
+  }
+  .footer-right {
+    gap: 16px;
+  }
 }
 </style>

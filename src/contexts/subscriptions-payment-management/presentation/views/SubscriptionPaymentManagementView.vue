@@ -1,6 +1,37 @@
 <template>
   <main class="subscription-content">
-    <div v-if="subscriptionPaymentStore.isLoading" class="sub-loading">
+    <!-- Password Verification Overlay -->
+    <div v-if="!isPasswordVerified" class="password-overlay">
+      <div class="password-card">
+        <div class="lock-icon-container">
+          <font-awesome-icon icon="lock" class="lock-icon" />
+        </div>
+        <h2>{{ t('subscription.security.verifyTitle') || 'Confirmar Identidad' }}</h2>
+        <p>{{ t('subscription.security.verifyDesc') || 'Por favor ingresa tu contraseña para ver los detalles de tu suscripción.' }}</p>
+        <form @submit.prevent="verifyPassword" class="password-form">
+          <div class="input-group">
+            <input 
+              v-model="passwordInput" 
+              type="password" 
+              placeholder="Contraseña" 
+              required
+              class="password-input"
+            />
+          </div>
+          <div v-if="verifyError" class="verify-error">{{ verifyError }}</div>
+          <div class="form-actions">
+            <button type="submit" :disabled="isVerifying" class="confirm-btn">
+              <span v-if="isVerifying" class="spinner"></span>
+              <span v-else>Confirmar</span>
+            </button>
+            <button type="button" @click="goHome" class="cancel-btn">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Rest of the view (only visible if verified) -->
+    <div v-else-if="subscriptionPaymentStore.isLoading" class="sub-loading">
       <span class="sub-loading__spinner" />
       <p>{{ t('subscription.loading') }}</p>
     </div>
@@ -60,17 +91,51 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '@/shared/presentation/i18n';
 import { useSubscriptionPaymentStore } from '../store/subscriptionPaymentStore';
+import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
+import apiClient from '@/shared/infrastructure/http/apiClient';
 import CurrentPlanCard from '../components/CurrentPlanCard.vue';
 import PaymentMethodCard from '../components/PaymentMethodCard.vue';
 import BillingHistoryCard from '../components/BillingHistoryCard.vue';
 import UpdateCardModal from '../components/UpdateCardModal.vue';
 
 const subscriptionPaymentStore = useSubscriptionPaymentStore();
+const authStore = useAuthStore();
 const router = useRouter();
 const { t, currentLocale } = useI18n();
 
 const showUpdateModal = ref(false);
 const editCardData = ref(null);
+
+const isPasswordVerified = ref(sessionStorage.getItem('subscription_password_verified') === 'true');
+const passwordInput = ref('');
+const isVerifying = ref(false);
+const verifyError = ref(null);
+
+const verifyPassword = async () => {
+  isVerifying.value = true;
+  verifyError.value = null;
+  try {
+    const email = authStore.user?.email;
+    if (!email) {
+      throw new Error('User email not found.');
+    }
+    await apiClient.post('/api/v1/authentication/signin', {
+      email: email,
+      password: passwordInput.value
+    });
+    sessionStorage.setItem('subscription_password_verified', 'true');
+    isPasswordVerified.value = true;
+    subscriptionPaymentStore.fetchOverview();
+  } catch (err) {
+    verifyError.value = t('subscription.security.invalidPassword') || 'Contraseña incorrecta. Inténtalo de nuevo.';
+  } finally {
+    isVerifying.value = false;
+  }
+};
+
+const goHome = () => {
+  router.push({ name: 'dashboard' });
+};
 
 function openUpdateModal() {
   editCardData.value = savedCard.value;
@@ -102,9 +167,7 @@ const currentPlan = computed(() => {
 });
 
 const savedCard = computed(() => {
-  const methods = subscriptionPaymentStore.paymentMethods;
-  if (!methods || methods.length === 0) return null;
-  return methods[0];
+  return subscriptionPaymentStore.paymentMethod || null;
 });
 
 const billingInvoices = computed(() => {
@@ -151,13 +214,19 @@ const goToPlans = () => {
   router.push({ name: 'plan-selection' });
 };
 
-onMounted(() => {
-  subscriptionPaymentStore.fetchOverview();
+onMounted(async () => {
+  if (!authStore.user) {
+    await authStore.fetchUser();
+  }
+  if (isPasswordVerified.value) {
+    subscriptionPaymentStore.fetchOverview();
+  }
 });
 </script>
 
 <style scoped>
 .subscription-content {
+  position: relative;
   min-height: calc(100vh - 72px);
   padding: 20px 28px 32px;
   background: #f5f7f2;
@@ -275,5 +344,139 @@ onMounted(() => {
   .sub-details-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Password Verification Overlay */
+.password-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(245, 247, 242, 0.96);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 100;
+  padding: 40px 20px;
+}
+
+.password-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  margin-top: 40px;
+}
+
+.lock-icon-container {
+  width: 64px;
+  height: 64px;
+  background: #eff6ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.lock-icon {
+  font-size: 1.75rem;
+  color: #1a237e;
+}
+
+.password-card h2 {
+  font-family: var(--font-titles);
+  color: #082765;
+  font-size: 1.4rem;
+  margin: 0 0 10px;
+}
+
+.password-card p {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.password-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.password-input:focus {
+  border-color: #1a237e;
+}
+
+.verify-error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.confirm-btn, .cancel-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.confirm-btn {
+  background: #1a237e;
+  color: #ffffff;
+}
+
+.confirm-btn:hover:not(:disabled) {
+  background: #0d165c;
+}
+
+.confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: spin 0.6s linear infinite;
 }
 </style>

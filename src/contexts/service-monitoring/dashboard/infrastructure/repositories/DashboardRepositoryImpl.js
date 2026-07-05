@@ -1,130 +1,152 @@
 import apiClient from '@/shared/infrastructure/http/apiClient';
-import { HealthCalculationService } from '../../../domain/services/HealthCalculationService';
 import { IDashboardRepository } from '../../../domain/repositories/IDashboardRepository';
 
 export class DashboardRepositoryImpl extends IDashboardRepository {
+  async #fetchTelemetry(deviceId) {
+    try {
+      const res = await apiClient.get(`/api/v1/telemetry/latest?deviceId=${deviceId}`);
+      return res.data || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async #fetchAlerts() {
+    try {
+      const res = await apiClient.get('/api/v1/alerts?limit=5');
+      return res.data || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async #fetchPropertiesStats() {
+    try {
+      const res = await apiClient.get('/api/v1/properties/summary');
+      return res.data?.total ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async #fetchDevices() {
+    try {
+      const res = await apiClient.get('/api/v1/devices');
+      return res.data || [];
+    } catch {
+      return [];
+    }
+  }
+
+  #formatNum(value, decimals = 2) {
+    if (value === null || value === undefined) return null;
+    const num = Number(value);
+    return Number.isNaN(num) ? null : parseFloat(num.toFixed(decimals));
+  }
+
+  #airQualityStatus(ppm) {
+    if (ppm === null || ppm === undefined) return '--';
+    if (ppm > 300) return 'Critical';
+    if (ppm > 100) return 'Poor';
+    if (ppm > 50) return 'Moderate';
+    return 'Good';
+  }
+
+  #buildAlertViewModel(alert, gasPpm, electricityKwh) {
+    let type = 'info';
+    let icon = 'info-circle';
+    let typeLabel = 'SYSTEM';
+    let desc = `Alert logged for device ${alert.deviceId}.`;
+
+    if (alert.severity === 'Critical') {
+      type = 'critical';
+      icon = 'triangle-exclamation';
+    } else if (alert.severity === 'Warning') {
+      type = 'warning';
+      icon = 'exclamation-circle';
+    }
+
+    if (alert.type?.includes('Gas')) {
+      typeLabel = 'GAS';
+      desc = gasPpm !== null
+        ? `High gas readings (${gasPpm} PPM) on ${alert.deviceId}.`
+        : `Gas alert on ${alert.deviceId}.`;
+    } else if (alert.type?.includes('Overcurrent') || alert.type?.includes('Voltage')) {
+      typeLabel = 'VOLTAGE';
+      icon = 'bolt';
+      desc = alert.type === 'Overcurrent Detected'
+        ? `High current draw (${electricityKwh ?? '--'} A) on ${alert.deviceId}.`
+        : `Grid instability on ${alert.deviceId}.`;
+    }
+
+    const date = new Date(alert.timestamp);
+    const timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      + ' ' + date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+    return {
+      id: alert.id,
+      type,
+      typeLabel,
+      title: alert.type,
+      desc,
+      time: timeFormatted,
+      icon
+    };
+  }
+
   async getStats() {
-    let electricityKwh = 0.0;
-    let gasPpm = 0;
-    let airQualityStatus = 'Good';
-    let devicesOnline = 2;
-    let totalDevices = 2;
-    let voltageOk = true;
+    const [voltageData, gasData, waterData, activeAlerts, devices, propertiesCount] = await Promise.all([
+      this.#fetchTelemetry('voltage-safety-unit-apt-402'),
+      this.#fetchTelemetry('gas-safety-unit-apt-402'),
+      this.#fetchTelemetry('water-meter-unit-biz-center'),
+      this.#fetchAlerts(),
+      this.#fetchDevices(),
+      this.#fetchPropertiesStats()
+    ]);
 
-    try {
-      // 1. Fetch latest telemetry for voltage safety unit
-      const resVoltage = await apiClient.get('/api/v1/telemetries/latest?deviceId=voltage-safety-unit-apt-402');
-      if (resVoltage.data) {
-        electricityKwh = resVoltage.data.electricityReading;
-        voltageOk = resVoltage.data.voltageOk !== false; // handle null/undefined or false
-      }
-    } catch (e) {
-      console.debug('Failed to fetch voltage telemetry, using mock fallback', e);
-      electricityKwh = 12.8; // Fallback
-      voltageOk = true;
+    const electricityKwh = this.#formatNum(voltageData?.electricityReading);
+    const voltageOk = voltageData ? (voltageData.voltageOk !== false) : null;
+    const gasPpm = this.#formatNum(gasData?.gasReading);
+    const waterReading = this.#formatNum(waterData?.waterReading);
+    const airQualityStatus = this.#airQualityStatus(gasPpm);
+
+    const totalDevices = Array.isArray(devices) ? devices.length : null;
+    const devicesOnline = Array.isArray(devices)
+      ? devices.filter(d => d.connectionStatus === 'Online').length
+      : null;
+
+    const alertViewModels = activeAlerts.map(a =>
+      this.#buildAlertViewModel(a, gasPpm, electricityKwh)
+    );
+
+    const hasGasIssues = gasPpm !== null && gasPpm > 100;
+    const hasVoltageIssues = voltageOk !== null && !voltageOk;
+    const hasCurrentIssues = electricityKwh !== null && electricityKwh > 20;
+
+    let healthScore = null;
+    if (gasPpm !== null || voltageOk !== null || electricityKwh !== null) {
+      healthScore = 100;
+      if (hasGasIssues) healthScore -= 12;
+      if (hasCurrentIssues) healthScore -= 15;
+      if (hasVoltageIssues) healthScore -= 25;
+      healthScore = Math.max(50, healthScore);
     }
-
-    try {
-      // 2. Fetch latest telemetry for gas safety unit
-      const resGas = await apiClient.get('/api/v1/telemetries/latest?deviceId=gas-safety-unit-apt-402');
-      if (resGas.data) {
-        gasPpm = resGas.data.gasReading;
-        airQualityStatus = gasPpm > 300 ? 'Critical' : (gasPpm > 100 ? 'Poor' : (gasPpm > 50 ? 'Moderate' : 'Good'));
-      }
-    } catch (e) {
-      console.debug('Failed to fetch gas telemetry, using mock fallback', e);
-      gasPpm = 14;
-      airQualityStatus = 'Good';
-    }
-
-    let propertiesCount = 4;
-    try {
-      // 3. Fetch properties count
-      const resProps = await apiClient.get('/api/v1/properties/stats');
-      if (resProps.data) {
-        propertiesCount = resProps.data.total;
-      }
-    } catch (e) {
-      console.debug('Failed to fetch properties total', e);
-    }
-
-    // 4. Fetch real-time alerts from backend
-    let activeAlerts = [];
-    try {
-      const resAlerts = await apiClient.get('/api/v1/alerts?limit=10');
-      if (resAlerts.data) {
-        activeAlerts = resAlerts.data.map(alert => {
-          let type = 'info';
-          let icon = 'info-circle';
-          let typeLabel = 'SYSTEM';
-          let desc = `An alert was logged for device ${alert.deviceId}.`;
-
-          if (alert.severity === 'Critical') {
-            type = 'critical';
-            icon = 'triangle-exclamation';
-          } else if (alert.severity === 'Warning') {
-            type = 'warning';
-            icon = 'exclamation-circle';
-          }
-
-          if (alert.type.includes('Gas')) {
-            typeLabel = 'GAS';
-            desc = `High gas readings (${gasPpm} PPM) detected on device ${alert.deviceId}.`;
-          } else if (alert.type.includes('Overcurrent') || alert.type.includes('Voltage')) {
-            typeLabel = 'VOLTAGE';
-            desc = alert.type === 'Overcurrent Detected'
-              ? `High current draw (${electricityKwh.toFixed(1)} A) detected on device ${alert.deviceId}.`
-              : `Grid instability or voltage drop detected on device ${alert.deviceId}.`;
-            icon = 'bolt';
-          } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {
-            typeLabel = 'SECURITY';
-            desc = `Unscheduled motion detected inside property associated with device ${alert.deviceId}.`;
-          }
-
-          const date = new Date(alert.timestamp);
-          const timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-
-          return {
-            id: alert.id,
-            type: type,
-            typeLabel: typeLabel,
-            title: alert.type,
-            desc: desc,
-            time: timeFormatted,
-            icon: icon
-          };
-        });
-      }
-    } catch (e) {
-      console.debug('Failed to fetch real alerts, using mock fallback', e);
-    }
-
-    let healthScore = 100.0;
-    if (gasPpm > 100) {
-      healthScore -= 12.0;
-    }
-    if (electricityKwh > 20.0) {
-      healthScore -= 15.0;
-    }
-    if (!voltageOk) {
-      healthScore -= 25.0;
-    }
-    healthScore = Math.max(50.0, healthScore);
 
     return {
       kpis: {
-        activeLeaks: activeAlerts.length,
-        airQuality: `${airQualityStatus} (${gasPpm} PPM)`,
-        devicesOnline: devicesOnline,
-        totalDevices: totalDevices,
-        dailyEnergy: parseFloat(electricityKwh.toFixed(2))
+        activeLeaks: alertViewModels.length,
+        airQuality: gasPpm !== null ? `${airQualityStatus} (${gasPpm} PPM)` : '--',
+        devicesOnline,
+        totalDevices,
+        dailyEnergy: electricityKwh
       },
-      alerts: activeAlerts,
+      alerts: alertViewModels,
       health: healthScore,
       rawGas: gasPpm,
-      rawWater: 0.0,
+      rawWater: waterReading,
       rawElectricity: electricityKwh,
-      voltageOk: voltageOk
+      voltageOk,
+      propertiesCount
     };
   }
 }

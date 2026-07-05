@@ -42,12 +42,7 @@
           variant="warning"
           icon="clipboard-list"
         />
-        <KpiCard
-          title="MEAN RESPONSE TIME"
-          value="1m 35s"
-          subtitle="Realtime updates active"
-          variant="positive"
-        />
+
         <KpiCard
           title="SENSORS ONLINE"
           :value="sensorsOnlineValue"
@@ -100,7 +95,7 @@ const exportIncidentReport = async () => {
   if (isExporting.value) return;
   isExporting.value = true;
   try {
-    const response = await apiClient.get('/api/v1/alerts/reports?format=pdf', {
+    const response = await apiClient.get('/api/v1/reports/alerts/export?format=pdf', {
       responseType: 'blob'
     });
 
@@ -337,7 +332,7 @@ onMounted(() => {
 /* KPI Grid */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
 }

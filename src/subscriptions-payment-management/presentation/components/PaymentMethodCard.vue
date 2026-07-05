@@ -97,12 +97,20 @@ const cardBrandLabel = computed(() => {
 
 const displayNumber = computed(() => {
   if (!props.card) return '';
+  if (props.card.fullNumber && props.card.fullNumber.length >= 16) {
+    const cleaned = props.card.fullNumber.replace(/\s+/g, '');
+    const lastFour = cleaned.slice(-4);
+    return `\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  ${lastFour}`;
+  }
   const last = props.card.maskedNumber || props.card.lastFour || '0000';
-  return `····  ····  ····  ${last}`;
+  return `\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  ${last}`;
 });
 
 const cardHolderName = computed(() => {
   if (!props.card) return t('subscription.payment.cardHolder');
+  if (props.card.firstName && props.card.lastName) {
+    return `${props.card.firstName} ${props.card.lastName}`;
+  }
   return props.card.holderName || t('subscription.payment.cardHolder');
 });
 

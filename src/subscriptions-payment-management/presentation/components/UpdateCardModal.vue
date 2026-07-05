@@ -56,37 +56,43 @@
         </div>
 
         <form class="edit-form" @submit.prevent="handleSave">
-          <div class="form-group">
+          <div class="form-group" :class="{ 'form-group--error': errors.holder }">
             <label for="ed-holder">{{ t('subscription.payment.edit.holder') }}</label>
-            <input id="ed-holder" type="text" v-model="form.holderName" maxlength="100" required />
+            <input id="ed-holder" type="text" v-model="form.holderName" maxlength="100" required @input="errors.holder = ''" />
+            <span v-if="errors.holder" class="form-error">{{ errors.holder }}</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" :class="{ 'form-group--error': errors.number }">
             <label for="ed-number">{{ t('subscription.payment.edit.number') }}</label>
-            <input id="ed-number" type="text" v-model="form.fullNumber" maxlength="19" placeholder="4111 1111 1111 1111" required />
+            <input id="ed-number" type="text" v-model="form.fullNumber" maxlength="19" placeholder="4111 1111 1111 1111" required @input="errors.number = ''" />
+            <span v-if="errors.number" class="form-error">{{ errors.number }}</span>
           </div>
 
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" :class="{ 'form-group--error': errors.month }">
               <label for="ed-month">{{ t('subscription.payment.edit.expiryMonth') }}</label>
-              <input id="ed-month" type="text" v-model="form.expiryMonth" maxlength="2" placeholder="MM" required />
+              <input id="ed-month" type="text" v-model="form.expiryMonth" maxlength="2" placeholder="MM" required @input="errors.month = ''" />
+              <span v-if="errors.month" class="form-error">{{ errors.month }}</span>
             </div>
-            <div class="form-group">
+            <div class="form-group" :class="{ 'form-group--error': errors.year }">
               <label for="ed-year">{{ t('subscription.payment.edit.expiryYear') }}</label>
-              <input id="ed-year" type="text" v-model="form.expiryYear" maxlength="2" placeholder="YY" required />
+              <input id="ed-year" type="text" v-model="form.expiryYear" maxlength="2" placeholder="YY" required @input="errors.year = ''" />
+              <span v-if="errors.year" class="form-error">{{ errors.year }}</span>
             </div>
-            <div class="form-group">
+            <div class="form-group" :class="{ 'form-group--error': errors.cvv }">
               <label for="ed-cvv">{{ t('subscription.payment.edit.cvv') }}</label>
-              <input 
-                id="ed-cvv" 
-                type="text" 
-                v-model="form.cvv" 
-                maxlength="4" 
-                placeholder="***" 
+              <input
+                id="ed-cvv"
+                type="text"
+                v-model="form.cvv"
+                maxlength="4"
+                placeholder="***"
                 required
-                @focus="flipped = true" 
-                @blur="flipped = false" 
+                @focus="flipped = true"
+                @blur="flipped = false"
+                @input="errors.cvv = ''"
               />
+              <span v-if="errors.cvv" class="form-error">{{ errors.cvv }}</span>
             </div>
           </div>
 
@@ -107,7 +113,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from '@/shared/presentation/i18n';
-import { SubscriptionPaymentRepositoryImpl } from '../../../../../../../Users/mimim/Downloads/MaferXD/MaferXD/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl.js';
+import { SubscriptionPaymentRepositoryImpl } from '@/contexts/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
 
 const props = defineProps({
   card: {
@@ -132,30 +138,63 @@ const form = reactive({
   cvv: props.card?.cvv || ''
 });
 
+const errors = reactive({
+  holder: '',
+  number: '',
+  month: '',
+  year: '',
+  cvv: ''
+});
+
+function isValidLuhn(num) {
+  const digits = (num || '').replace(/\D/g, '');
+  if (!digits) return false;
+  let sum = 0;
+  let alternate = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (alternate) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    alternate = !alternate;
+  }
+  return sum % 10 === 0;
+}
+
 const detectCardBrand = (num) => {
   const cleanNumber = (num || '').replace(/\s+/g, '');
   if (!cleanNumber) return 'unknown';
-  
   if (/^4/.test(cleanNumber)) return 'visa';
   if (/^(5[1-5]|2[2-7])/.test(cleanNumber)) return 'mastercard';
   if (/^3[47]/.test(cleanNumber)) return 'amex';
   if (/^(6011|622|64|65)/.test(cleanNumber)) return 'discover';
   if (/^36/.test(cleanNumber)) return 'diners';
   if (/^35/.test(cleanNumber)) return 'jcb';
-  
   return 'unknown';
 };
 
 watch(() => form.fullNumber, (newVal) => {
-  // Auto format card number with spaces every 4 digits
-  let formatted = (newVal || '').replace(/\D/g, '').match(/.{1,4}/g);
+  const formatted = (newVal || '').replace(/\D/g, '').match(/.{1,4}/g);
   if (formatted) {
     form.fullNumber = formatted.join(' ');
   }
-  
   const brand = detectCardBrand(newVal);
   if (brand !== 'unknown') {
     form.brand = brand.charAt(0).toUpperCase() + brand.slice(1);
+  }
+});
+
+watch(() => form.expiryMonth, (newVal) => {
+  if (newVal && newVal.length > 2) {
+    form.expiryMonth = newVal.slice(0, 2);
+  }
+});
+
+watch(() => form.expiryYear, (newVal) => {
+  if (newVal && newVal.length > 2) {
+    form.expiryYear = newVal.slice(0, 2);
   }
 });
 
@@ -164,7 +203,7 @@ const previewBrandLabel = computed(() => form.brand || 'CARD');
 
 const previewNumber = computed(() => {
   const n = form.fullNumber || '';
-  if (!n) return '····  ····  ····  ····';
+  if (!n) return '\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7';
   return n;
 });
 
@@ -177,20 +216,86 @@ const previewExpiry = computed(() => {
   return 'MM/YY';
 });
 
+function validate() {
+  let valid = true;
+  errors.holder = '';
+  errors.number = '';
+  errors.month = '';
+  errors.year = '';
+  errors.cvv = '';
+
+  if (!form.holderName.trim()) {
+    errors.holder = t('subscription.validation.holderRequired');
+    valid = false;
+  }
+
+  const cleanNumber = form.fullNumber.replace(/\s+/g, '');
+  if (!cleanNumber) {
+    errors.number = t('subscription.validation.numberRequired');
+    valid = false;
+  } else if (!isValidLuhn(cleanNumber)) {
+    errors.number = t('subscription.validation.numberInvalid');
+    valid = false;
+  }
+
+  const month = parseInt(form.expiryMonth, 10);
+  if (!form.expiryMonth) {
+    errors.month = t('subscription.validation.monthRequired');
+    valid = false;
+  } else if (isNaN(month) || month < 1 || month > 12) {
+    errors.month = t('subscription.validation.monthInvalid');
+    valid = false;
+  }
+
+  const year = parseInt(form.expiryYear, 10);
+  const fullYear = form.expiryYear ? (form.expiryYear.length === 2 ? 2000 + parseInt(form.expiryYear, 10) : parseInt(form.expiryYear, 10)) : null;
+  if (!form.expiryYear) {
+    errors.year = t('subscription.validation.yearRequired');
+    valid = false;
+  } else if (fullYear) {
+    const now = new Date();
+    const expiryDate = new Date(fullYear, month);
+    if (expiryDate < now) {
+      errors.year = t('subscription.validation.yearExpired');
+      valid = false;
+    }
+  }
+
+  if (!form.cvv) {
+    errors.cvv = t('subscription.validation.cvvRequired');
+    valid = false;
+  } else if (!/^\d{3,4}$/.test(form.cvv)) {
+    errors.cvv = t('subscription.validation.cvvInvalid');
+    valid = false;
+  }
+
+  return valid;
+}
+
 async function handleSave() {
+  if (!validate()) return;
+
   saving.value = true;
   try {
-    await repository.updatePaymentMethod(props.card.id, {
+    const cardData = {
       brand: form.brand,
       fullNumber: form.fullNumber.replace(/\s+/g, ''),
       expiryMonth: form.expiryMonth,
       expiryYear: form.expiryYear,
       holderName: form.holderName,
       cvv: form.cvv
-    });
+    };
+
+    if (props.card && props.card.id) {
+      await repository.updatePaymentMethod({ ...cardData, id: props.card.id });
+    } else {
+      const response = await repository.createPaymentMethod(cardData);
+      localStorage.setItem('savedCard', JSON.stringify(response));
+    }
     emit('saved');
   } catch (err) {
-    alert(t('subscription.payment.edit.errorSaving') + (err.message || 'Error'));
+    const msg = err.message || 'Error';
+    alert((t('subscription.payment.edit.errorSaving') || 'Error saving card: ') + msg);
   } finally {
     saving.value = false;
   }
@@ -485,6 +590,20 @@ async function handleSave() {
   box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
 }
 
+.form-group--error input {
+  border-color: #ef4444;
+}
+
+.form-group--error input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 2px;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -532,24 +651,24 @@ async function handleSave() {
   .modal-overlay {
     padding: 10px;
   }
-  
+
   .modal-body {
     padding: 16px;
   }
-  
+
   .credit-card__front {
     padding: 14px;
   }
-  
+
   .credit-card__number {
     font-size: 0.9rem;
     letter-spacing: 1.5px;
   }
-  
+
   .card-value {
     font-size: 0.7rem;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }

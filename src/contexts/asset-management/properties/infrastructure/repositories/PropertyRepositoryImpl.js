@@ -23,7 +23,7 @@ export class PropertyRepositoryImpl extends IPropertyRepository {
   }
 
   async updateStatus(id, status) {
-    await apiClient.put(`/api/v1/properties/${id}/status`, JSON.stringify(status), {
+    await apiClient.patch(`/api/v1/properties/${id}/status`, JSON.stringify(status), {
       headers: { 'Content-Type': 'application/json' }
     });
   }
@@ -33,7 +33,7 @@ export class PropertyRepositoryImpl extends IPropertyRepository {
   }
 
   async getTotal() {
-    const { data } = await apiClient.get('/api/v1/properties/stats');
+    const { data } = await apiClient.get('/api/v1/properties/summary');
     return data;
   }
 }

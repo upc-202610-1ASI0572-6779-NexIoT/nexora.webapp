@@ -4,8 +4,7 @@
       <button class="menu-btn" @click="$emit('toggle-sidebar')">
         <font-awesome-icon icon="bars" />
       </button>
-      
-      <!-- Render Breadcrumbs in Header if present -->
+
       <nav v-if="globalBreadcrumbs" class="header-breadcrumbs">
         <span v-for="(item, index) in globalBreadcrumbs" :key="index" class="breadcrumbs__item">
           <router-link v-if="index < globalBreadcrumbs.length - 1" :to="item.route" class="breadcrumbs__link">
@@ -19,13 +18,12 @@
     </div>
 
     <div class="header-actions">
-      <div v-if="!globalBreadcrumbs && route.name !== 'profile'" class="notification-container">
+      <div v-if="!globalBreadcrumbs" class="notification-container">
         <button class="icon-btn notification-btn" @click="toggleNotifications">
           <font-awesome-icon icon="bell" />
           <span v-if="notificationCount > 0" class="notification-dot"></span>
         </button>
 
-        <!-- Dropdown Menu -->
         <div v-if="showNotifications" class="notification-dropdown">
           <div class="dropdown-header">
             <h3>Recent Alerts</h3>
@@ -35,16 +33,15 @@
             <div v-if="latestAlerts.length === 0" class="empty-alerts">
               No recent alerts
             </div>
-            <div 
-              v-else 
-              v-for="alert in latestAlerts" 
-              :key="alert.id" 
+            <div
+              v-else
+              v-for="alert in latestAlerts"
+              :key="alert.id"
               class="alert-item"
-              :class="alert.severity.toLowerCase()"
               @click="navigateToAlert(alert.id)"
             >
               <div class="alert-item-header">
-                <span class="alert-badge" :class="alert.severity.toLowerCase()">
+                <span :class="['alert-badge', alert.severity.toLowerCase()]">
                   {{ alert.severity }}
                 </span>
                 <span class="alert-time">{{ alert.timestamp }}</span>
@@ -59,17 +56,13 @@
         </div>
       </div>
 
-      <button v-if="!globalBreadcrumbs && route.name !== 'property-registration' && route.name !== 'subscription' && route.name !== 'profile' && route.name !== 'alerts'" class="register-btn" @click="handleAction">
+      <button
+        v-if="!globalBreadcrumbs && actionRoute && route.name !== 'dashboard'"
+        class="register-btn"
+        @click="handleAction"
+      >
         <font-awesome-icon :icon="actionIcon" class="register-icon" />
         <span class="register-text">{{ actionLabel }}</span>
-      </button>
-
-      <!-- User Profile Avatar -->
-      <button class="user-profile-btn" @click="$emit('open-profile')">
-        <div class="user-avatar-small">
-          <span v-if="user" class="user-initials-small">{{ user.initials }}</span>
-          <font-awesome-icon v-else icon="user" />
-        </div>
       </button>
     </div>
   </header>
@@ -79,17 +72,13 @@
 import { computed, inject, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '@/shared/presentation/i18n';
-import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 import apiClient from '@/shared/infrastructure/http/apiClient';
 
-defineEmits(['toggle-sidebar', 'open-profile']);
+defineEmits(['toggle-sidebar']);
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const authStore = useAuthStore();
-
-const user = computed(() => authStore.user);
 const globalBreadcrumbs = inject('globalBreadcrumbs', null);
 
 const showNotifications = ref(false);
@@ -102,25 +91,17 @@ const fetchLatestAlerts = async () => {
       params: { page: 1, pageSize: 5 }
     });
     if (res.data) {
-      latestAlerts.value = res.data.map(alert => {
-        let status = 'WARNING';
-        if (alert.severity === 'Critical') {
-          status = 'CRITICAL';
-        }
-        
-        return {
-          id: alert.id,
-          type: alert.type,
-          severity: alert.severity,
-          status: status,
-          timestamp: new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          deviceId: alert.deviceId
-        };
-      });
+      latestAlerts.value = res.data.map(alert => ({
+        id: alert.id,
+        type: alert.type,
+        severity: alert.severity,
+        timestamp: new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        deviceId: alert.deviceId
+      }));
       notificationCount.value = latestAlerts.value.length;
     }
   } catch (e) {
-    console.error('Failed to fetch latest alerts for notifications', e);
+    console.error('Failed to fetch latest alerts', e);
   }
 };
 
@@ -155,9 +136,9 @@ onUnmounted(() => {
 const routeDefaults = {
   dashboard: {
     title: 'Dashboard',
-    searchPlaceholder: 'Search devices, alerts, or locations...',
     actionLabel: 'Register New Device',
-    actionIcon: 'plus'
+    actionIcon: 'plus',
+    actionRoute: '/devices/new'
   },
   buildings: {
     title: 'Properties Management',
@@ -167,26 +148,22 @@ const routeDefaults = {
   },
   devices: {
     title: 'Devices Management',
-    searchPlaceholder: 'Search devices, locations, or status...',
     actionLabel: 'Register New Device',
     actionIcon: 'plus',
     actionRoute: '/devices/new'
   },
   alerts: {
     title: 'Alerts Center',
-    searchPlaceholder: 'Search alerts, severity, or devices...',
     actionLabel: 'Create Alert Rule',
     actionIcon: 'bell'
   },
   reports: {
     title: 'Consumption Reports',
-    searchPlaceholder: 'Search data points, dates, or assets...',
     actionLabel: 'Export Data',
     actionIcon: 'file-pdf'
   },
   settings: {
     title: 'Settings',
-    searchPlaceholder: 'Search settings, roles, or integrations...',
     actionLabel: 'Save Settings',
     actionIcon: 'gear'
   }
@@ -196,10 +173,7 @@ const headerConfig = computed(() => {
   const name = route.name;
   const defaults = (name && routeDefaults[name]) || {};
   const meta = route.meta || {};
-  return {
-    ...defaults,
-    ...meta
-  };
+  return { ...defaults, ...meta };
 });
 
 const pageTitle = computed(() => {
@@ -209,8 +183,9 @@ const pageTitle = computed(() => {
   return headerConfig.value.title || 'Nexora';
 });
 
-const actionLabel = computed(() => headerConfig.value.actionLabel || 'New Item');
+const actionLabel = computed(() => headerConfig.value.actionLabel || '');
 const actionIcon = computed(() => headerConfig.value.actionIcon || 'plus');
+const actionRoute = computed(() => headerConfig.value.actionRoute || '');
 
 const handleAction = () => {
   const path = headerConfig.value.actionRoute;
@@ -260,45 +235,6 @@ const handleAction = () => {
   text-overflow: ellipsis;
 }
 
-.search-bar {
-  display: flex;
-  align-items: center;
-  background-color: #f8f9fc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 8px 16px;
-  flex: 1;
-  max-width: 400px;
-  margin-right: auto;
-  margin-left: 24px;
-  transition: border-color 0.2s;
-}
-
-.search-bar:focus-within {
-  border-color: #1a3673;
-  background-color: white;
-}
-
-.search-icon {
-  color: #7f8c8d;
-  margin-right: 12px;
-  font-size: 1rem;
-}
-
-.search-bar input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: var(--font-general, sans-serif);
-  color: #2c3e50;
-  width: 100%;
-  font-size: 0.95rem;
-}
-
-.search-bar input::placeholder {
-  color: #95a5a6;
-}
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -318,13 +254,9 @@ const handleAction = () => {
   justify-content: center;
 }
 
-.icon-btn:hover {
-  opacity: 0.8;
-}
+.icon-btn:hover { opacity: 0.8; }
 
-.notification-btn {
-  position: relative;
-}
+.notification-btn { position: relative; }
 
 .notification-dot {
   position: absolute;
@@ -338,7 +270,7 @@ const handleAction = () => {
 }
 
 .register-btn {
-  background-color: #e67e22; /* Primary orange */
+  background-color: #e67e22;
   color: white;
   border: none;
   border-radius: 4px;
@@ -353,59 +285,25 @@ const handleAction = () => {
   white-space: nowrap;
 }
 
-.register-btn:hover {
-  background-color: #d35400; /* Darker orange */
-}
+.register-btn:hover { background-color: #d35400; }
 
-.register-icon {
-  font-size: 1rem;
-}
+.register-icon { font-size: 1rem; }
 
-/* Responsiveness */
 @media (max-width: 1024px) {
-  .menu-btn {
-    display: block;
-  }
-
-  .dashboard-header {
-    padding: 12px 16px;
-  }
-
-  .page-title {
-    font-size: 1.25rem;
-  }
+  .menu-btn { display: block; }
+  .dashboard-header { padding: 12px 16px; }
+  .page-title { font-size: 1.25rem; }
 }
 
 @media (max-width: 768px) {
-  .search-bar {
-    display: none;
-  }
-
-  .header-left {
-    flex: 1;
-  }
-
-  .register-text {
-    display: none;
-  }
+  .register-text { display: none; }
 }
 
 @media (max-width: 480px) {
-  .page-title {
-    font-size: 1.1rem;
-  }
-
-  .register-btn {
-    padding: 8px 12px;
-  }
-
-  .dashboard-header {
-    gap: 12px;
-  }
-
-  .header-actions {
-    gap: 12px;
-  }
+  .page-title { font-size: 1.1rem; }
+  .register-btn { padding: 8px 12px; }
+  .dashboard-header { gap: 12px; }
+  .header-actions { gap: 12px; }
 }
 
 .header-breadcrumbs {
@@ -423,9 +321,7 @@ const handleAction = () => {
   transition: color 0.2s;
 }
 
-.breadcrumbs__link:hover {
-  color: #1a3673;
-}
+.breadcrumbs__link:hover { color: #1a3673; }
 
 .breadcrumbs__current {
   font-weight: 700;
@@ -437,36 +333,6 @@ const handleAction = () => {
   color: #cbd5e1;
 }
 
-.user-profile-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.user-avatar-small {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, #f97316, #e66700);
-  border: 1.5px solid #eaeaea;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  color: #ffffff;
-  overflow: hidden;
-}
-
-.user-initials-small {
-  font-weight: 700;
-}
-
-/* ─── Notifications Dropdown ─── */
 .notification-container {
   position: relative;
   display: flex;
@@ -529,13 +395,9 @@ const handleAction = () => {
   text-align: left;
 }
 
-.alert-item:hover {
-  background-color: #f8fafc;
-}
+.alert-item:hover { background-color: #f8fafc; }
 
-.alert-item:last-child {
-  border-bottom: none;
-}
+.alert-item:last-child { border-bottom: none; }
 
 .alert-item-header {
   display: flex;
@@ -593,7 +455,5 @@ const handleAction = () => {
   text-decoration: none;
 }
 
-.dropdown-footer a:hover {
-  text-decoration: underline;
-}
+.dropdown-footer a:hover { text-decoration: underline; }
 </style>

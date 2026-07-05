@@ -90,8 +90,8 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
           gasPpm = parseFloat(resGas.data.gasReading.toFixed(3));
           airQualityStatus = gasPpm > 300 ? 'Critical' : (gasPpm > 100 ? 'Poor' : (gasPpm > 50 ? 'Moderate' : 'Good'));
           airQualityVal = `${airQualityStatus} (${gasPpm} PPM)`;
-          airQualityColor = (airQualityStatus === 'Critical' || airQualityStatus === 'Poor') ? 'danger' : 'success';
-          airQualityIcon = airQualityColor === 'danger' ? 'triangle-exclamation' : 'circle-check';
+          airQualityColor = airQualityStatus === 'Critical' ? 'danger' : ((airQualityStatus === 'Poor' || airQualityStatus === 'Moderate') ? 'warning' : 'success');
+          airQualityIcon = airQualityColor === 'danger' ? 'triangle-exclamation' : (airQualityColor === 'warning' ? 'exclamation-circle' : 'circle-check');
         } else {
           airQualityVal = 'Sin reportes';
         }

@@ -11,9 +11,9 @@
       <KpiCard 
         title="GAS LEVEL" 
         :value="dashboardStore.stats.kpis.airQuality" 
-        valueIcon="circle-check"
+        :valueIcon="dashboardStore.stats.kpis.airQualityIcon"
         subtitle="Optimal range (<50 PPM)" 
-        colorType="success" 
+        :colorType="dashboardStore.stats.kpis.airQualityColor" 
         icon="fire-flame-curved" 
       />
       <KpiCard 
@@ -103,7 +103,6 @@ onUnmounted(() => {
   grid-template-columns: 2fr 1fr;
   gap: 24px;
   width: 100%;
-  align-items: start;
 }
 
 .left-column {

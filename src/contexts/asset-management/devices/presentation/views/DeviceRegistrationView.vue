@@ -34,8 +34,22 @@ const loadProperties = async () => {
 };
 
 const handleRegisterDevice = async () => {
-  if (!formData.serialNumber) {
-    errorMsg.value = 'Serial Number is required.';
+  if (!formData.name.trim()) {
+    errorMsg.value = 'Device Alias / Name is required.';
+    return;
+  }
+  if (!formData.serialNumber.trim()) {
+    errorMsg.value = 'Serial Number (S/N) is required.';
+    return;
+  }
+  if (!formData.macAddress.trim()) {
+    errorMsg.value = 'MAC Address is required.';
+    return;
+  }
+
+  const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$/;
+  if (!macRegex.test(formData.macAddress.trim())) {
+    errorMsg.value = 'Invalid MAC Address format. Example: AA:BB:CC:DD:EE:FF or AABBCCDDEEFF.';
     return;
   }
   
@@ -43,13 +57,15 @@ const handleRegisterDevice = async () => {
   errorMsg.value = '';
   try {
     await apiClient.post('/api/v1/devices', {
-      id: formData.serialNumber,
-      propertyId: formData.propertyId ? Number(formData.propertyId) : null
+      id: formData.serialNumber.trim(),
+      name: formData.name.trim(),
+      propertyId: formData.propertyId ? Number(formData.propertyId) : null,
+      macAddress: formData.macAddress.trim().replace(/-/g, ':').toUpperCase()
     });
     router.push('/devices');
   } catch (err) {
     console.error('Failed to register device', err);
-    errorMsg.value = err.response?.data || 'Failed to register device. The serial number may already exist.';
+    errorMsg.value = err.response?.data || 'Failed to register device. The serial number or MAC Address may already exist.';
   } finally {
     isSubmitting.value = false;
   }
@@ -123,7 +139,7 @@ onMounted(() => {
             <div class="form-group">
               <label class="form-label">ASSIGN TO PROPERTY</label>
               <select v-model="formData.propertyId" class="form-input">
-                <option value="" disabled>Select a property...</option>
+                <option value="">Unassigned (Register and link later)</option>
                 <option v-for="prop in properties" :key="prop.id" :value="prop.id">
                   {{ prop.name }}
                 </option>

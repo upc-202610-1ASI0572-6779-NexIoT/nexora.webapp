@@ -12,9 +12,31 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
     let totalDevices = 2;
     let voltageOk = true;
 
+    let userDevices = [];
+    try {
+      const resDevices = await apiClient.get('/api/v1/devices');
+      if (resDevices.data) {
+        userDevices = resDevices.data.filter(d => d.propertyId !== null);
+        totalDevices = resDevices.data.length;
+        devicesOnline = resDevices.data.filter(d => d.connectionStatus === 'Online').length;
+      }
+    } catch (e) {
+      console.debug('Failed to fetch devices, using mock fallback', e);
+      devicesOnline = 2;
+      totalDevices = 2;
+    }
+
+    const gasDevice = userDevices.find(d => d.id.toLowerCase().includes('gas'));
+    const waterDevice = userDevices.find(d => d.id.toLowerCase().includes('water') || d.id.toLowerCase().includes('agua'));
+    const voltageDevice = userDevices.find(d => d.id.toLowerCase().includes('voltage') || d.id.toLowerCase().includes('voltaje') || d.id.toLowerCase().includes('electricity') || d.id.toLowerCase().includes('corriente'));
+
+    const gasDeviceId = gasDevice ? gasDevice.id : 'gas-safety-unit-apt-402';
+    const waterDeviceId = waterDevice ? waterDevice.id : 'water-safety-unit-apt-402';
+    const voltageDeviceId = voltageDevice ? voltageDevice.id : 'voltage-safety-unit-apt-402';
+
     try {
       // 1. Fetch latest telemetry for voltage safety unit
-      const resVoltage = await apiClient.get('/api/v1/telemetries/latest?deviceId=voltage-safety-unit-apt-402');
+      const resVoltage = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${voltageDeviceId}`);
       if (resVoltage.data) {
         electricityKwh = resVoltage.data.electricityReading;
         voltageOk = resVoltage.data.voltageOk !== false; // handle null/undefined or false
@@ -27,7 +49,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
     try {
       // 2. Fetch latest telemetry for gas safety unit
-      const resGas = await apiClient.get('/api/v1/telemetries/latest?deviceId=gas-safety-unit-apt-402');
+      const resGas = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${gasDeviceId}`);
       if (resGas.data) {
         gasPpm = parseFloat(resGas.data.gasReading.toFixed(3));
         airQualityStatus = gasPpm > 300 ? 'Critical' : (gasPpm > 100 ? 'Poor' : (gasPpm > 50 ? 'Moderate' : 'Good'));
@@ -40,7 +62,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
     try {
       // 2.5. Fetch latest telemetry for water safety unit
-      const resWater = await apiClient.get('/api/v1/telemetries/latest?deviceId=water-safety-unit-apt-402');
+      const resWater = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${waterDeviceId}`);
       if (resWater.data) {
         rawWater = parseFloat(resWater.data.waterReading.toFixed(3));
       }
@@ -49,18 +71,6 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
       rawWater = 0.0;
     }
 
-    try {
-      // 2.7. Fetch dynamic device status
-      const resDevices = await apiClient.get('/api/v1/devices');
-      if (resDevices.data) {
-        totalDevices = resDevices.data.length;
-        devicesOnline = resDevices.data.filter(d => d.connectionStatus === 'Online').length;
-      }
-    } catch (e) {
-      console.debug('Failed to fetch devices, using mock fallback', e);
-      devicesOnline = 2;
-      totalDevices = 2;
-    }
 
     let propertiesCount = 4;
     try {

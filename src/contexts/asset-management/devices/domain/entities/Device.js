@@ -4,8 +4,10 @@ import { FirmwareVersion } from '../../../domain/value-objects/FirmwareVersion';
 import { Location } from '../../../domain/value-objects/Location';
 
 export class Device {
-  constructor({ id, location, status, rssi, firmware, uptime, isFirmwareOutdated }) {
+  constructor({ id, name, location, status, rssi, firmware, uptime, isFirmwareOutdated, propertyId }) {
     this.id = id;
+    this.name = name || id;
+    this.propertyId = propertyId;
     this._status = new DeviceStatus(status);
     this.status = this._status.toString();
     this._rssi = new RSSI(rssi);

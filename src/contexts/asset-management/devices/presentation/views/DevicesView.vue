@@ -51,6 +51,8 @@ const filteredDevices = computed(() => {
     list = list.filter(d => d.isOffline());
   } else if (activeFilter.value === 'Needs Maintenance') {
     list = list.filter(d => d.needsUpdate());
+  } else if (activeFilter.value === 'Unassigned') {
+    list = list.filter(d => !d.propertyId);
   }
 
   if (searchQuery.value) {
@@ -116,7 +118,8 @@ const filters = [
   { name: 'All Assets', icon: 'microchip' },
   { name: 'Online', icon: 'circle-check' },
   { name: 'Needs Maintenance', icon: 'triangle-exclamation' },
-  { name: 'Offline', icon: 'circle-info' }
+  { name: 'Offline', icon: 'circle-info' },
+  { name: 'Unassigned', icon: 'folder-open' }
 ];
 
 const getRssiIcon = (rssi) => {
@@ -259,7 +262,8 @@ const getStatusText = (status) => {
               <tr v-for="device in paginatedDevices" :key="device.id">
                 <td :class="['data-table__id', { 'data-table__id--error': device.isOffline() }]">
                   <router-link :to="{ name: 'device-details', params: { deviceId: device.id } }" class="device-link">
-                    {{ device.id }}
+                    {{ device.name }}
+                    <span class="serial-badge" style="display:block; font-size:0.75rem; color:#718096; font-weight:normal;">{{ device.id }}</span>
                   </router-link>
                 </td>
                 <td>{{ device.location }}</td>

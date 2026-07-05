@@ -7,8 +7,7 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
   async getAll() {
     try {
       const { data } = await apiClient.get('/api/v1/devices');
-      const linkedDevices = data.filter(d => d.propertyId !== null);
-      return linkedDevices.map(d => {
+      return data.map(d => {
         const isOnline = d.connectionStatus.toLowerCase() === 'online';
         // Format uptime based on last sync time
         let uptimeStr = 'Unknown';
@@ -17,18 +16,16 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
           uptimeStr = syncDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
         
-        // Simular firmware drift de manera determinista (si el id termina en número impar, tiene firmware antiguo)
-        const hasLegacyFirmware = d.id.charCodeAt(d.id.length - 1) % 2 !== 0;
-        const firmwareVersion = hasLegacyFirmware ? 'v2.3.5' : 'v2.4.1';
-        
         return new Device({
           id: d.id,
+          name: d.name,
           location: d.propertyName || 'Unassigned',
           status: isOnline ? 'online' : 'comm-failure',
-          rssi: isOnline ? -45 : null,
-          firmware: firmwareVersion,
+          rssi: isOnline ? (d.rssi || -45) : null,
+          firmware: d.firmwareVersion || 'v2.4.1',
           uptime: uptimeStr,
-          isFirmwareOutdated: hasLegacyFirmware
+          isFirmwareOutdated: d.isFirmwareOutdated,
+          propertyId: d.propertyId
         });
       });
     } catch (e) {
@@ -44,26 +41,20 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
 
   async getKPIs() {
     try {
-      const devices = await this.getAll();
-      const total = devices.length;
-      const online = devices.filter(d => d.isOnline()).length;
-      const offline = total - online;
-      const outdated = devices.filter(d => d.needsUpdate()).length;
-      
-      const opStatus = total > 0 ? `${Math.round((online / total) * 100)}%` : '100%';
-      
+      const { data } = await apiClient.get('/api/v1/devices/kpis');
       return {
-        operationalStatus: opStatus,
-        gatewayLoad: total > 0 ? (online * 12).toString() : '0',
-        activeAlerts: offline.toString(),
-        firmwareDrift: outdated.toString()
+        operationalStatus: data.operationalStatus,
+        gatewayLoad: data.gatewayLoad,
+        activeAlerts: data.activeAlerts,
+        firmwareDrift: data.firmwareDrift
       };
     } catch (e) {
+      console.error('Failed to fetch real KPIs, using default fallback', e);
       return {
-        operationalStatus: '0%',
-        gatewayLoad: '0',
+        operationalStatus: '100%',
+        gatewayLoad: '0.00',
         activeAlerts: '0',
-        firmwareDrift: '0.00'
+        firmwareDrift: '0'
       };
     }
   }

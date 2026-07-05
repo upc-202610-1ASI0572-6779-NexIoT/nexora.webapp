@@ -488,6 +488,8 @@ const handleExportPdf = async () => {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 25px;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -539,7 +541,8 @@ const handleExportPdf = async () => {
 }
 
 .chart-canvas-container {
-  height: 350px;
+  flex: 1;
+  min-height: 350px;
   margin-top: 30px;
   position: relative;
   display: flex;

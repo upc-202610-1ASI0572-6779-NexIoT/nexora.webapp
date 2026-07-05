@@ -199,6 +199,7 @@ const handleExportPdf = async () => {
               v-model="reportsStore.selectedMonths" 
               @change="reportsStore.fetchReportsData()"
             >
+              <option :value="1">Last Month</option>
               <option :value="3">Last 3 Months</option>
               <option :value="6">Last 6 Months</option>
               <option :value="12">Last Year</option>

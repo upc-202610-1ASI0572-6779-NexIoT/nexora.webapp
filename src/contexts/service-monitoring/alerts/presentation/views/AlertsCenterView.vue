@@ -165,7 +165,13 @@ const fetchAlerts = async (page = 1) => {
         }
 
         const date = new Date(alert.timestamp);
-        const timestampFormatted = date.toISOString().replace('T', ' ').substring(0, 19);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const timestampFormatted = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
         let propertyId = alert.deviceId;
 
@@ -223,7 +229,7 @@ const fetchDevicesStatus = async () => {
   try {
     const res = await apiClient.get('/api/v1/devices');
     if (res.data) {
-      const devices = res.data;
+      const devices = res.data.filter(d => d.propertyId !== null);
       const total = devices.length;
       const onlineCount = devices.filter(d => d.connectionStatus && d.connectionStatus.toLowerCase() === 'online').length;
       const percentage = total > 0 ? (onlineCount / total) * 100 : 0;

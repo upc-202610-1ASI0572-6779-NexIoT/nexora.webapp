@@ -3,7 +3,7 @@
     <div class="chart-header-row">
       <div class="chart-header-text">
         <h3 class="chart-title">Resource Consumption</h3>
-        <p class="chart-subtitle">Live Gas (PPM) and Electricity (Amps) telemetry trends</p>
+        <p class="chart-subtitle">Live Gas (PPM), Electricity (Amps) and Water (Lpm) telemetry trends</p>
       </div>
       <div class="chart-toggle">
         <button 
@@ -73,6 +73,12 @@ const loadChartData = async () => {
             backgroundColor: '#1a3673',
             borderRadius: 4,
             data: res.data.electricity
+          },
+          {
+            label: 'Water Flow (Lpm)',
+            backgroundColor: '#3498db',
+            borderRadius: 4,
+            data: res.data.water
           }
         ]
       };

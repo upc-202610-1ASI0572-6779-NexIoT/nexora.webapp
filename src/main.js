@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { 
   faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, 
   faLightbulb, faLock, faWifi, faGear, faTableCellsLarge, faBuilding, faBell, faMagnifyingGlass, 
-  faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus,
+  faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus, faFire,
   faSearch, faFilePdf, faChartLine, faClipboardList, faFilter, faEllipsisV,
   faExclamationCircle, faInfoCircle, faWind, faThermometerHalf, faTint, faBolt,
   faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,
@@ -24,7 +24,7 @@ import { faCcVisa, faCcMastercard, faCcAmex } from '@fortawesome/free-brands-svg
 library.add(
   faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, 
   faLightbulb, faLock, faWifi, faGear, faTableCellsLarge, faBuilding, faBell, faMagnifyingGlass, 
-  faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus,
+  faUser, faTemperatureHigh, faDroplet, faXmark, faBars, faLocationDot, faPlus, faFire,
   faSearch, faFilePdf, faChartLine, faClipboardList, faFilter, faEllipsisV,
   faExclamationCircle, faInfoCircle, faWind, faThermometerHalf, faTint, faBolt,
   faDotCircle, faChevronLeft, faChevronRight, faHeadset, faPhoneAlt,

@@ -4,71 +4,113 @@ import { IDashboardRepository } from '../../../domain/repositories/IDashboardRep
 
 export class DashboardRepositoryImpl extends IDashboardRepository {
   async getStats() {
-    let electricityKwh = 0.0;
-    let gasPpm = 0;
-    let rawWater = 0.0;
-    let airQualityStatus = 'Good';
-    let devicesOnline = 2;
-    let totalDevices = 2;
-    let voltageOk = true;
+    let electricityKwh = null;
+    let gasPpm = null;
+    let rawWater = null;
+    let airQualityStatus = 'N/A';
+    let devicesOnline = 0;
+    let totalDevices = 0;
+    let voltageOk = null;
 
     let userDevices = [];
+    let resDevices = null;
     try {
-      const resDevices = await apiClient.get('/api/v1/devices');
+      resDevices = await apiClient.get('/api/v1/devices');
       if (resDevices.data) {
         userDevices = resDevices.data.filter(d => d.propertyId !== null);
-        totalDevices = resDevices.data.length;
-        devicesOnline = resDevices.data.filter(d => d.connectionStatus === 'Online').length;
+        totalDevices = userDevices.length;
+        devicesOnline = userDevices.filter(d => d.connectionStatus === 'Online').length;
       }
     } catch (e) {
       console.debug('Failed to fetch devices, using mock fallback', e);
-      devicesOnline = 2;
-      totalDevices = 2;
+      devicesOnline = 0;
+      totalDevices = 0;
+      userDevices = [];
     }
 
-    const gasDevice = userDevices.find(d => d.id.toLowerCase().includes('gas'));
-    const waterDevice = userDevices.find(d => d.id.toLowerCase().includes('water') || d.id.toLowerCase().includes('agua'));
-    const voltageDevice = userDevices.find(d => d.id.toLowerCase().includes('voltage') || d.id.toLowerCase().includes('voltaje') || d.id.toLowerCase().includes('electricity') || d.id.toLowerCase().includes('corriente'));
+    const gasDevice = userDevices.find(d => 
+      (d.id && d.id.toLowerCase().includes('gas')) || 
+      (d.name && d.name.toLowerCase().includes('gas'))
+    );
+    const waterDevice = userDevices.find(d => 
+      (d.id && d.id.toLowerCase().includes('water')) || 
+      (d.id && d.id.toLowerCase().includes('agua')) || 
+      (d.name && d.name.toLowerCase().includes('water')) || 
+      (d.name && d.name.toLowerCase().includes('agua'))
+    );
+    const voltageDevice = userDevices.find(d => 
+      (d.id && d.id.toLowerCase().includes('voltage')) || 
+      (d.id && d.id.toLowerCase().includes('voltaje')) || 
+      (d.id && d.id.toLowerCase().includes('electricity')) || 
+      (d.id && d.id.toLowerCase().includes('corriente')) ||
+      (d.name && d.name.toLowerCase().includes('voltage')) || 
+      (d.name && d.name.toLowerCase().includes('voltaje')) || 
+      (d.name && d.name.toLowerCase().includes('electricity')) || 
+      (d.name && d.name.toLowerCase().includes('corriente'))
+    );
 
-    const gasDeviceId = gasDevice ? gasDevice.id : 'gas-safety-unit-apt-402';
-    const waterDeviceId = waterDevice ? waterDevice.id : 'water-safety-unit-apt-402';
-    const voltageDeviceId = voltageDevice ? voltageDevice.id : 'voltage-safety-unit-apt-402';
+    console.log('DEBUG DASHBOARD:', {
+      allDevicesFromApi: resDevices ? resDevices.data : null,
+      userDevicesFiltered: userDevices,
+      matchedGasDevice: gasDevice,
+      matchedWaterDevice: waterDevice,
+      matchedVoltageDevice: voltageDevice
+    });
 
-    try {
-      // 1. Fetch latest telemetry for voltage safety unit
-      const resVoltage = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${voltageDeviceId}`);
-      if (resVoltage.data) {
-        electricityKwh = resVoltage.data.electricityReading;
-        voltageOk = resVoltage.data.voltageOk !== false; // handle null/undefined or false
+    let dailyEnergyVal = 'Sin vincular';
+    let dailyEnergyColor = 'default';
+
+    if (voltageDevice) {
+      try {
+        const resVoltage = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${voltageDevice.id}`);
+        console.log('DEBUG VOLTAGE TELEMETRY:', { deviceId: voltageDevice.id, data: resVoltage.data });
+        if (resVoltage.data) {
+          electricityKwh = resVoltage.data.electricityReading;
+          voltageOk = resVoltage.data.voltageOk !== false;
+          dailyEnergyVal = parseFloat(electricityKwh.toFixed(2));
+          dailyEnergyColor = 'primary';
+        } else {
+          dailyEnergyVal = 'Sin reportes';
+        }
+      } catch (e) {
+        console.log('Failed to fetch voltage telemetry:', e);
+        dailyEnergyVal = 'Sin reportes';
       }
-    } catch (e) {
-      console.debug('Failed to fetch voltage telemetry, using mock fallback', e);
-      electricityKwh = 12.8; // Fallback
-      voltageOk = true;
     }
 
-    try {
-      // 2. Fetch latest telemetry for gas safety unit
-      const resGas = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${gasDeviceId}`);
-      if (resGas.data) {
-        gasPpm = parseFloat(resGas.data.gasReading.toFixed(3));
-        airQualityStatus = gasPpm > 300 ? 'Critical' : (gasPpm > 100 ? 'Poor' : (gasPpm > 50 ? 'Moderate' : 'Good'));
+    let airQualityVal = 'Sin vincular';
+    let airQualityColor = 'default';
+    let airQualityIcon = '';
+
+    if (gasDevice) {
+      try {
+        const resGas = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${gasDevice.id}`);
+        console.log('DEBUG GAS TELEMETRY:', { deviceId: gasDevice.id, data: resGas.data });
+        if (resGas.data) {
+          gasPpm = parseFloat(resGas.data.gasReading.toFixed(3));
+          airQualityStatus = gasPpm > 300 ? 'Critical' : (gasPpm > 100 ? 'Poor' : (gasPpm > 50 ? 'Moderate' : 'Good'));
+          airQualityVal = `${airQualityStatus} (${gasPpm} PPM)`;
+          airQualityColor = (airQualityStatus === 'Critical' || airQualityStatus === 'Poor') ? 'danger' : 'success';
+          airQualityIcon = airQualityColor === 'danger' ? 'triangle-exclamation' : 'circle-check';
+        } else {
+          airQualityVal = 'Sin reportes';
+        }
+      } catch (e) {
+        console.log('Failed to fetch gas telemetry:', e);
+        airQualityVal = 'Sin reportes';
       }
-    } catch (e) {
-      console.debug('Failed to fetch gas telemetry, using mock fallback', e);
-      gasPpm = 14;
-      airQualityStatus = 'Good';
     }
 
-    try {
-      // 2.5. Fetch latest telemetry for water safety unit
-      const resWater = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${waterDeviceId}`);
-      if (resWater.data) {
-        rawWater = parseFloat(resWater.data.waterReading.toFixed(3));
+    if (waterDevice) {
+      try {
+        const resWater = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${waterDevice.id}`);
+        console.log('DEBUG WATER TELEMETRY:', { deviceId: waterDevice.id, data: resWater.data });
+        if (resWater.data) {
+          rawWater = parseFloat(resWater.data.waterReading.toFixed(3));
+        }
+      } catch (e) {
+        console.log('Failed to fetch water telemetry:', e);
       }
-    } catch (e) {
-      console.debug('Failed to fetch water telemetry, using mock fallback', e);
-      rawWater = 0.0;
     }
 
 
@@ -137,13 +179,13 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
     }
 
     let healthScore = 100.0;
-    if (gasPpm > 100) {
+    if (gasPpm !== null && gasPpm > 100) {
       healthScore -= 12.0;
     }
-    if (electricityKwh > 20.0) {
+    if (electricityKwh !== null && electricityKwh > 20.0) {
       healthScore -= 15.0;
     }
-    if (!voltageOk) {
+    if (voltageOk === false) {
       healthScore -= 25.0;
     }
     healthScore = Math.max(50.0, healthScore);
@@ -151,17 +193,23 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
     return {
       kpis: {
         activeLeaks: activeAlerts.length,
-        airQuality: `${airQualityStatus} (${gasPpm} PPM)`,
+        airQuality: airQualityVal,
+        airQualityColor: airQualityColor,
+        airQualityIcon: airQualityIcon,
         devicesOnline: devicesOnline,
         totalDevices: totalDevices,
-        dailyEnergy: parseFloat(electricityKwh.toFixed(2))
+        dailyEnergy: dailyEnergyVal,
+        dailyEnergyColor: dailyEnergyColor
       },
       alerts: activeAlerts,
       health: healthScore,
       rawGas: gasPpm,
       rawWater: rawWater,
       rawElectricity: electricityKwh,
-      voltageOk: voltageOk
+      voltageOk: voltageOk,
+      gasLinked: gasDevice !== undefined,
+      waterLinked: waterDevice !== undefined,
+      electricityLinked: voltageDevice !== undefined
     };
   }
 }

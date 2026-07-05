@@ -12,7 +12,8 @@ onMounted(() => {
 const maxChartValue = computed(() => {
   const energyMax = reportsStore.chartData.energy.length > 0 ? Math.max(...reportsStore.chartData.energy) : 0;
   const gasMax = reportsStore.chartData.gas.length > 0 ? Math.max(...reportsStore.chartData.gas) : 0;
-  const overallMax = Math.max(energyMax, gasMax);
+  const waterMax = (reportsStore.chartData.water && reportsStore.chartData.water.length > 0) ? Math.max(...reportsStore.chartData.water) : 0;
+  const overallMax = Math.max(energyMax, gasMax, waterMax);
   const limit = Math.ceil(overallMax / 1000) * 1000;
   return limit > 0 ? limit : 5000;
 });
@@ -89,7 +90,7 @@ const handleExportPdf = async () => {
         <!-- Panel Izquierdo: Resumen de Consumo -->
         <aside class="consumption-summary">
           <!-- Energía -->
-          <div class="kpi-card">
+          <div v-if="reportsStore.hasElectricityLinked" class="kpi-card">
             <div class="kpi-card__header">
               <div class="kpi-card__icon-box kpi-card__icon-box--orange">
                 <font-awesome-icon icon="bolt" />
@@ -109,10 +110,10 @@ const handleExportPdf = async () => {
           </div>
 
           <!-- Gas -->
-          <div class="kpi-card">
+          <div v-if="reportsStore.hasGasLinked" class="kpi-card">
             <div class="kpi-card__header">
               <div class="kpi-card__icon-box kpi-card__icon-box--orange">
-                <font-awesome-icon icon="droplet" />
+                <font-awesome-icon icon="fire" />
               </div>
               <span :class="['trend-badge', `trend-badge--${reportsStore.consumption.gas.trendVariant}`]">
                 {{ reportsStore.consumption.gas.trend }}
@@ -123,6 +124,26 @@ const handleExportPdf = async () => {
               <div class="kpi-card__value-row">
                 <span class="kpi-card__value">{{ reportsStore.consumption.gas.value }}</span>
                 <span class="kpi-card__unit">{{ reportsStore.consumption.gas.unit }}</span>
+              </div>
+              <span class="kpi-card__subtitle">Current Billing Period</span>
+            </div>
+          </div>
+
+          <!-- Agua -->
+          <div v-if="reportsStore.hasWaterLinked" class="kpi-card">
+            <div class="kpi-card__header">
+              <div class="kpi-card__icon-box kpi-card__icon-box--blue">
+                <font-awesome-icon icon="droplet" />
+              </div>
+              <span :class="['trend-badge', `trend-badge--${reportsStore.consumption.water.trendVariant}`]">
+                {{ reportsStore.consumption.water.trend }}
+              </span>
+            </div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__label">WATER CONSUMPTION</span>
+              <div class="kpi-card__value-row">
+                <span class="kpi-card__value">{{ reportsStore.consumption.water.value }}</span>
+                <span class="kpi-card__unit">{{ reportsStore.consumption.water.unit }}</span>
               </div>
               <span class="kpi-card__subtitle">Current Billing Period</span>
             </div>
@@ -159,13 +180,17 @@ const handleExportPdf = async () => {
             <h2 class="chart-header__title">Comparative Consumption Analytics</h2>
             
             <div class="chart-header__legend">
-              <div class="legend-item">
+              <div v-if="reportsStore.hasGasLinked" class="legend-item">
                 <span class="dot dot--orange"></span>
                 <span>Gas (m³)</span>
               </div>
-              <div class="legend-item">
+              <div v-if="reportsStore.hasElectricityLinked" class="legend-item">
                 <span class="dot dot--blue"></span>
                 <span>Energy (kWh)</span>
+              </div>
+              <div v-if="reportsStore.hasWaterLinked" class="legend-item">
+                <span class="dot dot--cyan"></span>
+                <span>Water (m³)</span>
               </div>
             </div>
 
@@ -194,12 +219,19 @@ const handleExportPdf = async () => {
               <div v-for="(month, index) in reportsStore.chartData.months" :key="month" class="bar-group">
                 <div class="bar-pair">
                   <div 
+                    v-if="reportsStore.hasElectricityLinked"
                     class="bar bar--energy" 
                     :style="{ height: (reportsStore.chartData.energy[index] / maxChartValue) * 100 + '%' }"
                   ></div>
                   <div 
+                    v-if="reportsStore.hasGasLinked"
                     class="bar bar--gas" 
                     :style="{ height: (reportsStore.chartData.gas[index] / maxChartValue) * 100 + '%' }"
+                  ></div>
+                  <div 
+                    v-if="reportsStore.hasWaterLinked"
+                    class="bar bar--water" 
+                    :style="{ height: (reportsStore.chartData.water[index] / maxChartValue) * 100 + '%' }"
                   ></div>
                 </div>
                 <span class="month-label">{{ month }}</span>
@@ -224,8 +256,9 @@ const handleExportPdf = async () => {
                 <tr>
                   <th>PROPERTY NAME</th>
                   <th>LOCATION</th>
-                  <th>ENERGY (kWh)</th>
-                  <th>GAS (m³)</th>
+                  <th v-if="reportsStore.hasElectricityLinked">ENERGY (kWh)</th>
+                  <th v-if="reportsStore.hasGasLinked">GAS (m³)</th>
+                  <th v-if="reportsStore.hasWaterLinked">WATER (m³)</th>
                   <th>STATUS</th>
                 </tr>
               </thead>
@@ -233,8 +266,9 @@ const handleExportPdf = async () => {
                 <tr v-for="prop in reportsStore.propertyBreakdown" :key="prop.id">
                   <td class="cell--name">{{ prop.name }}</td>
                   <td class="cell--location">{{ prop.location }}</td>
-                  <td>{{ prop.energy }}</td>
-                  <td>{{ prop.gas }}</td>
+                  <td v-if="reportsStore.hasElectricityLinked">{{ prop.energy }}</td>
+                  <td v-if="reportsStore.hasGasLinked">{{ prop.gas }}</td>
+                  <td v-if="reportsStore.hasWaterLinked">{{ prop.water }}</td>
                   <td>
                     <span :class="['badge', getStatusBadgeClass(prop.status)]">
                       {{ getStatusText(prop.status) }}
@@ -354,6 +388,11 @@ const handleExportPdf = async () => {
 .kpi-card__icon-box--orange {
   background-color: rgba(244, 123, 32, 0.1);
   color: #f47b20;
+}
+
+.kpi-card__icon-box--blue {
+  background-color: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
 }
 
 .trend-badge {
@@ -486,6 +525,7 @@ const handleExportPdf = async () => {
 
 .dot--orange { background-color: #f47b20; }
 .dot--blue { background-color: #1a237e; }
+.dot--cyan { background-color: #06b6d4; }
 
 .chart-filter {
   background-color: #f7fafc;
@@ -555,7 +595,7 @@ const handleExportPdf = async () => {
   align-items: flex-end;
   gap: 4px;
   height: 100%;
-  width: 30px;
+  width: 45px;
 }
 
 .bar {
@@ -563,8 +603,9 @@ const handleExportPdf = async () => {
   transition: height 0.5s ease;
 }
 
-.bar--energy { width: 18px; background-color: #1a237e; }
+.bar--energy { width: 14px; background-color: #1a237e; }
 .bar--gas { width: 10px; background-color: #f47b20; }
+.bar--water { width: 10px; background-color: #06b6d4; }
 
 .month-label {
   font-size: 0.75rem;

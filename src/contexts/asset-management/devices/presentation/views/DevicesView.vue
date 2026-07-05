@@ -45,12 +45,14 @@ const toggleSearch = () => {
 
 const filteredDevices = computed(() => {
   let list = devicesStore.devices || [];
-  if (activeFilter.value === 'Online') {
-    list = list.filter(d => d.isOnline());
+  if (activeFilter.value === 'All Assets') {
+    list = list.filter(d => d.propertyId);
+  } else if (activeFilter.value === 'Online') {
+    list = list.filter(d => d.isOnline() && d.propertyId);
   } else if (activeFilter.value === 'Offline') {
-    list = list.filter(d => d.isOffline());
+    list = list.filter(d => d.isOffline() && d.propertyId);
   } else if (activeFilter.value === 'Needs Maintenance') {
-    list = list.filter(d => d.needsUpdate());
+    list = list.filter(d => d.needsUpdate() && d.propertyId);
   } else if (activeFilter.value === 'Unassigned') {
     list = list.filter(d => !d.propertyId);
   }

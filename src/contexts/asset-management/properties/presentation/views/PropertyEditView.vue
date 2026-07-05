@@ -112,16 +112,44 @@ const linkDevice = async () => {
   }
 };
 
-const unlinkDevice = async (deviceId) => {
-  if (!confirm('Are you sure you want to unlink this device?')) return;
-  try {
-    await apiClient.put(`/api/v1/devices/${deviceId}/assign`, {
-      propertyId: null
-    });
-    await loadDevices();
-  } catch (err) {
-    alert('Failed to unlink device.');
+const showConfirmModal = ref(false);
+const confirmModalTitle = ref('');
+const confirmModalMessage = ref('');
+const confirmModalAction = ref(null);
+const confirmModalIsDanger = ref(false);
+
+const openConfirmModal = (title, message, action, isDanger = false) => {
+  confirmModalTitle.value = title;
+  confirmModalMessage.value = message;
+  confirmModalAction.value = action;
+  confirmModalIsDanger.value = isDanger;
+  showConfirmModal.value = true;
+};
+
+const handleConfirmModalAction = async () => {
+  const action = confirmModalAction.value;
+  showConfirmModal.value = false;
+  if (action) {
+    await action();
   }
+};
+
+const unlinkDevice = async (deviceId) => {
+  openConfirmModal(
+    'Unlink Device',
+    `Are you sure you want to unlink the device ${deviceId}?`,
+    async () => {
+      try {
+        await apiClient.put(`/api/v1/devices/${deviceId}/assign`, {
+          propertyId: null
+        });
+        await loadDevices();
+      } catch (err) {
+        linkError.value = 'Failed to unlink device.';
+      }
+    },
+    true
+  );
 };
 
 const linkedDevices = computed(() => {
@@ -258,13 +286,19 @@ const handleAddTenant = async () => {
 };
 
 const handleDeleteTenant = async (tenantId) => {
-  if (!confirm(t('buildings.tenant.confirmDelete'))) return;
-  try {
-    await tenantRepo.delete(tenantId);
-    await loadTenants();
-  } catch {
-    tenantError.value = t('buildings.errors.deleteFailed');
-  }
+  openConfirmModal(
+    t('buildings.tenant.confirmDeleteTitle') || 'Delete Tenant',
+    t('buildings.tenant.confirmDelete') || 'Are you sure you want to delete this tenant?',
+    async () => {
+      try {
+        await tenantRepo.delete(tenantId);
+        await loadTenants();
+      } catch {
+        tenantError.value = t('buildings.errors.deleteFailed') || 'Failed to delete tenant.';
+      }
+    },
+    true
+  );
 };
 </script>
 
@@ -635,6 +669,28 @@ const handleDeleteTenant = async (tenantId) => {
         </div>
       </transition>
 
+
+      <!-- Custom Confirm Modal -->
+      <div v-if="showConfirmModal" class="modal-overlay" @click.self="showConfirmModal = false">
+        <div class="modal-card" :class="{ 'modal-card--danger': confirmModalIsDanger }">
+          <header class="modal-card__header" :class="{ 'modal-card__header--danger': confirmModalIsDanger }">
+            <h3>{{ confirmModalTitle }}</h3>
+            <button class="close-btn" @click="showConfirmModal = false">&times;</button>
+          </header>
+          <div class="modal-card__body">
+            <p>{{ confirmModalMessage }}</p>
+          </div>
+          <footer class="modal-card__footer">
+            <button class="button--text" @click="showConfirmModal = false">Cancel</button>
+            <button 
+              :class="confirmModalIsDanger ? 'button--solid-danger' : 'button--solid-orange'" 
+              @click="handleConfirmModalAction"
+            >
+              Confirm
+            </button>
+          </footer>
+        </div>
+      </div>
 
     </template>
   </div>

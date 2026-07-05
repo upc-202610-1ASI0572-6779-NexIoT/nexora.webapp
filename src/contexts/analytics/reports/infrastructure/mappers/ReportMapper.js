@@ -5,6 +5,7 @@ export class ReportMapper {
     return new ConsumptionReport({
       energy: raw.energy,
       gas: raw.gas,
+      water: raw.water,
       projectedCosts: {
         value: typeof raw.projectedCosts.value === 'string' ? parseFloat(raw.projectedCosts.value.replace(',', '')) : raw.projectedCosts.value,
         budgetLimit: typeof raw.projectedCosts.budgetLimit === 'string' ? parseFloat(raw.projectedCosts.budgetLimit.replace(',', '')) : raw.projectedCosts.budgetLimit,
@@ -20,6 +21,7 @@ export class ReportMapper {
       location: raw.location,
       energy: raw.energy,
       gas: raw.gas,
+      water: raw.water,
       status: raw.status
     });
   }

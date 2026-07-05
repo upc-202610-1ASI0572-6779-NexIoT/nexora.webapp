@@ -8,6 +8,9 @@ export class ReportRepositoryImpl extends IReportRepository {
       params: { months }
     });
     return {
+      hasElectricityLinked: data.hasElectricityLinked,
+      hasGasLinked: data.hasGasLinked,
+      hasWaterLinked: data.hasWaterLinked,
       consumption: ReportMapper.toConsumptionDomain(data.consumption),
       chartData: data.chartData,
       propertyBreakdown: data.propertyBreakdown.map(ReportMapper.toPropertyBreakdownDomain)

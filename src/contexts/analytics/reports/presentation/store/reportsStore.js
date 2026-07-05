@@ -8,10 +8,14 @@ const getConsumptionReportUseCase = new GetConsumptionReportUseCase(reportReposi
 export const useReportsStore = defineStore('reports', {
   state: () => ({
     consumption: null,
+    hasElectricityLinked: false,
+    hasGasLinked: false,
+    hasWaterLinked: false,
     chartData: {
       months: [],
       energy: [],
-      gas: []
+      gas: [],
+      water: []
     },
     propertyBreakdown: [],
     selectedMonths: 6,
@@ -26,6 +30,9 @@ export const useReportsStore = defineStore('reports', {
       try {
         const data = await getConsumptionReportUseCase.execute(this.selectedMonths);
         this.consumption = data.consumption;
+        this.hasElectricityLinked = data.hasElectricityLinked;
+        this.hasGasLinked = data.hasGasLinked;
+        this.hasWaterLinked = data.hasWaterLinked;
         this.chartData = data.chartData;
         this.propertyBreakdown = data.propertyBreakdown;
       } finally {

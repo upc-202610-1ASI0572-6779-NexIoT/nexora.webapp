@@ -23,7 +23,7 @@
     </div>
     
     <div class="alerts-footer">
-      Monitoring 1,240 data points in real time
+      Monitoring {{ dashboardStore.stats ? dashboardStore.stats.kpis.devicesOnline : 0 }} of {{ dashboardStore.stats ? dashboardStore.stats.kpis.totalDevices : 0 }} active devices in real time
     </div>
   </div>
 </template>
@@ -38,6 +38,20 @@ const alerts = computed(() => {
   if (dashboardStore.stats && dashboardStore.stats.alerts && dashboardStore.stats.alerts.length > 0) {
     return dashboardStore.stats.alerts;
   }
+  
+  if (dashboardStore.stats && dashboardStore.stats.kpis && dashboardStore.stats.kpis.totalDevices === 0) {
+    return [
+      {
+        type: 'info',
+        typeLabel: 'SYSTEM',
+        title: 'No Devices Connected',
+        desc: 'Please register and link devices to start monitoring.',
+        time: 'Setup',
+        icon: 'circle-info'
+      }
+    ];
+  }
+
   return [
     {
       type: 'resolved',

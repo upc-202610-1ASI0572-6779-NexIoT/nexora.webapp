@@ -28,6 +28,14 @@ const gridValues = computed(() => {
   return vals;
 });
 
+const barWidth = computed(() => {
+  const count = reportsStore.chartData.months ? reportsStore.chartData.months.length : 0;
+  if (count <= 1) return '55px';
+  if (count <= 3) return '35px';
+  if (count <= 6) return '20px';
+  return '10px';
+});
+
 const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'optimal': return 'badge--success';
@@ -222,17 +230,17 @@ const handleExportPdf = async () => {
                   <div 
                     v-if="reportsStore.hasElectricityLinked"
                     class="bar bar--energy" 
-                    :style="{ height: (reportsStore.chartData.energy[index] / maxChartValue) * 100 + '%' }"
+                    :style="{ height: (reportsStore.chartData.energy[index] / maxChartValue) * 100 + '%', width: barWidth }"
                   ></div>
                   <div 
                     v-if="reportsStore.hasGasLinked"
                     class="bar bar--gas" 
-                    :style="{ height: (reportsStore.chartData.gas[index] / maxChartValue) * 100 + '%' }"
+                    :style="{ height: (reportsStore.chartData.gas[index] / maxChartValue) * 100 + '%', width: barWidth }"
                   ></div>
                   <div 
                     v-if="reportsStore.hasWaterLinked"
                     class="bar bar--water" 
-                    :style="{ height: (reportsStore.chartData.water[index] / maxChartValue) * 100 + '%' }"
+                    :style="{ height: (reportsStore.chartData.water[index] / maxChartValue) * 100 + '%', width: barWidth }"
                   ></div>
                 </div>
                 <span class="month-label">{{ month }}</span>

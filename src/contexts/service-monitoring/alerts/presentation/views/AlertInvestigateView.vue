@@ -413,7 +413,7 @@ const assignTechnician = async () => {
 const resolveTicket = async () => {
   isActionLoading.value = true;
   try {
-    const res = await apiClient.put(`/api/v1/alerts/${props.alertId}/status`);
+    const res = await apiClient.put(`/api/v1/alerts/${props.alertId}/tickets/resolve`);
     if (res.data) {
       ticket.value = res.data;
     }

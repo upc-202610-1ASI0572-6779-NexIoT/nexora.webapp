@@ -287,7 +287,7 @@ async function handleSave() {
     };
 
     if (props.card && props.card.id) {
-      await repository.updatePaymentMethod(cardData);
+      await repository.updatePaymentMethod({ ...cardData, id: props.card.id });
     } else {
       const response = await repository.createPaymentMethod(cardData);
       localStorage.setItem('savedCard', JSON.stringify(response));

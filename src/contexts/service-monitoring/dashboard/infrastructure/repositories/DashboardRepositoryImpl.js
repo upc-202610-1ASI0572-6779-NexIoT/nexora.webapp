@@ -4,7 +4,7 @@ import { IDashboardRepository } from '../../../domain/repositories/IDashboardRep
 export class DashboardRepositoryImpl extends IDashboardRepository {
   async #fetchTelemetry(deviceId) {
     try {
-      const res = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${deviceId}`);
+      const res = await apiClient.get(`/api/v1/telemetry/latest?deviceId=${deviceId}`);
       return res.data || null;
     } catch {
       return null;
@@ -22,7 +22,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
   async #fetchPropertiesStats() {
     try {
-      const res = await apiClient.get('/api/v1/properties/stats');
+      const res = await apiClient.get('/api/v1/properties/summary');
       return res.data?.total ?? null;
     } catch {
       return null;

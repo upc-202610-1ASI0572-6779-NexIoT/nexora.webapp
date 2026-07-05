@@ -6,9 +6,10 @@ import { IAuthRepository } from '../../../domain/repositories/IAuthRepository';
 export class AuthRepositoryImpl extends IAuthRepository {
   async login(email, password) {
     try {
-      const { data } = await apiClient.post('/api/v1/auth/login/web', {
+      const { data } = await apiClient.post('/api/v1/auth/login', {
         email,
         password,
+        platform: 'web'
       });
 
       return {
@@ -87,7 +88,7 @@ export class AuthRepositoryImpl extends IAuthRepository {
   async changePassword(email, currentPassword, newPassword) {
     // email parameter is accepted for compatibility with use-cases but not used by the API
     try {
-      const { data } = await apiClient.post('/api/v1/auth/change-password', {
+      const { data } = await apiClient.put('/api/v1/settings/security/passwords', {
         currentPassword,
         newPassword,
       });

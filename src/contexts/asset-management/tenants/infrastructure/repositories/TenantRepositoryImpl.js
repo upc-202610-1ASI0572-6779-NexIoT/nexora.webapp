@@ -13,7 +13,7 @@ export class TenantRepositoryImpl extends ITenantRepository {
   }
 
   async getByProperty(propertyId) {
-    const { data } = await apiClient.get(`/api/v1/properties/${propertyId}/tenants`);
+    const { data } = await apiClient.get(`/api/v1/tenants?propertyId=${propertyId}`);
     return data;
   }
 

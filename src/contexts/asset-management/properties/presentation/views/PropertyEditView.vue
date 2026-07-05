@@ -432,6 +432,15 @@ const handleDeleteTenant = async (tenantId) => {
             </header>
 
             <div class="form-card__body">
+              <!-- Instructions Banner for Linking -->
+              <div class="tenant-instructions" v-if="property">
+                <font-awesome-icon icon="circle-info" class="tenant-instructions__icon" />
+                <div class="tenant-instructions__text">
+                  <strong>Vincular Inquilino con App Móvil</strong>
+                  <p>Indícale al inquilino que se registre en la App Móvil usando el código de propiedad <code class="code-highlight">{{ propertyCode }}</code> y el número de teléfono registrado abajo.</p>
+                </div>
+              </div>
+
               <div v-if="tenantsLoading" class="loading-mini">
                 <div class="loading-spinner-mini"></div>
                 <span>{{ t('buildings.loading') }}</span>
@@ -747,6 +756,48 @@ const handleDeleteTenant = async (tenantId) => {
 
 .button-icon {
   margin-right: 6px;
+}
+
+/* Tenant Instructions Banner */
+.tenant-instructions {
+  display: flex;
+  gap: 12px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: #1e3a8a;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.tenant-instructions__icon {
+  font-size: 1.1rem;
+  color: #3b82f6;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.tenant-instructions__text strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.tenant-instructions__text p {
+  margin: 0;
+}
+
+.code-highlight {
+  background-color: #dbeafe;
+  color: #1e40af;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 /* Grid Layout */

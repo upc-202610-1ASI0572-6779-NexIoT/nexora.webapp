@@ -2,7 +2,7 @@
   <div class="alerts-container">
     <div class="alerts-header">
       <h3>Recent Alerts</h3>
-      <span class="view-all">VIEW ALL</span>
+      <router-link to="/alerts" class="view-all" style="text-decoration: none;">VIEW ALL</router-link>
     </div>
     
     <div class="alerts-list">
@@ -104,7 +104,7 @@ const alerts = computed(() => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  max-height: 380px;
+  max-height: 480px;
   overflow-y: auto;
 }
 

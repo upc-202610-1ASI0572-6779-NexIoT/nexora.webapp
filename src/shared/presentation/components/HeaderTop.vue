@@ -19,7 +19,7 @@
     </div>
 
     <div class="header-actions">
-      <div v-if="!globalBreadcrumbs && route.name !== 'profile'" class="notification-container">
+      <div v-if="route.name !== 'profile'" class="notification-container">
         <button class="icon-btn notification-btn" @click="toggleNotifications">
           <font-awesome-icon icon="bell" />
           <span v-if="notificationCount > 0" class="notification-dot"></span>

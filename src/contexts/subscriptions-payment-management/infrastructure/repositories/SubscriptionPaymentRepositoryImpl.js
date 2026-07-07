@@ -36,16 +36,11 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async activateSubscription(planId, cardData = null) {
+  async activateSubscription(planId, paymentMethodId = null) {
     try {
       const payload = { subscriptionPlanId: planId };
-      if (cardData) {
-        payload.brand = cardData.brand;
-        payload.fullNumber = cardData.fullNumber;
-        payload.expiryMonth = cardData.expiryMonth;
-        payload.expiryYear = cardData.expiryYear;
-        payload.holderName = cardData.holderName;
-        payload.cvv = cardData.cvv;
+      if (paymentMethodId) {
+        payload.paymentMethodId = paymentMethodId;
       }
       const { data } = await apiClient.post('/api/v1/subscriptions', payload);
       return {
@@ -89,9 +84,12 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async createPaymentMethod(data) {
+  async createPaymentMethod(paymentMethodId, holderName) {
     try {
-      const { data: response } = await apiClient.post('/api/v1/subscriptions/payment-methods', data);
+      const { data: response } = await apiClient.post('/api/v1/subscriptions/payment-methods', {
+        paymentMethodId,
+        holderName
+      });
       return response;
     } catch (err) {
       const status = err.response?.status;
@@ -109,9 +107,12 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async updatePaymentMethod(data) {
+  async updatePaymentMethod(paymentMethodId, holderName) {
     try {
-      const { data: response } = await apiClient.put('/api/v1/subscriptions/payment-method', data);
+      const { data: response } = await apiClient.put('/api/v1/subscriptions/payment-method', {
+        paymentMethodId,
+        holderName
+      });
       return response;
     } catch (err) {
       const status = err.response?.status;
@@ -132,9 +133,9 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
     }
   }
 
-  async cancelSubscription() {
+  async cancelSubscription(subscriptionId) {
     try {
-      const { data } = await apiClient.put('/api/v1/subscriptions/status');
+      const { data } = await apiClient.post(`/api/v1/subscriptions/${subscriptionId}/cancel`);
       return data;
     } catch (err) {
       const status = err.response?.status;
@@ -142,7 +143,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
       const message = typeof body === 'string' ? body : body?.message || '';
 
       if (status === 400) {
-        throw { code: 'VALIDATION_ERROR', message: message || message || 'Cannot cancel subscription.' };
+        throw { code: 'VALIDATION_ERROR', message: message || 'Cannot cancel subscription.' };
       }
 
       throw {

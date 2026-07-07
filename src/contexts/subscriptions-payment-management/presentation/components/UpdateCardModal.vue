@@ -8,34 +8,37 @@
       <div class="modal-body">
         <div class="card-preview-area">
           <div class="credit-card-box">
-            <div class="credit-card" :class="{ 'flipped': flipped }">
+            <div class="credit-card">
               <div class="credit-card__front">
                 <div class="credit-card__chip">
                   <div class="chip-inner"></div>
                 </div>
                 <div class="credit-card__brand">
-                  <svg v-if="previewBrand === 'visa'" viewBox="0 0 100 30" class="card-brand-svg">
+                  <svg v-if="stripeBrand === 'visa'" viewBox="0 0 100 30" class="card-brand-svg">
                     <path fill="#ffffff" d="M45.5 23.4h-7.1l4.4-20.4h7.1l-4.4 20.4zm-16-13.1l-.7 3.6c2.1.6 4.5 1.6 5.7 3.2l-5-6.8zm15.7-7.3c-2.8-1.1-5.7-1.7-8.5-1.7-7.9 0-13.5 4.1-13.5 10 0 4.4 4 6.8 7 8.3 3.1 1.5 4.2 2.5 4.2 3.9 0 2.2-2.5 3.2-4.8 3.2-3.2 0-4.9-.5-7.5-1.6l-1-.5-.8 4.6c2.9 1.3 6 1.9 9.1 1.9 8.5 0 14-4 14.1-10.2 0-3.4-2.1-6-6.7-8.1-2.8-1.4-4.5-2.4-4.5-3.8 0-1.3 1.4-2.6 4.5-2.6 2.6-.1 4.5.5 5.9 1.1l.7.3.8-4.4zm27.4 20.4h5.5l-4.8-20.4h-5.1c-2.4 0-4.4 1.4-5.1 3.5l-9 16.9h6.3l1.3-3.4h7.7l.7 3.4h2.5zm-6.7-8.7l3.2-8.3 1.8 8.3h-5zm-47.5-11.7l-5.5 13.9-.7-3.6c-1.2-4.1-5-8.5-9.2-10.7l6 15.5h6.2l9.3-20.4h-6.1z"/>
                   </svg>
-                  <svg v-else-if="previewBrand === 'mastercard'" viewBox="0 0 50 30" class="card-brand-svg">
+                  <svg v-else-if="stripeBrand === 'mastercard'" viewBox="0 0 50 30" class="card-brand-svg">
                     <circle cx="18" cy="15" r="11" fill="#eb001b"/>
                     <circle cx="32" cy="15" r="11" fill="#f79e1b"/>
                   </svg>
-                  <svg v-else-if="previewBrand === 'amex'" viewBox="0 0 50 30" class="card-brand-svg">
+                  <svg v-else-if="stripeBrand === 'amex'" viewBox="0 0 50 30" class="card-brand-svg">
                     <rect width="50" height="30" rx="4" fill="#007bc1"/>
                     <text x="25" y="19" fill="#ffffff" font-family="Arial, sans-serif" font-size="9px" font-weight="bold" text-anchor="middle" letter-spacing="1">AMEX</text>
                   </svg>
-                  <span v-else class="card-brand-text">{{ previewBrandLabel }}</span>
+                  <span v-else class="card-brand-text">{{ stripeBrandLabel }}</span>
                 </div>
-                <div class="credit-card__number">{{ previewNumber }}</div>
+                <div class="credit-card__number">
+                  <span v-if="cardComplete && cardLast4">**** **** **** {{ cardLast4 }}</span>
+                  <span v-else>&#183;&#183;&#183;&#183;  &#183;&#183;&#183;&#183;  &#183;&#183;&#183;&#183;  &#183;&#183;&#183;&#183;</span>
+                </div>
                 <div class="credit-card__footer">
                   <div class="credit-card__holder">
                     <span class="card-label">{{ t('subscription.payment.cardHolder') }}</span>
-                    <span class="card-value">{{ previewHolder || t('subscription.payment.placeholderName') }}</span>
+                    <span class="card-value">{{ cardHolderName || t('subscription.payment.placeholderName') }}</span>
                   </div>
                   <div class="credit-card__expiry">
                     <span class="card-label">{{ t('subscription.payment.expires') }}</span>
-                    <span class="card-value">{{ previewExpiry }}</span>
+                    <span class="card-value">{{ cardExpiry }}</span>
                   </div>
                 </div>
                 <div class="credit-card__network">
@@ -44,55 +47,32 @@
                   </svg>
                 </div>
               </div>
-              <div class="credit-card__back">
-                <div class="credit-card__magstripe"></div>
-                <div class="credit-card__signature">
-                  <div class="credit-card__cvv">{{ form.cvv || '***' }}</div>
-                </div>
-                <div class="credit-card__back-text">{{ t('subscription.payment.securityCode') }}</div>
-              </div>
             </div>
           </div>
         </div>
 
         <form class="edit-form" @submit.prevent="handleSave">
+          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
           <div class="form-group" :class="{ 'form-group--error': errors.holder }">
             <label for="ed-holder">{{ t('subscription.payment.edit.holder') }}</label>
-            <input id="ed-holder" type="text" v-model="form.holderName" maxlength="100" required @input="errors.holder = ''" />
+            <input id="ed-holder" type="text" v-model="cardHolderName" maxlength="100" required @input="errors.holder = ''" />
             <span v-if="errors.holder" class="form-error">{{ errors.holder }}</span>
           </div>
 
-          <div class="form-group" :class="{ 'form-group--error': errors.number }">
-            <label for="ed-number">{{ t('subscription.payment.edit.number') }}</label>
-            <input id="ed-number" type="text" v-model="form.fullNumber" maxlength="19" placeholder="4111 1111 1111 1111" required @input="errors.number = ''" />
-            <span v-if="errors.number" class="form-error">{{ errors.number }}</span>
+          <div class="form-group stripe-element-group">
+            <label>{{ t('subscription.payment.edit.number') }}</label>
+            <div ref="cardNumberRef" class="stripe-element"></div>
+            <span v-if="errors.card" class="form-error">{{ errors.card }}</span>
           </div>
 
           <div class="form-row">
-            <div class="form-group" :class="{ 'form-group--error': errors.month }">
-              <label for="ed-month">{{ t('subscription.payment.edit.expiryMonth') }}</label>
-              <input id="ed-month" type="text" v-model="form.expiryMonth" maxlength="2" placeholder="MM" required @input="errors.month = ''" />
-              <span v-if="errors.month" class="form-error">{{ errors.month }}</span>
+            <div class="form-group stripe-element-group">
+              <label>{{ t('subscription.payment.edit.expiryMonth') }}</label>
+              <div ref="cardExpiryRef" class="stripe-element"></div>
             </div>
-            <div class="form-group" :class="{ 'form-group--error': errors.year }">
-              <label for="ed-year">{{ t('subscription.payment.edit.expiryYear') }}</label>
-              <input id="ed-year" type="text" v-model="form.expiryYear" maxlength="2" placeholder="YY" required @input="errors.year = ''" />
-              <span v-if="errors.year" class="form-error">{{ errors.year }}</span>
-            </div>
-            <div class="form-group" :class="{ 'form-group--error': errors.cvv }">
-              <label for="ed-cvv">{{ t('subscription.payment.edit.cvv') }}</label>
-              <input
-                id="ed-cvv"
-                type="text"
-                v-model="form.cvv"
-                maxlength="4"
-                placeholder="***"
-                required
-                @focus="flipped = true"
-                @blur="flipped = false"
-                @input="errors.cvv = ''"
-              />
-              <span v-if="errors.cvv" class="form-error">{{ errors.cvv }}</span>
+            <div class="form-group stripe-element-group">
+              <label>{{ t('subscription.payment.edit.cvv') }}</label>
+              <div ref="cardCvcRef" class="stripe-element"></div>
             </div>
           </div>
 
@@ -111,9 +91,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from '@/shared/presentation/i18n';
 import { SubscriptionPaymentRepositoryImpl } from '../../infrastructure/repositories/SubscriptionPaymentRepositoryImpl';
+import { loadStripe } from '@stripe/stripe-js';
 
 const props = defineProps({
   card: {
@@ -122,179 +103,135 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close', 'saved']);
+const emit = defineEmits(['close', 'saved', 'error']);
 const { t } = useI18n();
 
 const repository = new SubscriptionPaymentRepositoryImpl();
 const saving = ref(false);
-const flipped = ref(false);
+const errorMessage = ref('');
+const cardHolderName = ref(props.card?.holderName || '');
+const cardLast4 = ref('');
+const cardExpiry = ref('MM/YY');
+const stripeBrand = ref('unknown');
+const stripeBrandLabel = ref('CARD');
+const cardComplete = ref(false);
 
-const form = reactive({
-  brand: props.card?.brand || 'Visa',
-  holderName: props.card?.holderName || '',
-  fullNumber: props.card?.fullNumber || '',
-  expiryMonth: props.card?.expiryMonth || '',
-  expiryYear: props.card?.expiryYear || '',
-  cvv: props.card?.cvv || ''
-});
+const cardNumberRef = ref(null);
+const cardExpiryRef = ref(null);
+const cardCvcRef = ref(null);
+
+let stripe = null;
+let elements = null;
+let cardNumberElement = null;
+let cardExpiryElement = null;
+let cardCvcElement = null;
 
 const errors = reactive({
   holder: '',
-  number: '',
-  month: '',
-  year: '',
-  cvv: ''
+  card: ''
 });
 
-function isValidLuhn(num) {
-  const digits = (num || '').replace(/\D/g, '');
-  if (!digits) return false;
-  let sum = 0;
-  let alternate = false;
-  for (let i = digits.length - 1; i >= 0; i--) {
-    let digit = parseInt(digits[i], 10);
-    if (alternate) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
+onMounted(async () => {
+  const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  if (!stripeKey) {
+    errorMessage.value = 'Stripe publishable key is not configured. Set VITE_STRIPE_PUBLISHABLE_KEY in .env';
+    return;
+  }
+
+  stripe = await loadStripe(stripeKey);
+  if (!stripe) {
+    errorMessage.value = 'Failed to load Stripe. Please check your publishable key.';
+    return;
+  }
+
+  elements = stripe.elements();
+
+  const elementStyles = {
+    base: {
+      fontSize: '15px',
+      color: '#1a1a2e',
+      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+      '::placeholder': { color: '#a0a3b1' }
+    },
+    invalid: { color: '#dc3545' }
+  };
+
+  cardNumberElement = elements.create('cardNumber', { style: elementStyles, placeholder: '4111 1111 1111 1111' });
+  cardExpiryElement = elements.create('cardExpiry', { style: elementStyles });
+  cardCvcElement = elements.create('cardCvc', { style: elementStyles });
+
+  cardNumberElement.mount(cardNumberRef.value);
+  cardExpiryElement.mount(cardExpiryRef.value);
+  cardCvcElement.mount(cardCvcRef.value);
+
+  cardNumberElement.on('change', (event) => {
+    cardComplete.value = event.complete;
+    if (event.complete) {
+      cardLast4.value = event.value?.last4 || '';
+    } else {
+      cardLast4.value = '';
     }
-    sum += digit;
-    alternate = !alternate;
-  }
-  return sum % 10 === 0;
-}
+    if (event.brand && event.brand !== 'unknown') {
+      stripeBrand.value = event.brand;
+      stripeBrandLabel.value = event.brand.charAt(0).toUpperCase() + event.brand.slice(1);
+    } else {
+      stripeBrand.value = 'unknown';
+      stripeBrandLabel.value = 'CARD';
+    }
+    errors.card = event.error ? event.error.message : '';
+  });
 
-const detectCardBrand = (num) => {
-  const cleanNumber = (num || '').replace(/\s+/g, '');
-  if (!cleanNumber) return 'unknown';
-  if (/^4/.test(cleanNumber)) return 'visa';
-  if (/^(5[1-5]|2[2-7])/.test(cleanNumber)) return 'mastercard';
-  if (/^3[47]/.test(cleanNumber)) return 'amex';
-  if (/^(6011|622|64|65)/.test(cleanNumber)) return 'discover';
-  if (/^36/.test(cleanNumber)) return 'diners';
-  if (/^35/.test(cleanNumber)) return 'jcb';
-  return 'unknown';
-};
-
-watch(() => form.fullNumber, (newVal) => {
-  const formatted = (newVal || '').replace(/\D/g, '').match(/.{1,4}/g);
-  if (formatted) {
-    form.fullNumber = formatted.join(' ');
-  }
-  const brand = detectCardBrand(newVal);
-  if (brand !== 'unknown') {
-    form.brand = brand.charAt(0).toUpperCase() + brand.slice(1);
-  }
+  cardExpiryElement.on('change', (event) => {
+    cardExpiry.value = event.complete ? `${event.value.month}/${String(event.value.year).slice(-2)}` : 'MM/YY';
+  });
 });
 
-watch(() => form.expiryMonth, (newVal) => {
-  if (newVal && newVal.length > 2) {
-    form.expiryMonth = newVal.slice(0, 2);
-  }
+onBeforeUnmount(() => {
+  if (cardNumberElement) cardNumberElement.destroy();
+  if (cardExpiryElement) cardExpiryElement.destroy();
+  if (cardCvcElement) cardCvcElement.destroy();
 });
 
-watch(() => form.expiryYear, (newVal) => {
-  if (newVal && newVal.length > 2) {
-    form.expiryYear = newVal.slice(0, 2);
-  }
-});
-
-const previewBrand = computed(() => (form.brand || '').toLowerCase());
-const previewBrandLabel = computed(() => form.brand || 'CARD');
-
-const previewNumber = computed(() => {
-  const n = form.fullNumber || '';
-  if (!n) return '\u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7  \u00B7\u00B7\u00B7\u00B7';
-  return n;
-});
-
-const previewHolder = computed(() => form.holderName || '');
-
-const previewExpiry = computed(() => {
-  if (form.expiryMonth && form.expiryYear) {
-    return `${form.expiryMonth}/${form.expiryYear}`;
-  }
-  return 'MM/YY';
-});
-
-function validate() {
-  let valid = true;
+async function handleSave() {
   errors.holder = '';
-  errors.number = '';
-  errors.month = '';
-  errors.year = '';
-  errors.cvv = '';
+  errors.card = '';
+  errorMessage.value = '';
 
-  if (!form.holderName.trim()) {
+  let valid = true;
+  if (!cardHolderName.value.trim()) {
     errors.holder = t('subscription.validation.holderRequired');
     valid = false;
   }
 
-  const cleanNumber = form.fullNumber.replace(/\s+/g, '');
-  if (!cleanNumber) {
-    errors.number = t('subscription.validation.numberRequired');
-    valid = false;
-  } else if (!isValidLuhn(cleanNumber)) {
-    errors.number = t('subscription.validation.numberInvalid');
-    valid = false;
+  if (!valid) return;
+
+  if (!stripe || !cardNumberElement) {
+    errors.card = 'Payment form not ready. Please try again.';
+    return;
   }
-
-  const month = parseInt(form.expiryMonth, 10);
-  if (!form.expiryMonth) {
-    errors.month = t('subscription.validation.monthRequired');
-    valid = false;
-  } else if (isNaN(month) || month < 1 || month > 12) {
-    errors.month = t('subscription.validation.monthInvalid');
-    valid = false;
-  }
-
-  const fullYear = form.expiryYear ? (form.expiryYear.length === 2 ? 2000 + parseInt(form.expiryYear, 10) : parseInt(form.expiryYear, 10)) : null;
-  if (!form.expiryYear) {
-    errors.year = t('subscription.validation.yearRequired');
-    valid = false;
-  } else if (fullYear) {
-    const now = new Date();
-    const expiryDate = new Date(fullYear, month);
-    if (expiryDate < now) {
-      errors.year = t('subscription.validation.yearExpired');
-      valid = false;
-    }
-  }
-
-  if (!form.cvv) {
-    errors.cvv = t('subscription.validation.cvvRequired');
-    valid = false;
-  } else if (!/^\d{3,4}$/.test(form.cvv)) {
-    errors.cvv = t('subscription.validation.cvvInvalid');
-    valid = false;
-  }
-
-  return valid;
-}
-
-async function handleSave() {
-  if (!validate()) return;
 
   saving.value = true;
   try {
-    const cardData = {
-      brand: form.brand,
-      fullNumber: form.fullNumber.replace(/\s+/g, ''),
-      expiryMonth: form.expiryMonth,
-      expiryYear: form.expiryYear,
-      holderName: form.holderName,
-      cvv: form.cvv
-    };
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardNumberElement,
+      billing_details: { name: cardHolderName.value.trim() }
+    });
+
+    if (error) {
+      errors.card = error.message;
+      saving.value = false;
+      return;
+    }
 
     if (props.card && props.card.id) {
-      await repository.updatePaymentMethod({ ...cardData, id: props.card.id });
+      await repository.updatePaymentMethod(paymentMethod.id, cardHolderName.value.trim());
     } else {
-      const response = await repository.createPaymentMethod(cardData);
-      localStorage.setItem('savedCard', JSON.stringify(response));
+      await repository.createPaymentMethod(paymentMethod.id, cardHolderName.value.trim());
     }
     emit('saved');
   } catch (err) {
-    const msg = err.message || 'Error';
-    alert((t('subscription.payment.edit.errorSaving') || 'Error saving card: ') + msg);
+    errorMessage.value = (t('subscription.payment.edit.errorSaving') || 'Error saving card: ') + (err.message || '');
   } finally {
     saving.value = false;
   }
@@ -360,13 +297,6 @@ async function handleSave() {
   height: 100%;
   border-radius: 14px;
   position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-  transform-origin: center center;
-}
-
-.credit-card.flipped {
-  transform: rotateY(180deg);
 }
 
 .credit-card__front,
@@ -411,14 +341,6 @@ async function handleSave() {
   height: 160px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.03);
-}
-
-.credit-card__back {
-  background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
-  transform: rotateY(180deg);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 .credit-card__chip {
@@ -507,39 +429,45 @@ async function handleSave() {
   height: auto;
 }
 
-.credit-card__magstripe {
-  width: 100%;
-  height: 38px;
-  background: #111111;
-  margin-top: 24px;
+.stripe-element-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.credit-card__signature {
-  margin: 14px 20px 0;
-  height: 30px;
-  background: #f2f2f2;
-  border-radius: 4px;
+.stripe-element-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stripe-element {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  transition: border-color 0.2s;
+  min-height: 41px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 10px;
 }
 
-.credit-card__cvv {
-  font-family: 'Courier New', monospace;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #111111;
-  font-style: italic;
+.stripe-element:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
 }
 
-.credit-card__back-text {
-  text-align: right;
-  margin: 4px 20px 0;
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
 }
 
 .edit-form {

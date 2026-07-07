@@ -109,14 +109,10 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async updatePaymentMethod(paymentMethodId, holderName) {
     try {
-<<<<<<< HEAD
-      const { data: response } = await apiClient.put(`/api/v1/subscriptions/payment-methods/${data.id}`, data);
-=======
       const { data: response } = await apiClient.put('/api/v1/subscriptions/payment-method', {
         paymentMethodId,
         holderName
       });
->>>>>>> 0d688ca (feat(subscription): update repository for Stripe paymentMethodId and cancel endpoint)
       return response;
     } catch (err) {
       const status = err.response?.status;
@@ -139,11 +135,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async cancelSubscription(subscriptionId) {
     try {
-<<<<<<< HEAD
-      const { data } = await apiClient.post('/api/v1/subscriptions/current/cancel');
-=======
       const { data } = await apiClient.post(`/api/v1/subscriptions/${subscriptionId}/cancel`);
->>>>>>> 0d688ca (feat(subscription): update repository for Stripe paymentMethodId and cancel endpoint)
       return data;
     } catch (err) {
       const status = err.response?.status;

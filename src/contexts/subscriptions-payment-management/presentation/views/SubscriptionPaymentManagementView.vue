@@ -43,7 +43,11 @@
 
     <template v-else-if="subscriptionPaymentStore.subscription">
       <section class="summary-grid" :aria-label="t('subscription.overview.ariaLabel')">
-        <CurrentPlanCard :plan="currentPlan" />
+        <CurrentPlanCard
+          :plan="currentPlan"
+          :subscriptionId="subscriptionPaymentStore.subscription?.id"
+          @cancel="onCancelSubscription"
+        />
       </section>
 
       <section class="sub-info-cards">
@@ -212,6 +216,10 @@ const statusClass = computed(() => {
 
 const goToPlans = () => {
   router.push({ name: 'plan-selection' });
+};
+
+const onCancelSubscription = () => {
+  subscriptionPaymentStore.fetchOverview();
 };
 
 onMounted(async () => {

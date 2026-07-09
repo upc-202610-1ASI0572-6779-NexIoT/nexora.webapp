@@ -144,6 +144,7 @@
   "common": {
     "yes": "Yes",
     "no": "No",
+    "back": "Back",
     "comingSoon": "Coming Soon"
   },
   "subscription": {
@@ -250,8 +251,16 @@
     "actions": {
       "viewPlans": "View Plans",
       "changePlan": "Change Plan",
+      "cancel": "Cancel Subscription",
       "updateCard": "Update Card",
       "addPaymentMethod": "Add Payment Card"
+    },
+    "cancel": {
+      "title": "Cancel Subscription",
+      "description": "Are you sure you want to cancel your subscription?",
+      "warning": "Your subscription will remain active until the end of the current billing period.",
+      "confirm": "Yes, Cancel",
+      "error": "Unable to cancel subscription."
     },
     "currentPlan": {
       "title": "Current Plan"
@@ -267,7 +276,9 @@
         "activating": "Activating subscription..."
       },
       "loadPlanFailed": "Failed to load plan details.",
-      "activateFailed": "An error occurred while activating subscription. Please try again."
+      "activateFailed": "An error occurred while activating subscription. Please try again.",
+      "requiresAction": "Your card requires authentication. Please complete the 3D Secure challenge.",
+      "authenticationFailed": "Card authentication failed. Please try a different card."
     },
     "empty": {
       "title": "No active subscription",

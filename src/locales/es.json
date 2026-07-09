@@ -142,8 +142,9 @@
   }
   ,
   "common": {
-    "yes": "Si",
+    "yes": "Sí",
     "no": "No",
+    "back": "Volver",
     "comingSoon": "Próximamente"
   },
   "subscription": {
@@ -250,8 +251,16 @@
     "actions": {
       "viewPlans": "Ver Planes",
       "changePlan": "Cambiar Plan",
+      "cancel": "Cancelar Suscripción",
       "updateCard": "Actualizar tarjeta",
       "addPaymentMethod": "Agregar tarjeta de pago"
+    },
+    "cancel": {
+      "title": "Cancelar Suscripción",
+      "description": "¿Estás seguro de que deseas cancelar tu suscripción?",
+      "warning": "Tu suscripción permanecerá activa hasta el final del período de facturación actual.",
+      "confirm": "Sí, Cancelar",
+      "error": "No se pudo cancelar la suscripción."
     },
     "currentPlan": {
       "title": "Plan actual"
@@ -267,7 +276,9 @@
         "activating": "Activando suscripción..."
       },
       "loadPlanFailed": "No se pudieron cargar los detalles del plan.",
-      "activateFailed": "Ocurrió un error al activar la suscripción. Intenta nuevamente."
+      "activateFailed": "Ocurrió un error al activar la suscripción. Intenta nuevamente.",
+      "requiresAction": "Tu tarjeta requiere autenticación. Completa el desafío 3D Secure.",
+      "authenticationFailed": "La autenticación de la tarjeta falló. Intenta con otra tarjeta."
     },
     "empty": {
       "title": "Sin suscripción activa",

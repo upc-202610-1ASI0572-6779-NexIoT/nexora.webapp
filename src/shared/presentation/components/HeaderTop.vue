@@ -20,7 +20,7 @@
 
     <div class="header-actions">
       <button class="icon-btn help-btn" :title="t('helpCenter.helpButton')" @click="$emit('open-help-center')">
-        <font-awesome-icon icon="circle-question" />
+        <font-awesome-icon icon="headset" />
       </button>
 
       <div v-if="route.name !== 'profile'" class="notification-container">

@@ -473,5 +473,37 @@
        "assetPreview": "ASSET PREVIEW",
        "buildingAlt": "Building Preview"
      }
+   },
+   "helpCenter": {
+     "title": "Help & Support",
+     "close": "Close",
+     "helpButton": "Help & Support",
+     "contact": {
+       "title": "Immediate Contact",
+       "whatsapp": "WhatsApp",
+       "whatsappDesc": "Chat with our support team",
+       "email": "Email",
+       "emailDesc": "Write to soporte@nexora.com",
+       "phone": "Phone",
+       "phoneDesc": "Call us +51 999 999 999"
+     },
+     "faq": {
+       "title": "Frequently Asked Questions",
+       "cardTitle": "Looking for answers?",
+       "cardDesc": "Find quick answers to the most common questions about Nexora.",
+       "action": "View FAQ"
+     },
+     "report": {
+       "title": "Report a Problem",
+       "subject": "Subject",
+       "subjectPlaceholder": "Brief summary of the issue",
+       "description": "Description",
+       "descriptionPlaceholder": "Describe the problem in detail...",
+       "submit": "Send Report",
+       "sending": "Sending...",
+       "successTitle": "Report sent successfully!",
+       "successDesc": "Thank you for letting us know. Our support team will review your report and get back to you as soon as possible.",
+       "newReport": "Submit another report"
+     }
    }
 }

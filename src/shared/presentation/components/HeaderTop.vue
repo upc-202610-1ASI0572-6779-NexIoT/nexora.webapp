@@ -19,6 +19,10 @@
     </div>
 
     <div class="header-actions">
+      <button class="icon-btn help-btn" :title="t('helpCenter.helpButton')" @click="$emit('open-help-center')">
+        <font-awesome-icon icon="circle-question" />
+      </button>
+
       <div v-if="route.name !== 'profile'" class="notification-container">
         <button class="icon-btn notification-btn" @click="toggleNotifications">
           <font-awesome-icon icon="bell" />
@@ -97,7 +101,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '@/shared/presentation/i18n';
 import apiClient from '@/shared/infrastructure/http/apiClient';
 
-defineEmits(['toggle-sidebar']);
+defineEmits(['toggle-sidebar', 'open-help-center']);
 
 const route = useRoute();
 const router = useRouter();
@@ -327,6 +331,10 @@ const handleAction = () => {
 }
 
 .icon-btn:hover { opacity: 0.8; }
+
+.help-btn {
+  font-size: 1.3rem;
+}
 
 .notification-btn { position: relative; }
 

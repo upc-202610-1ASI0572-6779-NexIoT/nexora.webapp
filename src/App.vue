@@ -29,6 +29,7 @@
           @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
           @open-profile="isProfileOpen = true"
           @edit-profile="requestEditProfile"
+          @open-help-center="isHelpCenterOpen = true"
         />
         <div class="main-content-scrollable">
           <router-view />
@@ -46,6 +47,8 @@
     </div>
 
     <SettingsModal :is-open="isSettingsOpen" @close="isSettingsOpen = false" />
+
+    <HelpCenter :is-open="isHelpCenterOpen" @close="isHelpCenterOpen = false" />
   </div>
 </template>
 
@@ -58,6 +61,7 @@ import HeaderTop from './shared/presentation/components/HeaderTop.vue';
 import SettingsModal from './contexts/iam/settings/presentation/components/SettingsModal.vue';
 import ProfileModal from "@/contexts/iam/profile/presentation/components/ProfileModal.vue";
 import EditProfileModal from "@/contexts/iam/profile/presentation/components/EditProfileModal.vue";
+import HelpCenter from '@/features/help-center/presentation/components/HelpCenter.vue';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -65,6 +69,7 @@ const isSidebarOpen = ref(false);
 const isSettingsOpen = ref(false);
 const isProfileOpen = ref(false);
 const isEditProfileOpen = ref(false);
+const isHelpCenterOpen = ref(false);
 
 const editProfileRequested = ref(false);
 provide('editProfileRequested', editProfileRequested);

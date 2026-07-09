@@ -99,7 +99,7 @@ const routes = [
         name: 'subscription',
         meta: {
             requiresAuth: true,
-            requiresSubscription: true,
+            requiresSubscription: false,
             title: 'Subscription Management',
             searchPlaceholder: 'Search invoices, plans, or payment methods...',
             actionLabel: 'Add Payment Method',

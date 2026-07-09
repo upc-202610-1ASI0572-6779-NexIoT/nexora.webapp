@@ -110,11 +110,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../../auth/presentation/store/authStore';
 import { SubscriptionPaymentRepositoryImpl } from '@/contexts/subscriptions-payment-management/infrastructure/repositories/SubscriptionPaymentRepositoryImpl.js';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const repo = new SubscriptionPaymentRepositoryImpl();
 
@@ -127,8 +128,10 @@ onMounted(async () => {
     const currentSub = await repo.getCurrentSubscription();
     if (currentSub && currentSub.status === 'Active') {
       authStore.setSubscription(currentSub);
-      router.replace({ name: 'subscription' });
-      return;
+      if (route.query.change !== 'true') {
+        router.replace({ name: 'subscription' });
+        return;
+      }
     }
   } catch {
     // Not logged in or no subscription — proceed to show plans
@@ -152,7 +155,11 @@ function formatPrice(price) {
 
 const selectPlan = (planId) => {
   if (authStore.hasActiveSubscription) {
-    router.push({ name: 'subscription' });
+    if (authStore.subscriptionPlanId === planId) {
+      router.push({ name: 'subscription' });
+      return;
+    }
+    router.push({ name: 'checkout', query: { planId, change: 'true' } });
     return;
   }
   router.push({ name: 'checkout', query: { planId } });

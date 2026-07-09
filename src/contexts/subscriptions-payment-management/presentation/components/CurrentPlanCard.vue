@@ -25,30 +25,34 @@
         <font-awesome-icon icon="arrow-up" />
         <span>{{ t('subscription.actions.changePlan') }}</span>
       </button>
-      <button class="secondary-action danger-action" type="button" @click="cancelConfirm = true">
+      <button v-if="!cancelAtPeriodEnd" class="secondary-action danger-action" type="button" @click="cancelConfirm = true">
         <font-awesome-icon icon="xmark" />
         <span>{{ t('subscription.actions.cancel') }}</span>
       </button>
-    </div>
-
-    <div v-if="cancelConfirm" class="cancel-modal-overlay" @click.self="cancelConfirm = false">
-      <div class="cancel-modal">
-        <h3>{{ t('subscription.cancel.title') }}</h3>
-        <p>{{ t('subscription.cancel.description') }}</p>
-        <p class="cancel-warning">{{ t('subscription.cancel.warning') }}</p>
-        <div v-if="cancelError" class="cancel-error">{{ cancelError }}</div>
-        <div class="cancel-modal-actions">
-          <button class="btn btn--secondary" type="button" @click="cancelConfirm = false" :disabled="isCancelling">
-            {{ t('common.back') }}
-          </button>
-          <button class="btn btn--danger" type="button" @click="handleCancel" :disabled="isCancelling">
-            <span v-if="isCancelling" class="spinner"></span>
-            <span v-else>{{ t('subscription.cancel.confirm') }}</span>
-          </button>
-        </div>
+      <div v-else class="cancellation-pending-badge">
+        <font-awesome-icon icon="circle-info" />
+        <span>Cancelación pendiente</span>
       </div>
     </div>
   </article>
+
+  <div v-if="cancelConfirm" class="cancel-modal-overlay" @click.self="cancelConfirm = false">
+    <div class="cancel-modal">
+      <h3>{{ t('subscription.cancel.title') }}</h3>
+      <p>{{ t('subscription.cancel.description') }}</p>
+      <p class="cancel-warning">{{ t('subscription.cancel.warning') }}</p>
+      <div v-if="cancelError" class="cancel-error">{{ cancelError }}</div>
+      <div class="cancel-modal-actions">
+        <button class="btn btn--secondary" type="button" @click="cancelConfirm = false" :disabled="isCancelling">
+          {{ t('common.back') }}
+        </button>
+        <button class="btn btn--danger" type="button" @click="handleCancel" :disabled="isCancelling">
+          <span v-if="isCancelling" class="spinner"></span>
+          <span v-else>{{ t('subscription.cancel.confirm') }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -65,6 +69,10 @@ const props = defineProps({
   subscriptionId: {
     type: [Number, String],
     default: null
+  },
+  cancelAtPeriodEnd: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -79,7 +87,7 @@ const isCancelling = ref(false);
 const cancelError = ref('');
 
 const goToPlanSelection = () => {
-  router.push({ name: 'plan-selection' });
+  router.push({ name: 'plan-selection', query: { change: 'true' } });
 };
 
 const handleCancel = async () => {
@@ -321,6 +329,20 @@ const handleCancel = async () => {
   border-radius: 50%;
   border-top-color: #ffffff;
   animation: spin 0.6s linear infinite;
+}
+
+.cancellation-pending-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  color: #d97706;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 @keyframes spin {

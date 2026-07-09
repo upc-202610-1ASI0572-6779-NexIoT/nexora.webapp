@@ -46,6 +46,7 @@
         <CurrentPlanCard
           :plan="currentPlan"
           :subscriptionId="subscriptionPaymentStore.subscription?.id"
+          :cancelAtPeriodEnd="subscriptionPaymentStore.subscription?.cancelAtPeriodEnd"
           @cancel="onCancelSubscription"
         />
       </section>

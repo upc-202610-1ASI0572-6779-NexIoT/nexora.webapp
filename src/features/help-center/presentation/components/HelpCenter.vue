@@ -5,7 +5,7 @@
         <div class="help-modal">
           <header class="help-modal__header">
             <div class="help-modal__header-left">
-              <font-awesome-icon icon="circle-question" class="help-modal__header-icon" />
+              <font-awesome-icon icon="headset" class="help-modal__header-icon" />
               <h2>{{ t('helpCenter.title') }}</h2>
             </div>
             <button
@@ -59,7 +59,7 @@
                   class="contact-card"
                 >
                   <div class="contact-card__icon contact-card__icon--phone">
-                    <font-awesome-icon icon="phone" />
+                    <font-awesome-icon icon="phone-alt" />
                   </div>
                   <div class="contact-card__info">
                     <span class="contact-card__title">{{ t('helpCenter.contact.phone') }}</span>

@@ -16,10 +16,10 @@ import {
   faHouse, faSignal, faChartColumn, faCreditCard, faAddressCard, faDownload,
   faArrowUp, faSliders, faMapPin, faNetworkWired, faTrash, faQrcode, faCircleQuestion, faShield,
   faUsers, faHeartPulse, faArrowTrendUp, faPenToSquare, faArrowUpRightFromSquare, faCheck,
-  faArrowLeft, faArrowRight, faRightFromBracket, faSpinner
+  faArrowLeft, faArrowRight, faRightFromBracket, faSpinner, faEnvelope, faFlag
 } from '@fortawesome/free-solid-svg-icons'
 
-import { faCcVisa, faCcMastercard, faCcAmex } from '@fortawesome/free-brands-svg-icons'
+import { faCcVisa, faCcMastercard, faCcAmex, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 
 library.add(
   faCircleCheck, faTriangleExclamation, faEye, faEyeSlash, faArrowRightToBracket, faMicrochip, 
@@ -32,7 +32,8 @@ library.add(
   faArrowUp, faSliders, faMapPin, faNetworkWired, faTrash, faQrcode, faCircleQuestion, faShield,
   faUsers, faHeartPulse, faArrowTrendUp, faPenToSquare, faArrowUpRightFromSquare, faCheck,
   faArrowLeft, faArrowRight, faRightFromBracket,
-  faCcVisa, faCcMastercard, faCcAmex, faSpinner
+  faCcVisa, faCcMastercard, faCcAmex, faSpinner,
+  faEnvelope, faFlag, faWhatsapp
 )
 
 import './style.css'

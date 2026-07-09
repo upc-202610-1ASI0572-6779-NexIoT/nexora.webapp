@@ -42,12 +42,7 @@
           variant="warning"
           icon="clipboard-list"
         />
-        <KpiCard
-          title="MEAN RESPONSE TIME"
-          value="1m 35s"
-          subtitle="Realtime updates active"
-          variant="positive"
-        />
+
         <KpiCard
           title="SENSORS ONLINE"
           :value="sensorsOnlineValue"
@@ -100,7 +95,7 @@ const exportIncidentReport = async () => {
   if (isExporting.value) return;
   isExporting.value = true;
   try {
-    const response = await apiClient.get('/api/v1/alerts/reports?format=pdf', {
+    const response = await apiClient.get('/api/v1/reports/alerts/export?format=pdf', {
       responseType: 'blob'
     });
 
@@ -150,31 +145,35 @@ const fetchAlerts = async (page = 1) => {
 
         let sensorType = 'System';
         let ppmLevel = '-';
+        const val = alert.reading !== undefined && alert.reading !== null ? alert.reading : 0;
+
         if (alert.type.includes('Gas')) {
           sensorType = 'Gas Level';
-          ppmLevel = 'Gas Anomaly';
+          ppmLevel = `${val.toFixed(1)} Ppm`;
         } else if (alert.type.includes('Overcurrent')) {
           sensorType = 'Current Overload';
-          ppmLevel = 'Overload';
+          ppmLevel = `${val.toFixed(2)} kWh`;
         } else if (alert.type.includes('Voltage')) {
           sensorType = 'Voltage Monitor';
-          ppmLevel = 'Instability';
+          ppmLevel = val === 0 ? 'Instable' : '220V Ok';
         } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {
           sensorType = 'Security Motion';
           ppmLevel = 'Intrusion';
+        } else if (alert.type.includes('Water') || alert.type.includes('Leak')) {
+          sensorType = 'Water Flow';
+          ppmLevel = `${val.toFixed(1)} Lpm`;
         }
 
         const date = new Date(alert.timestamp);
-        const timestampFormatted = date.toISOString().replace('T', ' ').substring(0, 19);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const timestampFormatted = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-        let propertyId = 'Unassigned';
-        if (alert.deviceId.includes('voltage-safety-unit')) {
-          propertyId = 'Apt-402 (Elec)';
-        } else if (alert.deviceId.includes('gas-safety-unit')) {
-          propertyId = 'Apt-402 (Gas)';
-        } else {
-          propertyId = alert.deviceId;
-        }
+        let propertyId = alert.deviceId;
 
         return {
           id: alert.id,
@@ -230,7 +229,7 @@ const fetchDevicesStatus = async () => {
   try {
     const res = await apiClient.get('/api/v1/devices');
     if (res.data) {
-      const devices = res.data;
+      const devices = res.data.filter(d => d.propertyId !== null);
       const total = devices.length;
       const onlineCount = devices.filter(d => d.connectionStatus && d.connectionStatus.toLowerCase() === 'online').length;
       const percentage = total > 0 ? (onlineCount / total) * 100 : 0;
@@ -337,7 +336,7 @@ onMounted(() => {
 /* KPI Grid */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
 }

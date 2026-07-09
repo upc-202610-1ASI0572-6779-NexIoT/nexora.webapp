@@ -122,10 +122,10 @@
               <thead>
                 <tr>
                   <th>Timestamp</th>
-                  <th v-if="alert.type.includes('Gas')">Gas Level (PPM)</th>
+                  <th v-if="hasGas()">Gas Level (PPM)</th>
                   <th v-else>Electricity (Amps)</th>
                   <th>Grid Voltage Status</th>
-                  <th>Presence / Motion</th>
+                  <!-- <th>Presence / Motion</th> -->
                   <th>Water Flow (Lpm)</th>
                 </tr>
               </thead>
@@ -133,24 +133,35 @@
                 <tr v-for="(log, idx) in alert.recentTelemetry" :key="idx" :class="{ 'warning-row': isLogAnomaly(log) }">
                   <td class="timestamp-cell">{{ formatDateTime(log.timestamp) }}</td>
                   <td class="font-bold value-cell" :class="{ 'text-danger': log.electricityReading > 20.0 || log.gasReading > 100 }">
-                    <span v-if="alert.type.includes('Gas')">{{ log.gasReading }} PPM</span>
-                    <span v-else>{{ log.electricityReading.toFixed(2) }} A</span>
+                    <span v-if="hasGas()">
+                      {{ formatDecimal(log.gasReading) }} PPM
+                      <font-awesome-icon v-if="log.gasReading > 100" icon="triangle-exclamation" class="text-danger ml-5" />
+                    </span>
+                    <span v-else>
+                      <span v-if="hasElectricity()">{{ formatDecimal(log.electricityReading) }} A</span>
+                      <span v-else class="text-muted">Not Available</span>
+                    </span>
                   </td>
                   <td>
-                    <span class="grid-badge" :class="log.voltageOk ? 'ok' : 'error'">
+                    <span v-if="hasVoltage()" class="grid-badge" :class="log.voltageOk ? 'ok' : 'error'">
                       <font-awesome-icon :icon="log.voltageOk ? 'circle-check' : 'xmark'" />
                       {{ log.voltageOk ? 'Stable' : 'Unstable' }}
                     </span>
+                    <span v-else class="text-muted">Not Available</span>
                   </td>
-                  <td>
+                  <!-- Commented out Presence / Motion column cell -->
+                  <!-- <td>
                     <span class="presence-badge" :class="{ active: log.presenceReading }">
                       {{ log.presenceReading ? 'Motion' : 'None' }}
                     </span>
+                  </td> -->
+                  <td>
+                    <span v-if="hasWater()">{{ formatDecimal(log.waterReading) }} Lpm</span>
+                    <span v-else class="text-muted">Not Available</span>
                   </td>
-                  <td>{{ log.waterReading.toFixed(1) }} Lpm</td>
                 </tr>
                 <tr v-if="!alert.recentTelemetry || alert.recentTelemetry.length === 0">
-                  <td colspan="5" class="empty-table">No telemetry records registered for this safety unit.</td>
+                  <td colspan="4" class="empty-table">No telemetry records registered for this safety unit.</td>
                 </tr>
               </tbody>
             </table>
@@ -375,6 +386,27 @@ const isLogAnomaly = (log) => {
   return false;
 };
 
+const formatDecimal = (val, maxDecimals = 3) => {
+  if (val === null || val === undefined) return '';
+  return parseFloat(Number(val).toFixed(maxDecimals));
+};
+
+const hasGas = () => {
+  return alert.value?.deviceId?.toLowerCase().includes('gas');
+};
+
+const hasElectricity = () => {
+  return alert.value?.deviceId?.toLowerCase().includes('voltage') || alert.value?.deviceId?.toLowerCase().includes('electricity');
+};
+
+const hasVoltage = () => {
+  return alert.value?.deviceId?.toLowerCase().includes('voltage') || alert.value?.deviceId?.toLowerCase().includes('gateway');
+};
+
+const hasWater = () => {
+  return alert.value?.deviceId?.toLowerCase().includes('water') || alert.value?.deviceId?.toLowerCase().includes('san-isidro');
+};
+
 const createTicket = async () => {
   isActionLoading.value = true;
   try {
@@ -413,7 +445,7 @@ const assignTechnician = async () => {
 const resolveTicket = async () => {
   isActionLoading.value = true;
   try {
-    const res = await apiClient.put(`/api/v1/alerts/${props.alertId}/status`);
+    const res = await apiClient.put(`/api/v1/alerts/${props.alertId}/tickets/resolve`);
     if (res.data) {
       ticket.value = res.data;
     }
@@ -899,6 +931,16 @@ onMounted(() => {
   padding: 2rem;
   color: #64748b;
   font-style: italic;
+}
+
+.text-muted {
+  color: #94a3b8;
+  font-weight: normal;
+  font-size: 0.8rem;
+}
+
+.ml-5 {
+  margin-left: 5px;
 }
 
 /* Incident Management (Right Column) */

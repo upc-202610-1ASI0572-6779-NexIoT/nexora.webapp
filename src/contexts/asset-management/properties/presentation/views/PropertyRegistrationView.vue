@@ -310,14 +310,13 @@ async function handleCreateProperty() {
 </template>
 
 <style scoped>
-/* Contenedor Raíz: Ocupa exactamente el alto de la pantalla */
+/* Contenedor Raíz: Fluye naturalmente con el scroll general */
 .reg-view {
-  height: 100vh;
+  min-height: calc(100vh - 72px - 50px);
   width: 100%;
   background-color: #ffffff;
   color: #0f172a;
   font-family: var(--font-general, sans-serif);
-  overflow: hidden;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -338,17 +337,15 @@ async function handleCreateProperty() {
   margin: 0;
 }
 
-/* Layout Flex Vertical centrado */
+/* Layout Flex Vertical */
 .reg-container {
   max-width: 1100px;
   width: 100%;
-  height: 100%;
   margin: 0 auto;
   padding: 16px 40px 24px 40px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  overflow: hidden; /* Controla que nada desborde de forma desordenada */
 }
 
 /* Cabecera Fija */
@@ -372,11 +369,8 @@ async function handleCreateProperty() {
   color: #64748b;
 }
 
-/* Zona de Contenido Scrolleable Limpia */
+/* Zona de Contenido */
 .reg-scrollable-body {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 12px;
   margin-bottom: 16px;
 }
 

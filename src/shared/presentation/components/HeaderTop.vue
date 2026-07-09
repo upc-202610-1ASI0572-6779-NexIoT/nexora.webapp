@@ -4,7 +4,7 @@
       <button class="menu-btn" @click="$emit('toggle-sidebar')">
         <font-awesome-icon icon="bars" />
       </button>
-      
+
       <!-- Render Breadcrumbs in Header if present -->
       <nav v-if="globalBreadcrumbs" class="header-breadcrumbs">
         <span v-for="(item, index) in globalBreadcrumbs" :key="index" class="breadcrumbs__item">
@@ -19,7 +19,7 @@
     </div>
 
     <div class="header-actions">
-      <div v-if="!globalBreadcrumbs && route.name !== 'profile'" class="notification-container">
+      <div v-if="route.name !== 'profile'" class="notification-container">
         <button class="icon-btn notification-btn" @click="toggleNotifications">
           <font-awesome-icon icon="bell" />
           <span v-if="notificationCount > 0" class="notification-dot"></span>
@@ -35,16 +35,15 @@
             <div v-if="latestAlerts.length === 0" class="empty-alerts">
               No recent alerts
             </div>
-            <div 
-              v-else 
-              v-for="alert in latestAlerts" 
-              :key="alert.id" 
-              class="alert-item"
-              :class="alert.severity.toLowerCase()"
-              @click="navigateToAlert(alert.id)"
+            <div
+                v-else
+                v-for="alert in latestAlerts"
+                :key="alert.id"
+                class="alert-item"
+                @click="navigateToAlert(alert.id)"
             >
               <div class="alert-item-header">
-                <span class="alert-badge" :class="alert.severity.toLowerCase()">
+                <span :class="['alert-badge', alert.severity.toLowerCase()]">
                   {{ alert.severity }}
                 </span>
                 <span class="alert-time">{{ alert.timestamp }}</span>
@@ -59,42 +58,70 @@
         </div>
       </div>
 
-      <button v-if="!globalBreadcrumbs && route.name !== 'property-registration' && route.name !== 'subscription' && route.name !== 'profile' && route.name !== 'alerts'" class="register-btn" @click="handleAction">
+      <button v-if="!globalBreadcrumbs && headerConfig.actionRoute && route.name !== 'dashboard' && route.name !== 'property-registration' && route.name !== 'subscription' && route.name !== 'profile' && route.name !== 'alerts' && route.name !== 'reports'" class="register-btn" @click="handleAction">
         <font-awesome-icon :icon="actionIcon" class="register-icon" />
         <span class="register-text">{{ actionLabel }}</span>
       </button>
-
-      <!-- User Profile Avatar -->
-      <button class="user-profile-btn" @click="$emit('open-profile')">
-        <div class="user-avatar-small">
-          <span v-if="user" class="user-initials-small">{{ user.initials }}</span>
-          <font-awesome-icon v-else icon="user" />
-        </div>
-      </button>
     </div>
   </header>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container">
+    <TransitionGroup name="toast">
+      <div
+          v-for="toast in activeToasts"
+          :key="toast.id"
+          class="alert-toast"
+          :class="toast.severity.toLowerCase()"
+          @click="navigateToAlert(toast.id)"
+      >
+        <div class="toast-icon">
+          <font-awesome-icon :icon="toast.severity === 'Critical' ? 'triangle-exclamation' : 'circle-info'" />
+        </div>
+        <div class="toast-content">
+          <h4 class="toast-title">{{ toast.severity === 'Critical' ? '⚠️ CRITICAL ALERT!' : 'ℹ️ System Warning' }}</h4>
+          <p class="toast-message">{{ toast.type }} en {{ toast.propertyName || 'Property' }}</p>
+          <span class="toast-subtext">Device: {{ toast.deviceId }} - Click to investigate</span>
+        </div>
+        <button class="toast-close" @click.stop="removeToast(toast.id)">
+          <font-awesome-icon icon="times" />
+        </button>
+      </div>
+    </TransitionGroup>
+  </div>
 </template>
 
 <script setup>
 import { computed, inject, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from '@/shared/presentation/i18n';
-import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 import apiClient from '@/shared/infrastructure/http/apiClient';
 
-defineEmits(['toggle-sidebar', 'open-profile']);
+defineEmits(['toggle-sidebar']);
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const authStore = useAuthStore();
-
-const user = computed(() => authStore.user);
 const globalBreadcrumbs = inject('globalBreadcrumbs', null);
 
 const showNotifications = ref(false);
 const latestAlerts = ref([]);
 const notificationCount = ref(0);
+const activeToasts = ref([]);
+const lastAlertId = ref(null);
+
+const addToast = (alert) => {
+  // Prevent duplicate toasts for the same alert
+  if (activeToasts.value.some(t => t.id === alert.id)) return;
+  activeToasts.value.push(alert);
+  setTimeout(() => {
+    removeToast(alert.id);
+  }, 10000); // Auto-close toast in 10s
+};
+
+const removeToast = (id) => {
+  activeToasts.value = activeToasts.value.filter(t => t.id !== id);
+};
 
 const fetchLatestAlerts = async () => {
   try {
@@ -102,12 +129,32 @@ const fetchLatestAlerts = async () => {
       params: { page: 1, pageSize: 5 }
     });
     if (res.data) {
-      latestAlerts.value = res.data.map(alert => {
+      const alerts = res.data;
+
+      // If we already established a baseline last alert ID, check for new arrivals
+      if (lastAlertId.value !== null) {
+        const newAlerts = alerts.filter(a => a.id > lastAlertId.value);
+        newAlerts.forEach(a => {
+          addToast({
+            id: a.id,
+            type: a.type,
+            severity: a.severity,
+            deviceId: a.deviceId,
+            propertyName: a.propertyName
+          });
+        });
+      }
+
+      if (alerts.length > 0) {
+        lastAlertId.value = Math.max(...alerts.map(a => a.id));
+      }
+
+      latestAlerts.value = alerts.map(alert => {
         let status = 'WARNING';
         if (alert.severity === 'Critical') {
           status = 'CRITICAL';
         }
-        
+
         return {
           id: alert.id,
           type: alert.type,
@@ -120,7 +167,7 @@ const fetchLatestAlerts = async () => {
       notificationCount.value = latestAlerts.value.length;
     }
   } catch (e) {
-    console.error('Failed to fetch latest alerts for notifications', e);
+    console.error('Failed to fetch latest alerts', e);
   }
 };
 
@@ -143,21 +190,27 @@ const closeDropdown = (e) => {
   }
 };
 
+let alertPollInterval = null;
+
 onMounted(() => {
   fetchLatestAlerts();
   document.addEventListener('click', closeDropdown);
+  alertPollInterval = setInterval(fetchLatestAlerts, 5000);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', closeDropdown);
+  if (alertPollInterval) {
+    clearInterval(alertPollInterval);
+  }
 });
 
 const routeDefaults = {
   dashboard: {
     title: 'Dashboard',
-    searchPlaceholder: 'Search devices, alerts, or locations...',
     actionLabel: 'Register New Device',
-    actionIcon: 'plus'
+    actionIcon: 'plus',
+    actionRoute: '/devices/new'
   },
   buildings: {
     title: 'Properties Management',
@@ -167,26 +220,22 @@ const routeDefaults = {
   },
   devices: {
     title: 'Devices Management',
-    searchPlaceholder: 'Search devices, locations, or status...',
     actionLabel: 'Register New Device',
     actionIcon: 'plus',
     actionRoute: '/devices/new'
   },
   alerts: {
     title: 'Alerts Center',
-    searchPlaceholder: 'Search alerts, severity, or devices...',
     actionLabel: 'Create Alert Rule',
     actionIcon: 'bell'
   },
   reports: {
     title: 'Consumption Reports',
-    searchPlaceholder: 'Search data points, dates, or assets...',
     actionLabel: 'Export Data',
     actionIcon: 'file-pdf'
   },
   settings: {
     title: 'Settings',
-    searchPlaceholder: 'Search settings, roles, or integrations...',
     actionLabel: 'Save Settings',
     actionIcon: 'gear'
   }
@@ -196,10 +245,7 @@ const headerConfig = computed(() => {
   const name = route.name;
   const defaults = (name && routeDefaults[name]) || {};
   const meta = route.meta || {};
-  return {
-    ...defaults,
-    ...meta
-  };
+  return { ...defaults, ...meta };
 });
 
 const pageTitle = computed(() => {
@@ -209,8 +255,9 @@ const pageTitle = computed(() => {
   return headerConfig.value.title || 'Nexora';
 });
 
-const actionLabel = computed(() => headerConfig.value.actionLabel || 'New Item');
+const actionLabel = computed(() => headerConfig.value.actionLabel || '');
 const actionIcon = computed(() => headerConfig.value.actionIcon || 'plus');
+const actionRoute = computed(() => headerConfig.value.actionRoute || '');
 
 const handleAction = () => {
   const path = headerConfig.value.actionRoute;
@@ -260,45 +307,6 @@ const handleAction = () => {
   text-overflow: ellipsis;
 }
 
-.search-bar {
-  display: flex;
-  align-items: center;
-  background-color: #f8f9fc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 8px 16px;
-  flex: 1;
-  max-width: 400px;
-  margin-right: auto;
-  margin-left: 24px;
-  transition: border-color 0.2s;
-}
-
-.search-bar:focus-within {
-  border-color: #1a3673;
-  background-color: white;
-}
-
-.search-icon {
-  color: #7f8c8d;
-  margin-right: 12px;
-  font-size: 1rem;
-}
-
-.search-bar input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: var(--font-general, sans-serif);
-  color: #2c3e50;
-  width: 100%;
-  font-size: 0.95rem;
-}
-
-.search-bar input::placeholder {
-  color: #95a5a6;
-}
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -318,13 +326,9 @@ const handleAction = () => {
   justify-content: center;
 }
 
-.icon-btn:hover {
-  opacity: 0.8;
-}
+.icon-btn:hover { opacity: 0.8; }
 
-.notification-btn {
-  position: relative;
-}
+.notification-btn { position: relative; }
 
 .notification-dot {
   position: absolute;
@@ -338,7 +342,7 @@ const handleAction = () => {
 }
 
 .register-btn {
-  background-color: #e67e22; /* Primary orange */
+  background-color: #e67e22;
   color: white;
   border: none;
   border-radius: 4px;
@@ -353,59 +357,25 @@ const handleAction = () => {
   white-space: nowrap;
 }
 
-.register-btn:hover {
-  background-color: #d35400; /* Darker orange */
-}
+.register-btn:hover { background-color: #d35400; }
 
-.register-icon {
-  font-size: 1rem;
-}
+.register-icon { font-size: 1rem; }
 
-/* Responsiveness */
 @media (max-width: 1024px) {
-  .menu-btn {
-    display: block;
-  }
-
-  .dashboard-header {
-    padding: 12px 16px;
-  }
-
-  .page-title {
-    font-size: 1.25rem;
-  }
+  .menu-btn { display: block; }
+  .dashboard-header { padding: 12px 16px; }
+  .page-title { font-size: 1.25rem; }
 }
 
 @media (max-width: 768px) {
-  .search-bar {
-    display: none;
-  }
-
-  .header-left {
-    flex: 1;
-  }
-
-  .register-text {
-    display: none;
-  }
+  .register-text { display: none; }
 }
 
 @media (max-width: 480px) {
-  .page-title {
-    font-size: 1.1rem;
-  }
-
-  .register-btn {
-    padding: 8px 12px;
-  }
-
-  .dashboard-header {
-    gap: 12px;
-  }
-
-  .header-actions {
-    gap: 12px;
-  }
+  .page-title { font-size: 1.1rem; }
+  .register-btn { padding: 8px 12px; }
+  .dashboard-header { gap: 12px; }
+  .header-actions { gap: 12px; }
 }
 
 .header-breadcrumbs {
@@ -423,9 +393,7 @@ const handleAction = () => {
   transition: color 0.2s;
 }
 
-.breadcrumbs__link:hover {
-  color: #1a3673;
-}
+.breadcrumbs__link:hover { color: #1a3673; }
 
 .breadcrumbs__current {
   font-weight: 700;
@@ -437,36 +405,6 @@ const handleAction = () => {
   color: #cbd5e1;
 }
 
-.user-profile-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.user-avatar-small {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, #f97316, #e66700);
-  border: 1.5px solid #eaeaea;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  color: #ffffff;
-  overflow: hidden;
-}
-
-.user-initials-small {
-  font-weight: 700;
-}
-
-/* ─── Notifications Dropdown ─── */
 .notification-container {
   position: relative;
   display: flex;
@@ -529,13 +467,9 @@ const handleAction = () => {
   text-align: left;
 }
 
-.alert-item:hover {
-  background-color: #f8fafc;
-}
+.alert-item:hover { background-color: #f8fafc; }
 
-.alert-item:last-child {
-  border-bottom: none;
-}
+.alert-item:last-child { border-bottom: none; }
 
 .alert-item-header {
   display: flex;
@@ -595,5 +529,145 @@ const handleAction = () => {
 
 .dropdown-footer a:hover {
   text-decoration: underline;
+}
+
+/* Toast Notification Styles */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 380px;
+  width: calc(100% - 40px);
+}
+
+.alert-toast {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid;
+}
+
+.alert-toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+/* Critical Toast */
+.alert-toast.critical {
+  background-color: rgba(254, 242, 242, 0.95);
+  border-color: rgba(252, 165, 165, 0.5);
+  color: #991b1b;
+}
+
+.alert-toast.critical::before {
+  background-color: #ef4444;
+}
+
+.alert-toast.critical .toast-icon {
+  color: #ef4444;
+}
+
+/* Warning Toast */
+.alert-toast.warning {
+  background-color: rgba(255, 251, 235, 0.95);
+  border-color: rgba(253, 230, 138, 0.5);
+  color: #92400e;
+}
+
+.alert-toast.warning::before {
+  background-color: #f59e0b;
+}
+
+.alert-toast.warning .toast-icon {
+  color: #f59e0b;
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.toast-message {
+  margin: 0 0 4px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.toast-subtext {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-weight: 500;
+  display: block;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 1rem;
+  align-self: flex-start;
+  transition: opacity 0.2s;
+  margin-top: -2px;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+/* Toast Transitions */
+.toast-enter-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-leave-active {
+  transition: all 0.3s ease;
+  position: absolute;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(50px) scale(0.9);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.toast-move {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>

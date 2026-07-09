@@ -13,7 +13,7 @@
       />
       <PropertyKpiCard
           :title="t('buildings.kpis.avgHealthScore')"
-          value="—"
+          :value="avgHealthScore"
           icon="heart-pulse"
       />
     </div>
@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import PropertyKpiCard from '../components/PropertyKpiCard.vue';
 import InventoryTable from '../components/InventoryTable.vue';
 import { PropertyRepositoryImpl } from '../../infrastructure/repositories/PropertyRepositoryImpl';
@@ -42,11 +42,15 @@ const activeTenants = ref('—');
 
 const avgHealthScore = computed(() => {
   if (properties.value.length === 0) return '—';
-  const total = properties.value.reduce((acc, p) => acc + (p.healthScore ?? 75), 0);
-  return Math.round(total / properties.value.length) + '%';
+  const validScores = properties.value.filter(p => p.healthScore !== null && p.healthScore !== undefined);
+  if (validScores.length === 0) return '—';
+  const total = validScores.reduce((acc, p) => acc + p.healthScore, 0);
+  return Math.round(total / validScores.length) + '%';
 });
 
-onMounted(async () => {
+let pollInterval = null;
+
+const refreshData = async () => {
   try {
     properties.value = await propertyRepo.getAll();
     totalAssets.value = properties.value.length;
@@ -56,9 +60,22 @@ onMounted(async () => {
 
   try {
     const tenants = await tenantRepo.getAll();
-    activeTenants.value = tenants.length;
+    const propertyIds = new Set(properties.value.map(p => p.id));
+    const landlordTenants = tenants.filter(t => propertyIds.has(t.propertyId));
+    activeTenants.value = landlordTenants.length;
   } catch {
     activeTenants.value = '—';
+  }
+};
+
+onMounted(async () => {
+  await refreshData();
+  pollInterval = setInterval(refreshData, 5000);
+});
+
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval);
   }
 });
 </script>

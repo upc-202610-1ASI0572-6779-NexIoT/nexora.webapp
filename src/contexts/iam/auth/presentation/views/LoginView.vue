@@ -124,10 +124,9 @@ const fieldErrors = computed(() => {
   if (!error) return {};
 
   switch (error.code) {
-    case 'USER_NOT_FOUND':
-      return { email: error.message };
-    case 'INVALID_PASSWORD':
-      return { password: error.message };
+    case 'INVALID_CREDENTIALS':
+    case 'FORBIDDEN_ACCESS':
+      return {};
     default:
       return {};
   }
@@ -151,9 +150,9 @@ const handleClearErrors = () => {
 
 const handleLogin = async (credentials) => {
   try {
-    const data = await authStore.login(credentials);
+    await authStore.login(credentials);
 
-    const status = data.subscription?.status;
+    const status = authStore.subscription?.status;
 
     if (status && status.toLowerCase() === 'active') {
       router.push({ name: 'dashboard' });

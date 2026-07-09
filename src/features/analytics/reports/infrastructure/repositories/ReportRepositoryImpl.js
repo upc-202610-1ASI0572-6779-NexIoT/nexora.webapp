@@ -3,6 +3,7 @@ import { IReportRepository } from '../../../domain/repositories/IReportRepositor
 
 export class ReportRepositoryImpl extends IReportRepository {
   constructor() {
+    super();
     this.rawData = {
       consumption: {
         energy: { value: '4,820', unit: 'kWh', trend: '+12.5%', trendVariant: 'success' },

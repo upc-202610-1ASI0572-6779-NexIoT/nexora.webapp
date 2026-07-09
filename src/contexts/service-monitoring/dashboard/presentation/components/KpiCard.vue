@@ -54,6 +54,7 @@ const props = defineProps({
 
 const colorClass = computed(() => {
   if (props.colorType === 'danger') return 'text-danger';
+  if (props.colorType === 'warning') return 'text-warning';
   if (props.colorType === 'success') return 'text-success';
   if (props.colorType === 'primary') return 'text-primary';
   return 'text-default';
@@ -98,6 +99,7 @@ const colorClass = computed(() => {
   align-items: baseline;
   gap: 4px;
   margin-bottom: 4px;
+  min-width: 0;
 }
 
 .kpi-value {
@@ -105,6 +107,10 @@ const colorClass = computed(() => {
   font-weight: 700;
   font-family: var(--font-titles, sans-serif);
   line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .kpi-value-sub {
@@ -131,6 +137,7 @@ const colorClass = computed(() => {
 }
 
 .text-danger { color: #e74c3c; }
+.text-warning { color: #f39c12; }
 .text-success { color: #2ecc71; }
 .text-primary { color: #e67e22; } /* using orange for daily energy */
 .text-default { color: #2c3e50; } /* main text */

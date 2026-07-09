@@ -12,7 +12,9 @@ export const useDashboardStore = defineStore('dashboard', {
   }),
   actions: {
     async fetchStats() {
-      this.isLoading = true;
+      if (!this.stats) {
+        this.isLoading = true;
+      }
       try {
         this.stats = await getDashboardStatsUseCase.execute();
       } finally {

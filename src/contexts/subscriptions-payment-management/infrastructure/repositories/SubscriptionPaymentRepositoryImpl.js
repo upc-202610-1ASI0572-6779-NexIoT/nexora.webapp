@@ -4,7 +4,7 @@ import { ISubscriptionPaymentRepository } from '../../domain/repositories/ISubsc
 export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepository {
   async getPlans() {
     try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/plans');
+      const { data } = await apiClient.get('/api/v1/subscriptions/plans?target=landlord');
       return data;
     } catch (err) {
       const body = err.response?.data;

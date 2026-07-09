@@ -1453,6 +1453,19 @@ const handleDeleteTenant = async (tenantId) => {
     grid-template-columns: 1fr;
   }
 
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-card__actions {
+    justify-content: stretch;
+  }
+
+  .form-card__actions .button--solid-orange {
+    width: 100%;
+    min-width: 0;
+  }
+
   .entity-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1527,16 +1540,78 @@ const handleDeleteTenant = async (tenantId) => {
 }
 
 .tenant-form {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+  margin-top: 18px;
+  padding: 18px;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(26, 35, 126, 0.06);
 }
 
 .tenant-form__title {
-  margin: 0 0 12px 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #1a237e;
+  margin: 0 0 14px 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group--full {
+  grid-column: 1 / -1;
+}
+
+.input-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.input-field {
+  width: 100%;
+  border: 1px solid #d7e0ea;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #0f172a;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
+}
+
+.input-field:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
+  transform: translateY(-1px);
+}
+
+.form-card__actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.form-card__actions .button--solid-orange {
+  min-width: 180px;
+  border-radius: 999px;
+  padding-inline: 18px;
 }
 
 .loading-mini {
@@ -1558,9 +1633,17 @@ const handleDeleteTenant = async (tenantId) => {
 }
 
 .form-error {
-  color: #e53e3e;
-  font-size: 0.8rem;
-  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin: 14px 0 0;
+  line-height: 1.4;
 }
 
 /* Devices Panel Styles */

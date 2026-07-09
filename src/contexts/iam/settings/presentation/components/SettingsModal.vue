@@ -47,7 +47,7 @@
                     </div>
                   </div>
 
-                  <div class="setting-group">
+                  <!-- <div class="setting-group">
                     <label class="setting-group__label">{{ t('settings.notifications.label') }}</label>
                     <div class="notification-toggles">
                       <div class="toggle-row">
@@ -81,7 +81,7 @@
                         </label>
                       </div>
                     </div>
-                  </div>
+                  </div> -->
                 </section>
 
                 <section v-else-if="activeTab === 'account'" key="account" class="settings-section">

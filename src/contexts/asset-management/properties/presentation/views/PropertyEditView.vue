@@ -100,7 +100,7 @@ const linkDevice = async () => {
   linkingDevice.value = true;
   linkError.value = '';
   try {
-    await apiClient.put(`/api/v1/devices/${selectedDeviceToLink.value}/assign`, {
+    await apiClient.patch(`/api/v1/devices/${selectedDeviceToLink.value}`, {
       propertyId: Number(propertyId.value)
     });
     selectedDeviceToLink.value = '';
@@ -140,7 +140,7 @@ const unlinkDevice = async (deviceId) => {
     `Are you sure you want to unlink the device ${deviceId}?`,
     async () => {
       try {
-        await apiClient.put(`/api/v1/devices/${deviceId}/assign`, {
+        await apiClient.patch(`/api/v1/devices/${deviceId}`, {
           propertyId: null
         });
         await loadDevices();

@@ -26,7 +26,7 @@ onUnmounted(() => {
 
 const rebootDevice = async (id) => {
   try {
-    await apiClient.put(`/api/v1/devices/${id}/reboot`);
+    await apiClient.post(`/api/v1/devices/${id}/commands`, { command: 'reboot' });
     devicesStore.fetchDevices(); // refresh immediately
   } catch (e) {
     console.error('Failed to reboot device', e);

@@ -52,8 +52,8 @@ const getStatusText = (status) => {
 const handleExportPdf = async () => {
   try {
     const months = reportsStore.selectedMonths;
-    const response = await apiClient.get('/api/v1/reports/consumption/export', {
-      params: { months },
+    const response = await apiClient.get('/api/v1/consumption-metrics', {
+      params: { months, format: 'pdf' },
       responseType: 'blob'
     });
 

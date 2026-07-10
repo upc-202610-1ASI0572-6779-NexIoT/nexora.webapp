@@ -55,7 +55,7 @@ const chartData = ref({
 
 const loadChartData = async () => {
   try {
-    const res = await apiClient.get('/api/v1/analytics/live-consumption', {
+    const res = await apiClient.get('/api/v1/consumption-metrics', {
       params: { range: currentRange.value }
     });
     if (res.data) {

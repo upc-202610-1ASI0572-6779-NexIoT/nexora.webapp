@@ -43,7 +43,7 @@ export class DeviceRepositoryImpl extends IDeviceRepository {
 
   async getKPIs() {
     try {
-      const { data } = await apiClient.get('/api/v1/devices/kpis');
+      const { data } = await apiClient.get('/api/v1/device-statistics');
       return {
         operationalStatus: data.operationalStatus,
         gatewayLoad: data.gatewayLoad,

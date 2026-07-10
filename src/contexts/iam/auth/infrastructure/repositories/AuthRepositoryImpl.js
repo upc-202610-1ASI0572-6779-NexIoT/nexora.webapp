@@ -6,7 +6,7 @@ import { IAuthRepository } from '../../../domain/repositories/IAuthRepository';
 export class AuthRepositoryImpl extends IAuthRepository {
   async login(email, password) {
     try {
-      const { data } = await apiClient.post('/api/v1/auth/login', {
+      const { data } = await apiClient.post('/api/v1/sessions', {
         email,
         password,
         platform: 'web'
@@ -52,7 +52,7 @@ export class AuthRepositoryImpl extends IAuthRepository {
   async register(registrationData) {
     try {
       const payload = RegisterMapper.toApiPayload(registrationData);
-      const { data } = await apiClient.post('/api/v1/auth/register/landlords', payload);
+      const { data } = await apiClient.post('/api/v1/landlord-accounts', payload);
 
       return {
         token: data.token,
@@ -88,7 +88,7 @@ export class AuthRepositoryImpl extends IAuthRepository {
   async changePassword(email, currentPassword, newPassword) {
     // email parameter is accepted for compatibility with use-cases but not used by the API
     try {
-      const { data } = await apiClient.put('/api/v1/settings/security/passwords', {
+      const { data } = await apiClient.put('/api/v1/password', {
         currentPassword,
         newPassword,
       });

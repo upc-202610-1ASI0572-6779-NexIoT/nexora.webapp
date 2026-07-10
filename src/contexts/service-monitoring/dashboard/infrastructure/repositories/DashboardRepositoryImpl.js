@@ -4,7 +4,7 @@ import { IDashboardRepository } from '../../../domain/repositories/IDashboardRep
 export class DashboardRepositoryImpl extends IDashboardRepository {
     async #fetchTelemetry(deviceId) {
         try {
-            const res = await apiClient.get(`/api/v1/telemetry/latest?deviceId=${deviceId}`);
+            const res = await apiClient.get(`/api/v1/telemetry-records?deviceId=${deviceId}&latest=true`);
             return res.data || null;
         } catch {
             return null;
@@ -22,7 +22,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
     async #fetchPropertiesStats() {
         try {
-            const res = await apiClient.get('/api/v1/properties/summary');
+            const res = await apiClient.get('/api/v1/property-statistics');
             return res.data?.total ?? null;
         } catch {
             return null;
@@ -153,7 +153,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
         if (voltageDevice) {
             try {
-                const resVoltage = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${voltageDevice.id}`);
+                const resVoltage = await apiClient.get(`/api/v1/telemetry-records?deviceId=${voltageDevice.id}&latest=true`);
                 console.log('DEBUG VOLTAGE TELEMETRY:', { deviceId: voltageDevice.id, data: resVoltage.data });
                 if (resVoltage.data) {
                     electricityKwh = resVoltage.data.electricityReading;
@@ -175,7 +175,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
         if (gasDevice) {
             try {
-                const resGas = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${gasDevice.id}`);
+                const resGas = await apiClient.get(`/api/v1/telemetry-records?deviceId=${gasDevice.id}&latest=true`);
                 console.log('DEBUG GAS TELEMETRY:', { deviceId: gasDevice.id, data: resGas.data });
                 if (resGas.data) {
                     gasPpm = parseFloat(resGas.data.gasReading.toFixed(3));
@@ -194,7 +194,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
         if (waterDevice) {
             try {
-                const resWater = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${waterDevice.id}`);
+                const resWater = await apiClient.get(`/api/v1/telemetry-records?deviceId=${waterDevice.id}&latest=true`);
                 console.log('DEBUG WATER TELEMETRY:', { deviceId: waterDevice.id, data: resWater.data });
                 if (resWater.data) {
                     rawWater = parseFloat(resWater.data.waterReading.toFixed(3));
@@ -206,7 +206,7 @@ export class DashboardRepositoryImpl extends IDashboardRepository {
 
         let propertiesCount = 4;
         try {
-            const resProps = await apiClient.get('/api/v1/properties/summary');
+            const resProps = await apiClient.get('/api/v1/property-statistics');
             if (resProps.data) {
                 propertiesCount = resProps.data.total;
             }

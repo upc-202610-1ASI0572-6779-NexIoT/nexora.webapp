@@ -410,7 +410,8 @@ const hasWater = () => {
 const createTicket = async () => {
   isActionLoading.value = true;
   try {
-    const res = await apiClient.post(`/api/v1/alerts/${props.alertId}/tickets`, {
+    const res = await apiClient.post('/api/v1/maintenance-tickets', {
+      alertId: Number(props.alertId),
       assignedTo: technicianName.value || null
     });
     if (res.data) {
@@ -428,7 +429,8 @@ const assignTechnician = async () => {
   if (!technicianName.value) return;
   isActionLoading.value = true;
   try {
-    const res = await apiClient.post(`/api/v1/alerts/${props.alertId}/tickets`, {
+    const res = await apiClient.post('/api/v1/maintenance-tickets', {
+      alertId: Number(props.alertId),
       assignedTo: technicianName.value
     });
     if (res.data) {
@@ -445,7 +447,9 @@ const assignTechnician = async () => {
 const resolveTicket = async () => {
   isActionLoading.value = true;
   try {
-    const res = await apiClient.put(`/api/v1/alerts/${props.alertId}/tickets/resolve`);
+    const res = await apiClient.patch(`/api/v1/maintenance-tickets/${ticket.value.id}`, {
+      resolved: true
+    });
     if (res.data) {
       ticket.value = res.data;
     }

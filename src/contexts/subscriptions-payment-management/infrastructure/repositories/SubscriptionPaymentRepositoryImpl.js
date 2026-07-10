@@ -4,7 +4,7 @@ import { ISubscriptionPaymentRepository } from '../../domain/repositories/ISubsc
 export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepository {
   async getPlans() {
     try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/plans?target=landlord');
+      const { data } = await apiClient.get('/api/v1/subscription-plans?target=landlord');
       return data;
     } catch (err) {
       const body = err.response?.data;
@@ -68,7 +68,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async getPaymentMethod() {
     try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/payment-methods');
+      const { data } = await apiClient.get('/api/v1/payment-methods');
       return data.paymentMethods && data.paymentMethods.length > 0 ? data.paymentMethods[0] : null;
     } catch (err) {
       return null;
@@ -77,7 +77,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async getInvoices() {
     try {
-      const { data } = await apiClient.get('/api/v1/subscriptions/invoices');
+      const { data } = await apiClient.get('/api/v1/invoices');
       return data;
     } catch (err) {
       return { invoices: [] };
@@ -86,7 +86,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async createPaymentMethod(paymentMethodId, holderName) {
     try {
-      const { data: response } = await apiClient.post('/api/v1/subscriptions/payment-methods', {
+      const { data: response } = await apiClient.post('/api/v1/payment-methods', {
         paymentMethodId,
         holderName
       });
@@ -109,8 +109,7 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async updatePaymentMethod(paymentMethodId, holderName) {
     try {
-      const { data: response } = await apiClient.put('/api/v1/subscriptions/payment-method', {
-        paymentMethodId,
+      const { data: response } = await apiClient.patch(`/api/v1/payment-methods/${paymentMethodId}`, {
         holderName
       });
       return response;
@@ -135,7 +134,9 @@ export class SubscriptionPaymentRepositoryImpl extends ISubscriptionPaymentRepos
 
   async cancelSubscription(subscriptionId) {
     try {
-      const { data } = await apiClient.post(`/api/v1/subscriptions/${subscriptionId}/cancel`);
+      const { data } = await apiClient.patch(`/api/v1/subscriptions/${subscriptionId}`, {
+        status: 'cancelled'
+      });
       return data;
     } catch (err) {
       const status = err.response?.status;

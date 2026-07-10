@@ -95,7 +95,8 @@ const exportIncidentReport = async () => {
   if (isExporting.value) return;
   isExporting.value = true;
   try {
-    const response = await apiClient.get('/api/v1/reports/alerts/export?format=pdf', {
+    const response = await apiClient.get('/api/v1/alerts', {
+      params: { format: 'pdf' },
       responseType: 'blob'
     });
 

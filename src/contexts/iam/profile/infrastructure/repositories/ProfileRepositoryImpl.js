@@ -7,7 +7,7 @@ export class ProfileRepositoryImpl extends IProfileRepository {
   // real backend identifies the user from the JWT token.
   async getProfile() {
     try {
-      const { data } = await apiClient.get('/api/v1/profiles/me');
+      const { data } = await apiClient.get('/api/v1/profile');
 
       if (!data || !data.profile) {
         throw { code: 'USER_NOT_FOUND', message: 'User not found.' };
@@ -33,7 +33,7 @@ export class ProfileRepositoryImpl extends IProfileRepository {
 
   async updateProfile(data) {
     try {
-      const { data: res } = await apiClient.put('/api/v1/profiles/me', data);
+      const { data: res } = await apiClient.patch('/api/v1/profile', data);
       if (!res || !res.profile) {
         throw { code: 'UPDATE_FAILED', message: 'Failed to update profile.' };
       }

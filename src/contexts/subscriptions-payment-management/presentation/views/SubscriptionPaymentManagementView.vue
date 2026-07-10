@@ -124,7 +124,7 @@ const verifyPassword = async () => {
     if (!email) {
       throw new Error('User email not found.');
     }
-    await apiClient.post('/api/v1/auth/login', {
+    await apiClient.post('/api/v1/sessions', {
       email: email,
       password: passwordInput.value
     });

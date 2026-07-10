@@ -43,7 +43,7 @@ const reboot = async () => {
   if (!deviceId.value) return;
   isRebooting.value = true;
   try {
-    await apiClient.put(`/api/v1/devices/${deviceId.value}/reboot`);
+    await apiClient.post(`/api/v1/devices/${deviceId.value}/commands`, { command: 'reboot' });
     
     // Add reboot log entry in real time
     logs.value.unshift({
@@ -116,7 +116,7 @@ let tempInterval = null;
 const updateTelemetry = async () => {
   if (!deviceId.value) return;
   try {
-    const { data } = await apiClient.get(`/api/v1/telemetries/latest?deviceId=${deviceId.value}`);
+    const { data } = await apiClient.get(`/api/v1/telemetry-records?deviceId=${deviceId.value}&latest=true`);
     const newMetrics = [];
     const devIdLower = deviceId.value.toLowerCase();
 

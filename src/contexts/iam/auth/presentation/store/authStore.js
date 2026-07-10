@@ -72,7 +72,7 @@ export const useAuthStore = defineStore('auth', {
       if (!this.token || this.user) return;
 
       try {
-        const { data } = await apiClient.get('/api/v1/profiles/me');
+        const { data } = await apiClient.get('/api/v1/profile');
         if (data?.profile) {
           const p = data.profile;
           const firstName = p.firstName || '';

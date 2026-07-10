@@ -4,7 +4,9 @@ import { useRoute } from 'vue-router';
 import { useDevicesStore } from '../store/devicesStore';
 import { useAuthStore } from '@/contexts/iam/auth/presentation/store/authStore';
 import apiClient from '@/shared/infrastructure/http/apiClient';
+import { useI18n } from '@/shared/presentation/i18n';
 
+const { t } = useI18n();
 const route = useRoute();
 const devicesStore = useDevicesStore();
 const authStore = useAuthStore();
@@ -19,20 +21,22 @@ let syncInterval = null;
 
 const updateRelativeLastSync = () => {
   if (!device.value?.lastSyncAt) {
-    relativeLastSync.value = 'Never';
+    relativeLastSync.value = t('deviceDetailsPage.connectionDetails.values.never');
     return;
   }
   const diffMs = Date.now() - new Date(device.value.lastSyncAt).getTime();
   const diffSecs = Math.floor(diffMs / 1000);
-  if (diffSecs < 0) {
-    relativeLastSync.value = 'Just now';
-  } else if (diffSecs < 5) {
-    relativeLastSync.value = 'Just now';
+  if (diffSecs < 0 || diffSecs < 5) {
+    relativeLastSync.value = t('deviceDetailsPage.connectionDetails.values.justNow');
   } else if (diffSecs < 60) {
-    relativeLastSync.value = `${diffSecs} seconds ago`;
+    relativeLastSync.value = t('deviceDetailsPage.connectionDetails.values.secondsAgo', { seconds: diffSecs });
   } else {
     const diffMins = Math.floor(diffSecs / 60);
-    relativeLastSync.value = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffMins === 1) {
+      relativeLastSync.value = t('deviceDetailsPage.connectionDetails.values.minutesAgo', { minutes: diffMins });
+    } else {
+      relativeLastSync.value = t('deviceDetailsPage.connectionDetails.values.minutesAgoPlural', { minutes: diffMins });
+    }
   }
 };
 
@@ -45,15 +49,31 @@ const reboot = async () => {
   try {
     await apiClient.put(`/api/v1/devices/${deviceId.value}/reboot`);
     
-    // Add reboot log entry in real time
-    logs.value.unshift({
-      id: Date.now(),
+    // Add reboot log entry in DB
+    const logData = {
       type: 'warning',
       title: 'Reboot Initiated',
-      desc: 'System hard reboot requested by administrator. Connection closed.',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    });
-    saveLogs();
+      message: 'System hard reboot requested by administrator. Connection closed.'
+    };
+    try {
+      const { data } = await apiClient.post(`/api/v1/devices/${deviceId.value}/logs`, logData);
+      logs.value.unshift({
+        id: data.id,
+        type: data.type,
+        title: data.title,
+        desc: data.message,
+        time: formatLogTime(data.timestamp)
+      });
+    } catch (err) {
+      console.error('Failed to save log to DB', err);
+      logs.value.unshift({
+        id: Date.now(),
+        type: logData.type,
+        title: logData.title,
+        desc: logData.message,
+        time: formatLogTime(new Date())
+      });
+    }
     
     await devicesStore.fetchDevices();
   } catch (e) {
@@ -85,14 +105,30 @@ const updateFirmware = async () => {
   localIsOutdated.value = false;
   isUpdatingFirmware.value = false;
   
-  logs.value.unshift({
-    id: Date.now(),
+  const logData = {
     type: 'success',
     title: 'Firmware Flashed',
-    desc: 'System flashed successfully to v2.4.1-stable.',
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  });
-  saveLogs();
+    message: 'System flashed successfully to v2.4.1-stable.'
+  };
+  try {
+    const { data } = await apiClient.post(`/api/v1/devices/${deviceId.value}/logs`, logData);
+    logs.value.unshift({
+      id: data.id,
+      type: data.type,
+      title: data.title,
+      desc: data.message,
+      time: formatLogTime(data.timestamp)
+    });
+  } catch (err) {
+    console.error('Failed to save log to DB', err);
+    logs.value.unshift({
+      id: Date.now(),
+      type: logData.type,
+      title: logData.title,
+      desc: logData.message,
+      time: formatLogTime(new Date())
+    });
+  }
 };
 
 const calibrateSensor = async () => {
@@ -101,17 +137,78 @@ const calibrateSensor = async () => {
   await new Promise(resolve => setTimeout(resolve, 2000));
   isCalibrating.value = false;
   
-  logs.value.unshift({
-    id: Date.now(),
+  const logData = {
     type: 'success',
     title: 'Sensor Calibrated',
-    desc: `Calibration successful. Zero offset adjusted. Current Temp: ${metrics.value[0].value}`,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  });
-  saveLogs();
+    message: `Calibration successful. Zero offset adjusted. Current Temp: ${metrics.value[0].value}`
+  };
+  try {
+    const { data } = await apiClient.post(`/api/v1/devices/${deviceId.value}/logs`, logData);
+    logs.value.unshift({
+      id: data.id,
+      type: data.type,
+      title: data.title,
+      desc: data.message,
+      time: formatLogTime(data.timestamp)
+    });
+  } catch (err) {
+    console.error('Failed to save log to DB', err);
+    logs.value.unshift({
+      id: Date.now(),
+      type: logData.type,
+      title: logData.title,
+      desc: logData.message,
+      time: formatLogTime(new Date())
+    });
+  }
 };
 
 let tempInterval = null;
+
+const getTranslatedMetricLabel = (label) => {
+  switch (label) {
+    case 'GAS LEVEL': return t('deviceDetailsPage.analytics.labels.gasLevel');
+    case 'WATER FLOW': return t('deviceDetailsPage.analytics.labels.waterFlow');
+    case 'ENERGY CONSUMPTION': return t('deviceDetailsPage.analytics.labels.energyConsumption');
+    case 'VOLTAGE SAFETY': return t('deviceDetailsPage.analytics.labels.voltageSafety');
+    case 'MOTION SENSOR': return t('deviceDetailsPage.analytics.labels.motionSensor');
+    case 'DEVICE STATUS': return t('deviceDetailsPage.analytics.labels.deviceStatus');
+    case 'SIGNAL STRENGTH': return t('deviceDetailsPage.analytics.labels.signalStrength');
+    case 'RAM USAGE': return t('deviceDetailsPage.analytics.labels.ramUsage');
+    case 'PACKET LOSS': return t('deviceDetailsPage.analytics.labels.packetLoss');
+    case 'AVG TEMP': return t('deviceDetailsPage.analytics.labels.avgTemp');
+    case 'PEAK LOAD': return t('deviceDetailsPage.analytics.labels.peakLoad');
+    default: return label;
+  }
+};
+
+const getTranslatedMetricTrend = (trend) => {
+  switch (trend) {
+    case 'NOMINAL': return t('deviceDetailsPage.analytics.trends.nominal');
+    case 'ACTIVE': return t('deviceDetailsPage.analytics.trends.active');
+    case 'STABLE': return t('deviceDetailsPage.analytics.trends.stable');
+    case 'OPTIMAL': return t('deviceDetailsPage.analytics.trends.optimal');
+    case 'EXCELLENT': return t('deviceDetailsPage.analytics.trends.excellent');
+    case 'ALERT': return t('deviceDetailsPage.analytics.trends.alert');
+    case 'VOLTAGE OK': return t('deviceDetailsPage.analytics.trends.voltageOk');
+    case 'VOLTAGE DROP': return t('deviceDetailsPage.analytics.trends.voltageDrop');
+    case 'HIGH ALERT': return t('deviceDetailsPage.analytics.trends.highAlert');
+    case 'HIGH FLOW': return t('deviceDetailsPage.analytics.trends.highFlow');
+    case 'OVERLOAD': return t('deviceDetailsPage.analytics.trends.overload');
+    case 'PRESENCE DETECTED': return t('deviceDetailsPage.analytics.trends.presenceDetected');
+    case 'DISCONNECTED': return t('deviceDetailsPage.analytics.trends.disconnected');
+    default: return trend;
+  }
+};
+
+const getTranslatedMetricValue = (value) => {
+  if (value === 'ACTIVE') return t('deviceDetailsPage.analytics.trends.active');
+  if (value === 'NOMINAL') return t('deviceDetailsPage.analytics.trends.nominal');
+  if (value === 'ALERT') return t('deviceDetailsPage.analytics.trends.alert');
+  if (value === 'ONLINE') return t('deviceDetailsPage.liveTelemetry.status.active');
+  if (value === 'OFFLINE') return t('deviceDetailsPage.liveTelemetry.status.offline');
+  return value;
+};
 
 const updateTelemetry = async () => {
   if (!deviceId.value) return;
@@ -285,52 +382,97 @@ const getDynamicTime = (minutesAgo) => {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
+const formatLogTime = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
 const getDefaultLogs = () => [
   { id: 1, type: 'success', title: 'Calibration Successful', desc: 'Internal sensor range adjusted to ±0.2°C.', time: getDynamicTime(10) },
   { id: 2, type: 'warning', title: 'Fringe Signal Detected', desc: 'RSSI dropped below -75dBm for 12 seconds.', time: getDynamicTime(90) },
   { id: 3, type: 'info', title: 'Routine Heartbeat', desc: 'System status report sent to main gateway.', time: getDynamicTime(240) }
 ];
 
+const getTranslatedLog = (log) => {
+  let title = log.title;
+  let desc = log.desc;
+
+  if (title === 'Calibration Successful') {
+    title = t('deviceDetailsPage.eventLogs.messages.calibrationSuccessfulTitle');
+    if (desc === 'Internal sensor range adjusted to ±0.2°C.') {
+      desc = t('deviceDetailsPage.eventLogs.messages.calibrationSuccessfulDesc');
+    } else if (desc === 'Voltage sensor calibrated to baseline.') {
+      desc = t('deviceDetailsPage.eventLogs.messages.calibrationSuccessfulDesc');
+    }
+  } else if (title === 'Fringe Signal Detected') {
+    title = t('deviceDetailsPage.eventLogs.messages.fringeSignalTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.fringeSignalDesc');
+  } else if (title === 'Routine Heartbeat') {
+    title = t('deviceDetailsPage.eventLogs.messages.routineHeartbeatTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.routineHeartbeatDesc');
+  } else if (title === 'Reboot Initiated') {
+    title = t('deviceDetailsPage.eventLogs.messages.rebootInitiatedTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.rebootInitiatedDesc');
+  } else if (title === 'Firmware Flashed') {
+    title = t('deviceDetailsPage.eventLogs.messages.firmwareFlashedTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.firmwareFlashedDesc');
+  } else if (title === 'Sensor Calibrated') {
+    title = t('deviceDetailsPage.eventLogs.messages.sensorCalibratedTitle');
+    if (desc.includes('Current Temp:')) {
+      const val = desc.split('Current Temp:')[1]?.trim() || '';
+      desc = t('deviceDetailsPage.eventLogs.messages.sensorCalibratedDesc', { val });
+    } else {
+      desc = t('deviceDetailsPage.eventLogs.messages.sensorCalibratedDesc', { val: '' });
+    }
+  } else if (title === 'Voltage Spike Detected') {
+    title = t('deviceDetailsPage.eventLogs.messages.voltageSpikeDetectedTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.voltageSpikeDetectedDesc');
+  } else if (title === 'Power Cycle Initiated') {
+    title = t('deviceDetailsPage.eventLogs.messages.powerCycleInitiatedTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.powerCycleInitiatedDesc');
+  } else if (title === 'Gas Leak Warning') {
+    title = t('deviceDetailsPage.eventLogs.messages.gasLeakWarningTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.gasLeakWarningDesc');
+  } else if (title === 'Sensor Pre-heat Complete') {
+    title = t('deviceDetailsPage.eventLogs.messages.sensorPreheatCompleteTitle');
+    desc = t('deviceDetailsPage.eventLogs.messages.sensorPreheatCompleteDesc');
+  }
+
+  return { ...log, title, desc };
+};
+
 const logs = ref([]);
 const showAllLogs = ref(false);
 
 const displayedLogs = computed(() => {
-  return showAllLogs.value ? logs.value : logs.value.slice(0, 3);
+  const list = showAllLogs.value ? logs.value : logs.value.slice(0, 3);
+  return list.map(getTranslatedLog);
 });
 
-const currentUserId = computed(() => authStore.user?.email || 'guest');
-
-const storageKey = computed(() => {
-  return `device_logs_${currentUserId.value}_${deviceId.value}`;
-});
-
-const loadLogs = () => {
+const loadLogs = async () => {
   if (!deviceId.value) return;
-  const stored = localStorage.getItem(storageKey.value);
-  if (stored) {
-    try {
-      logs.value = JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to parse logs from localStorage', e);
-      logs.value = getDefaultLogs();
-    }
-  } else {
+  try {
+    const { data } = await apiClient.get(`/api/v1/devices/${deviceId.value}/logs`);
+    logs.value = data.map(l => ({
+      id: l.id,
+      type: l.type,
+      title: l.title,
+      desc: l.message,
+      time: formatLogTime(l.timestamp)
+    }));
+  } catch (e) {
+    console.error('Failed to load logs from server, falling back to local mocks', e);
     logs.value = getDefaultLogs();
-    localStorage.setItem(storageKey.value, JSON.stringify(logs.value));
   }
 };
 
-const saveLogs = () => {
-  if (!deviceId.value) return;
-  localStorage.setItem(storageKey.value, JSON.stringify(logs.value));
-};
-
 const breadcrumbs = computed(() => [
-  { label: 'Devices', route: '/devices' },
+  { label: t('deviceDetailsPage.breadcrumbs.devices'), route: '/devices' },
   { label: deviceId.value || 'Device Details', route: `/devices/${deviceId.value}` }
 ]);
 
-watch(storageKey, () => {
+watch(deviceId, () => {
   loadLogs();
   showAllLogs.value = false; // Reset collapse state when switching devices or users
   updateTelemetry(); // Fetch immediately when changing devices
@@ -352,7 +494,7 @@ const metrics = ref([
     <template v-if="!device">
       <div class="loading-overlay">
         <div class="spinner"></div>
-        <p>Loading device details...</p>
+        <p>{{ t('deviceDetailsPage.loading') }}</p>
       </div>
     </template>
 
@@ -360,16 +502,16 @@ const metrics = ref([
       <!-- 1. Cabecera de Entidad -->
       <header class="entity-header">
         <nav class="breadcrumbs">
-          <router-link to="/devices" class="breadcrumbs__item breadcrumbs__item--link">DEVICES</router-link>
+          <router-link to="/devices" class="breadcrumbs__item breadcrumbs__item--link">{{ t('deviceDetailsPage.breadcrumbs.devices') }}</router-link>
           <span class="breadcrumbs__separator">></span>
           <span class="breadcrumbs__item breadcrumbs__item--active">{{ device.id }}</span>
         </nav>
 
         <div class="entity-header__main">
-          <h1 class="entity-header__title">ESP32 Gateway Node ({{ device.location }})</h1>
+          <h1 class="entity-header__title">{{ t('deviceDetailsPage.header.title', { location: device.location }) }}</h1>
           <button class="button--solid-orange" :disabled="isCalibrating || device.isOffline()" @click="calibrateSensor">
             <font-awesome-icon icon="sliders" :class="{ 'fa-spin': isCalibrating }" />
-            <span>{{ isCalibrating ? 'Calibrating...' : 'Calibrate Sensor' }}</span>
+            <span>{{ isCalibrating ? t('deviceDetailsPage.header.calibrating') : t('deviceDetailsPage.header.calibrateBtn') }}</span>
           </button>
         </div>
       </header>
@@ -379,57 +521,57 @@ const metrics = ref([
         <!-- Panel Izquierdo: Telemetría -->
         <div class="live-telemetry-card">
           <div class="live-telemetry-card__header">
-            <span class="kicker">LIVE TELEMETRY</span>
+            <span class="kicker">{{ t('deviceDetailsPage.liveTelemetry.kicker') }}</span>
             <span :class="device.isOnline() ? 'badge--active' : 'badge--inactive'">
-              ● {{ device.isOnline() ? 'ACTIVE' : 'OFFLINE' }}
+              ● {{ device.isOnline() ? t('deviceDetailsPage.liveTelemetry.status.active') : t('deviceDetailsPage.liveTelemetry.status.offline') }}
             </span>
           </div>
-          <h2 class="live-telemetry-card__title">Environmental Stability</h2>
+          <h2 class="live-telemetry-card__title">{{ t('deviceDetailsPage.liveTelemetry.title') }}</h2>
           
           <div class="telemetry-grid">
             <div class="telemetry-col">
-              <span class="telemetry-col__label">LAST SYNC TIME</span>
+              <span class="telemetry-col__label">{{ t('deviceDetailsPage.liveTelemetry.labels.lastSyncTime') }}</span>
               <span class="telemetry-col__value telemetry-col__value--giant">{{ device.uptime }}</span>
-              <span class="telemetry-col__sub">Local Time</span>
+              <span class="telemetry-col__sub">{{ t('deviceDetailsPage.liveTelemetry.subs.localTime') }}</span>
             </div>
             <div class="telemetry-col">
-              <span class="telemetry-col__label">SIGNAL (RSSI)</span>
+              <span class="telemetry-col__label">{{ t('deviceDetailsPage.liveTelemetry.labels.signal') }}</span>
               <span class="telemetry-col__value telemetry-col__value--giant">
-                {{ device.rssi !== null ? device.rssi + ' dBm' : 'Timeout' }}
+                {{ device.rssi !== null ? device.rssi + ' dBm' : t('devicesPage.inventory.text.timeout') }}
               </span>
               <span class="telemetry-col__sub" :class="device.isOnline() ? 'telemetry-col__sub--success' : 'telemetry-col__sub--danger'">
-                {{ device.isOnline() ? 'EXCELLENT' : 'OFFLINE' }}
+                {{ device.isOnline() ? t('deviceDetailsPage.liveTelemetry.subs.excellent') : t('deviceDetailsPage.liveTelemetry.status.offline') }}
               </span>
             </div>
             <div class="telemetry-col">
-              <span class="telemetry-col__label">HEALTH</span>
+              <span class="telemetry-col__label">{{ t('deviceDetailsPage.liveTelemetry.labels.health') }}</span>
               <span class="telemetry-col__value telemetry-col__value--giant" :class="device.isOnline() ? 'telemetry-col__value--success' : 'telemetry-col__value--danger'">
                 {{ device.isOnline() ? '100%' : '0%' }}
               </span>
-              <span class="telemetry-col__sub">{{ device.isOnline() ? 'NOMINAL OPS' : 'COMM FAILURE' }}</span>
+              <span class="telemetry-col__sub">{{ device.isOnline() ? t('deviceDetailsPage.liveTelemetry.subs.nominalOps') : t('deviceDetailsPage.liveTelemetry.subs.commFailure') }}</span>
             </div>
           </div>
         </div>
 
       <!-- Panel Derecho: Conexión -->
       <div class="connection-details-card">
-        <span class="kicker kicker--pale">CONNECTION DETAILS</span>
+        <span class="kicker kicker--pale">{{ t('deviceDetailsPage.connectionDetails.kicker') }}</span>
         
         <div class="data-list">
           <div class="data-list__row">
-            <span class="data-list__label">SSID</span>
+            <span class="data-list__label">{{ t('deviceDetailsPage.connectionDetails.labels.ssid') }}</span>
             <span class="data-list__value">{{ connection.ssid }}</span>
           </div>
           <div class="data-list__row">
-            <span class="data-list__label">IP Address</span>
+            <span class="data-list__label">{{ t('deviceDetailsPage.connectionDetails.labels.ipAddress') }}</span>
             <span class="data-list__value">{{ connection.ip }}</span>
           </div>
           <div class="data-list__row">
-            <span class="data-list__label">MAC Address</span>
+            <span class="data-list__label">{{ t('deviceDetailsPage.connectionDetails.labels.macAddress') }}</span>
             <span class="data-list__value">{{ connection.mac }}</span>
           </div>
           <div class="data-list__row">
-            <span class="data-list__label">Protocol</span>
+            <span class="data-list__label">{{ t('deviceDetailsPage.connectionDetails.labels.protocol') }}</span>
             <span class="data-list__value">{{ connection.protocol }}</span>
           </div>
         </div>
@@ -437,7 +579,7 @@ const metrics = ref([
         <footer class="connection-details-card__footer">
           <font-awesome-icon icon="rotate" class="sync-icon" />
           <div class="sync-texts">
-            <span class="sync-label">LAST SYNC</span>
+            <span class="sync-label">{{ t('deviceDetailsPage.connectionDetails.labels.lastSync') }}</span>
             <span class="sync-value">{{ relativeLastSync }}</span>
           </div>
         </footer>
@@ -447,15 +589,15 @@ const metrics = ref([
     <!-- 3. Fila 2: Analítica -->
     <section class="analytics-card">
       <header class="analytics-card__header">
-        <h3 class="analytics-card__title">High-Density Sensor Analytics</h3>
+        <h3 class="analytics-card__title">{{ t('deviceDetailsPage.analytics.title') }}</h3>
       </header>
 
       <div class="metrics-grid">
         <div v-for="metric in metrics" :key="metric.label" class="metric-box">
-          <span class="metric-box__label">{{ metric.label }}</span>
-          <span class="metric-box__value">{{ metric.value }}</span>
+          <span class="metric-box__label">{{ getTranslatedMetricLabel(metric.label) }}</span>
+          <span class="metric-box__value">{{ getTranslatedMetricValue(metric.value) }}</span>
           <span :class="['metric-box__trend', `metric-box__trend--${metric.trendColor}`]">
-            {{ metric.trendDir === 'up' ? '↑' : '' }} {{ metric.trend }}
+            {{ metric.trendDir === 'up' ? '↑' : '' }} {{ getTranslatedMetricTrend(metric.trend) }}
           </span>
         </div>
       </div>
@@ -465,7 +607,7 @@ const metrics = ref([
     <div class="logs-hardware-row">
       <!-- Panel Izquierdo: Event Logs -->
       <div class="event-logs-card">
-        <span class="kicker">SYSTEM EVENT LOGS</span>
+        <span class="kicker">{{ t('deviceDetailsPage.eventLogs.kicker') }}</span>
         
         <div class="log-list">
           <div v-for="log in displayedLogs" :key="log.id" class="log-item">
@@ -483,29 +625,29 @@ const metrics = ref([
         </div>
 
         <button class="button--outline-fullwidth" @click="showAllLogs = !showAllLogs">
-          {{ showAllLogs ? 'COLLAPSE LOGS' : 'VIEW ALL LOGS' }}
+          {{ showAllLogs ? t('deviceDetailsPage.eventLogs.buttons.collapse') : t('deviceDetailsPage.eventLogs.buttons.viewAll') }}
         </button>
       </div>
 
       <!-- Panel Derecho: Hardware Profile -->
       <div class="hardware-profile-card">
-        <span class="kicker">HARDWARE PROFILE</span>
+        <span class="kicker">{{ t('deviceDetailsPage.hardwareProfile.kicker') }}</span>
         
         <div class="profile-grid">
           <div class="profile-item">
-            <span class="profile-item__label">FIRMWARE VERSION</span>
+            <span class="profile-item__label">{{ t('deviceDetailsPage.hardwareProfile.labels.firmwareVersion') }}</span>
             <span class="profile-item__value">{{ hardware.firmware }}</span>
           </div>
           <div class="profile-item">
-            <span class="profile-item__label">HARDWARE REV</span>
+            <span class="profile-item__label">{{ t('deviceDetailsPage.hardwareProfile.labels.hardwareRev') }}</span>
             <span class="profile-item__value">{{ hardware.rev }}</span>
           </div>
           <div class="profile-item">
-            <span class="profile-item__label">CORE FREQUENCY</span>
+            <span class="profile-item__label">{{ t('deviceDetailsPage.hardwareProfile.labels.coreFrequency') }}</span>
             <span class="profile-item__value">{{ hardware.frequency }}</span>
           </div>
           <div class="profile-item">
-            <span class="profile-item__label">CHIP TEMP</span>
+            <span class="profile-item__label">{{ t('deviceDetailsPage.hardwareProfile.labels.chipTemp') }}</span>
             <span class="profile-item__value">{{ hardware.temp }}</span>
           </div>
         </div>
@@ -513,11 +655,11 @@ const metrics = ref([
         <div class="hardware-actions">
           <button class="button--solid-blue" :disabled="isUpdatingFirmware || !isFirmwareOutdated || device.isOffline()" @click="updateFirmware">
             <font-awesome-icon icon="microchip" :class="{ 'fa-spin': isUpdatingFirmware }" />
-            <span>{{ isUpdatingFirmware ? 'UPDATING...' : (isFirmwareOutdated ? 'FIRMWARE UPDATE' : 'FIRMWARE UP-TO-DATE') }}</span>
+            <span>{{ isUpdatingFirmware ? t('deviceDetailsPage.hardwareProfile.buttons.updating') : (isFirmwareOutdated ? t('deviceDetailsPage.hardwareProfile.buttons.firmwareUpdate') : t('deviceDetailsPage.hardwareProfile.buttons.firmwareUpToDate')) }}</span>
           </button>
           <button class="button--outline-blue" :disabled="isRebooting || device.isOffline()" @click="reboot">
             <font-awesome-icon icon="rotate" :class="{ 'fa-spin': isRebooting }" />
-            <span>{{ isRebooting ? 'REBOOTING...' : (device.isOffline() ? 'OFFLINE' : 'HARD REBOOT') }}</span>
+            <span>{{ isRebooting ? t('deviceDetailsPage.hardwareProfile.buttons.rebooting') : (device.isOffline() ? t('deviceDetailsPage.hardwareProfile.buttons.offline') : t('deviceDetailsPage.hardwareProfile.buttons.hardReboot')) }}</span>
           </button>
         </div>
       </div>

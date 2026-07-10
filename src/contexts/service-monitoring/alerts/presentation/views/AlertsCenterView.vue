@@ -1,68 +1,55 @@
 <template>
   <div class="page-container">
-        <!-- Topbar -->
-    <!-- <header class="topbar">
-      <div class="search-container">
-        <font-awesome-icon icon="search" class="search-icon" />
-        <input type="text" placeholder="Search alerts, assets, or logs..." class="search-input" />
-      </div>
-      <div class="topbar-actions">
-        <button class="notification-btn">
-          <font-awesome-icon icon="bell" />
-          <span class="notification-badge"></span>
-        </button>
-      </div>
-    </header> -->
     <!-- Page Header -->
-        <div class="page-header">
-        <div>
-          <div class="breadcrumbs">DASHBOARD > <strong>ALERTS CENTER</strong></div>
-          <h1 class="page-title">Emergency Alerts Center</h1>
-          <p class="page-subtitle">Real-time critical event monitoring across all industrial properties.</p>
-        </div>
-        <button class="export-btn" @click="exportIncidentReport" :disabled="isExporting">
-          <font-awesome-icon :icon="isExporting ? 'spinner' : 'file-pdf'" :spin="isExporting" />
-          {{ isExporting ? 'Exporting PDF...' : 'Export Incident Report (PDF)' }}
-        </button>
+      <div class="page-header">
+      <div>
+        <div class="breadcrumbs" v-html="t('alertsPage.breadcrumbs')"></div>
+        <h1 class="page-title">{{ t('alertsPage.title') }}</h1>
+        <p class="page-subtitle">{{ t('alertsPage.subtitle') }}</p>
       </div>
+      <button class="export-btn" @click="exportIncidentReport" :disabled="isExporting">
+        <font-awesome-icon :icon="isExporting ? 'spinner' : 'file-pdf'" :spin="isExporting" />
+        {{ isExporting ? t('alertsPage.exporting') : t('alertsPage.exportBtn') }}
+      </button>
+    </div>
 
-      <!-- KPI Cards Row -->
-      <div class="kpi-grid">
-        <KpiCard
-          title="ACTIVE CRITICAL"
-          :value="activeCriticalCount.toString()"
-          subtitle="Requires Immediate Action"
-          variant="critical"
-          icon="chart-line"
-        />
-        <KpiCard
-          title="PENDING WARNINGS"
-          :value="pendingWarningsCount.toString()"
-          subtitle="Awaiting Investigation"
-          variant="warning"
-          icon="clipboard-list"
-        />
+    <!-- KPI Cards Row -->
+    <div class="kpi-grid">
+      <KpiCard
+        :title="t('alertsPage.kpis.activeCritical')"
+        :value="activeCriticalCount.toString()"
+        :subtitle="t('alertsPage.kpis.criticalSubtitle')"
+        variant="critical"
+        icon="chart-line"
+      />
+      <KpiCard
+        :title="t('alertsPage.kpis.pendingWarnings')"
+        :value="pendingWarningsCount.toString()"
+        :subtitle="t('alertsPage.kpis.warningSubtitle')"
+        variant="warning"
+        icon="clipboard-list"
+      />
 
-        <KpiCard
-          title="SENSORS ONLINE"
-          :value="sensorsOnlineValue"
-          :subtitle="sensorsOnlineSubtitle"
-          variant="default"
-        />
-      </div>
+      <KpiCard
+        :title="t('alertsPage.kpis.sensorsOnline')"
+        :value="sensorsOnlineValue"
+        :subtitle="sensorsOnlineSubtitle"
+        variant="default"
+      />
+    </div>
 
-      <!-- Recent Events Table -->
-      <div class="table-section">
-        <RecentEventsTable 
-          :events="recentEvents" 
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          :total-alerts="totalAlerts"
-          :page-size="pageSize"
-          @page-change="onPageChange"
-          @filter-change="onFilterChange"
-        />
-      </div>
+    <!-- Recent Events Table -->
+    <div class="table-section">
+      <RecentEventsTable 
+        :events="recentEvents" 
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total-alerts="totalAlerts"
+        :page-size="pageSize"
+        @page-change="onPageChange"
+        @filter-change="onFilterChange"
+      />
+    </div>
 
   </div>
 </template>
@@ -72,13 +59,16 @@ import { ref, onMounted } from 'vue';
 import apiClient from '@/shared/infrastructure/http/apiClient';
 import KpiCard from '../components/KpiCard.vue';
 import RecentEventsTable from '../components/RecentEventsTable.vue';
+import { useI18n } from '@/shared/presentation/i18n';
+
+const { t } = useI18n();
 
 const recentEvents = ref([]);
 const activeCriticalCount = ref(0);
 const pendingWarningsCount = ref(0);
 
 const sensorsOnlineValue = ref('0%');
-const sensorsOnlineSubtitle = ref('0 active safety units');
+const sensorsOnlineSubtitle = ref('');
 
 // Pagination & Filtering State
 const currentPage = ref(1);
@@ -143,24 +133,24 @@ const fetchAlerts = async (page = 1) => {
           status = 'CRITICAL';
         }
 
-        let sensorType = 'System';
+        let sensorType = t('alertsPage.table.sensorTypes.system');
         let ppmLevel = '-';
         const val = alert.reading !== undefined && alert.reading !== null ? alert.reading : 0;
 
         if (alert.type.includes('Gas')) {
-          sensorType = 'Gas Level';
+          sensorType = t('alertsPage.table.sensorTypes.gas');
           ppmLevel = `${val.toFixed(1)} Ppm`;
         } else if (alert.type.includes('Overcurrent')) {
-          sensorType = 'Current Overload';
+          sensorType = t('alertsPage.table.sensorTypes.overcurrent');
           ppmLevel = `${val.toFixed(2)} kWh`;
         } else if (alert.type.includes('Voltage')) {
-          sensorType = 'Voltage Monitor';
-          ppmLevel = val === 0 ? 'Instable' : '220V Ok';
+          sensorType = t('alertsPage.table.sensorTypes.voltage');
+          ppmLevel = val === 0 ? t('alertsPage.table.readings.voltageUnstable') : t('alertsPage.table.readings.voltageOk');
         } else if (alert.type.includes('Intrusión') || alert.type.includes('intrusion')) {
-          sensorType = 'Security Motion';
-          ppmLevel = 'Intrusion';
+          sensorType = t('alertsPage.table.sensorTypes.intrusion');
+          ppmLevel = t('alertsPage.table.readings.intrusion');
         } else if (alert.type.includes('Water') || alert.type.includes('Leak')) {
-          sensorType = 'Water Flow';
+          sensorType = t('alertsPage.table.sensorTypes.water');
           ppmLevel = `${val.toFixed(1)} Lpm`;
         }
 
@@ -182,7 +172,7 @@ const fetchAlerts = async (page = 1) => {
           sensorType: sensorType,
           ppmLevel: ppmLevel,
           status: status,
-          action: status === 'CRITICAL' ? 'INVESTIGATE' : 'VIEW LOG'
+          action: status === 'CRITICAL' ? t('alertsPage.table.actions.investigate') : t('alertsPage.table.actions.viewLog')
         };
       });
 
@@ -235,12 +225,12 @@ const fetchDevicesStatus = async () => {
       const percentage = total > 0 ? (onlineCount / total) * 100 : 0;
       
       sensorsOnlineValue.value = percentage > 0 ? (percentage % 1 === 0 ? `${percentage}%` : `${percentage.toFixed(1)}%`) : '0%';
-      sensorsOnlineSubtitle.value = `${onlineCount} of ${total} units active`;
+      sensorsOnlineSubtitle.value = t('alertsPage.kpis.sensorsOnlineSubtitle', { online: onlineCount, total: total });
     }
   } catch (e) {
     console.error('Failed to fetch devices status', e);
     sensorsOnlineValue.value = '0%';
-    sensorsOnlineSubtitle.value = '0 active safety units';
+    sensorsOnlineSubtitle.value = t('alertsPage.kpis.sensorsOnlineSubtitle', { online: 0, total: 0 });
   }
 };
 

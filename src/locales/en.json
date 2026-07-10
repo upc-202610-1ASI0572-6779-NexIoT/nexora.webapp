@@ -504,6 +504,394 @@
        "successTitle": "Report sent successfully!",
        "successDesc": "Thank you for letting us know. Our support team will review your report and get back to you as soon as possible.",
        "newReport": "Submit another report"
-     }
-   }
+      }
+    },
+    "reportsPage": {
+      "loading": "Loading reports and insights...",
+      "title": "Consumption & Sustainability",
+      "subtitle": "Analyze property efficiency, identify leakage anomalies, and manage resources.",
+      "exportPdf": "EXPORT PDF",
+      "kpis": {
+        "estimatedCost": "ESTIMATED COST",
+        "vsLastPeriod": "{trend}% vs last period",
+        "budgetPlan": "Monthly Budget Plan",
+        "budgetUsed": "{percent}% used",
+        "totalEnergy": "TOTAL ENERGY",
+        "allProperties": "Across all active properties",
+        "totalGas": "TOTAL GAS",
+        "aggregatedGas": "Aggregated gas consumption"
+      },
+      "chart": {
+        "title": "Comparative Resource Usage",
+        "subtitle": "Compare consumption across selected timeline.",
+        "energy": "Energy (kWh)",
+        "gas": "Gas (m³)",
+        "water": "Water (m³)",
+        "filters": {
+          "lastMonth": "Last Month",
+          "last3Months": "Last 3 Months",
+          "last6Months": "Last 6 Months",
+          "lastYear": "Last Year",
+          "last2Years": "Last 2 Years"
+        }
+      },
+      "breakdown": {
+        "title": "Property Breakdown",
+        "viewAll": "VIEW ALL PROPERTIES >",
+        "headers": {
+          "name": "PROPERTY NAME",
+          "location": "LOCATION",
+          "energy": "ENERGY (kWh)",
+          "gas": "GAS (m³)",
+          "water": "WATER (m³)",
+          "status": "STATUS"
+        },
+        "status": {
+          "optimal": "OPTIMAL",
+          "monitor": "MONITOR",
+          "highLoad": "HIGH LOAD"
+        }
+      }
+    },
+    "alertsPage": {
+      "breadcrumbs": "DASHBOARD > <strong>ALERTS CENTER</strong>",
+      "title": "Emergency Alerts Center",
+      "subtitle": "Real-time critical event monitoring across all industrial properties.",
+      "exportBtn": "Export Incident Report (PDF)",
+      "exporting": "Exporting PDF...",
+      "kpis": {
+        "activeCritical": "ACTIVE CRITICAL",
+        "criticalSubtitle": "Requires Immediate Action",
+        "pendingWarnings": "PENDING WARNINGS",
+        "warningSubtitle": "Awaiting Investigation",
+        "sensorsOnline": "SENSORS ONLINE",
+        "sensorsOnlineSubtitle": "{online} of {total} units active"
+      },
+      "table": {
+        "title": "Recent Critical Events",
+        "liveUpdates": "LIVE UPDATES",
+        "severity": "Severity",
+        "severityAll": "All Severities",
+        "severityWarning": "Warning",
+        "severityCritical": "Critical",
+        "type": "Alert Type",
+        "typeAll": "All Types",
+        "typeGas": "Gas Threshold",
+        "typeOvercurrent": "Overcurrent Detected",
+        "typeVoltage": "Voltage Instability",
+        "typeIntrusion": "Intrusion (Security)",
+        "clearFilters": "Clear Filters",
+        "headers": {
+          "timestamp": "Timestamp",
+          "deviceId": "Device ID",
+          "sensorType": "Sensor Type",
+          "reading": "Reading",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "sensorTypes": {
+          "system": "System",
+          "gas": "Gas Level",
+          "overcurrent": "Current Overload",
+          "voltage": "Voltage Monitor",
+          "intrusion": "Security Motion",
+          "water": "Water Flow"
+        },
+        "readings": {
+          "voltageOk": "220V Ok",
+          "voltageUnstable": "Unstable",
+          "intrusion": "Intrusion"
+        },
+        "actions": {
+          "investigate": "INVESTIGATE",
+          "viewLog": "VIEW LOG"
+        },
+        "showingText": "Showing <strong>{start} - {end}</strong> of <strong>{total}</strong> total alerts"
+      }
+    },
+    "alertInvestigation": {
+      "breadcrumbs": "DASHBOARD > ALERTS CENTER > <strong>INVESTIGATION #{id}</strong>",
+      "title": "Alert Investigation",
+      "subtitle": "Real-time diagnostics and maintenance resolution interface.",
+      "backBtn": "Back to Alerts Center",
+      "loading": "Loading diagnostic details from Cloud Gateway...",
+      "error": {
+        "title": "Failed to Load Alert",
+        "retry": "Retry Connection",
+        "empty": "Alert record is empty.",
+        "fallback": "Failed to establish contact with backend services. Please ensure the backend is running."
+      },
+      "severity": {
+        "critical": "CRITICAL",
+        "warning": "WARNING"
+      },
+      "logged": "Logged: {dateTime}",
+      "deviceSignature": "Device Signature:",
+      "diagnostics": {
+        "overcurrent": "Diagnostic Summary: The current consumption on this line exceeded the maximum safe current limit of 20.0 Amps. This indicates an overload anomaly, which could trigger safety relays or represent a hazard for the electrical grid.",
+        "voltage": "Diagnostic Summary: Grid instability has been reported by the safety unit (VoltageOk status is False). This indicates voltage drops, sags, or potential micro-outages in the power supply.",
+        "gas": "Diagnostic Summary: Combustible gas levels have exceeded safety levels. Values above 100 PPM require warnings, while readings exceeding 300 PPM demand critical emergency response.",
+        "intrusion": "Diagnostic Summary: Motion or access sensor triggered while the security system is armed. This represents a potential intrusion warning.",
+        "generic": "Diagnostic Summary: Safety threshold breached. Inspect device logs and telemetry historical timeline below to identify potential causes."
+      },
+      "propertyCard": {
+        "title": "Associated Property Asset",
+        "armed": "SECURITY ARMED",
+        "disarmed": "SECURITY DISARMED",
+        "name": "Property Name",
+        "address": "Address",
+        "cityCountry": "City & Country",
+        "connection": "Device Connection",
+        "noProperty": "No property assigned to this safety gateway. This alert applies to all accounts viewing this unit."
+      },
+      "telemetryCard": {
+        "title": "Historical Telemetry Logs (Recent readings)",
+        "liveLink": "Live Link Active",
+        "headers": {
+          "timestamp": "Timestamp",
+          "gasLevel": "Gas Level (PPM)",
+          "electricity": "Electricity (Amps)",
+          "voltageStatus": "Grid Voltage Status",
+          "waterFlow": "Water Flow (Lpm)"
+        },
+        "values": {
+          "stable": "Stable",
+          "unstable": "Unstable",
+          "notAvailable": "Not Available"
+        },
+        "empty": "No telemetry records registered for this safety unit."
+      },
+      "ticketPanel": {
+        "title": "Incident Management",
+        "subtitle": "Manage the maintenance lifecycle and log the engineer resolution.",
+        "statusLabel": "TICKET STATUS",
+        "noTicket": "NO TICKET CREATED",
+        "details": {
+          "id": "Ticket ID:",
+          "assigned": "Assigned To:",
+          "opened": "Opened At:",
+          "resolved": "Resolved At:"
+        },
+        "assign": {
+          "label": "Assign Safety Inspector / Engineer",
+          "placeholder": "-- Select Engineer --",
+          "carlos": "Ing. Carlos Mendoza (Electrical Inspector)",
+          "sofia": "Ing. Sofía Reyes (Gas Safety Expert)",
+          "juan": "Tech. Juan Torres (Field Technician)"
+        },
+        "buttons": {
+          "openTicket": "Open Maintenance Ticket",
+          "assignInspector": "Assign Inspector",
+          "resolve": "Mark Incident as Resolved"
+        },
+        "resolvedNote": "This incident has been fully resolved and marked as safe. The safety gateway logs are preserved for audits."
+      },
+      "protocols": {
+        "title": "Emergency Protocols",
+        "subtitle": "Mandatory procedures for the assigned engineer.",
+        "overcurrent": {
+          "step1Title": "Overload Trip Verification:",
+          "step1Desc": "Verify if the automatic thermal-magnetic circuit breaker on Apt-402 has tripped.",
+          "step2Title": "Load Shedding:",
+          "step2Desc": "Locate and disconnect high-power appliances (water heaters, HVAC units, space heaters) to identify the overload source.",
+          "step3Title": "Thermal Scan:",
+          "step3Desc": "Inspect the electrical board using a thermal camera to look for loose connections or damaged wiring."
+        },
+        "voltage": {
+          "step1Title": "Phase Test:",
+          "step1Desc": "Measure line voltage at the distribution panel to verify if it falls between 210V - 230V.",
+          "step2Title": "Neutral Check:",
+          "step2Desc": "Verify that the neutral-to-ground voltage is below 2.0V. High neutral voltage indicates neutral drift.",
+          "step3Title": "Grid Sync:",
+          "step3Desc": "Report phase drops to the utility company if the grid failure is external."
+        },
+        "gas": {
+          "step1Title": "Main Valve Shut-off:",
+          "step1Desc": "Close the manual gas valve at the property immediately.",
+          "step2Title": "Ventilation:",
+          "step2Desc": "Open windows and doors to disperse the gas concentration. Do NOT toggle electrical switches.",
+          "step3Title": "Sensor Calibration:",
+          "step3Desc": "Inspect the gas safety unit sensor for contamination or damage."
+        },
+        "generic": {
+          "step1Title": "Site Audit:",
+          "step1Desc": "Visit the property to confirm if there are any visible signs of damage.",
+          "step2Title": "Inspect Devices:",
+          "step2Desc": "Confirm the safety gateway has normal LED signals and is communicating correctly."
+        }
+      }
+    },
+    "devicesPage": {
+      "loading": "Scanning IoT fleet...",
+      "title": "Device Fleet Overview",
+      "subtitle": "Monitoring {count} ESP32 Gateway nodes.",
+      "exportWarning": "No devices to export.",
+      "filters": {
+        "allAssets": "All Assets",
+        "online": "Online",
+        "needsMaintenance": "Needs Maintenance",
+        "offline": "Offline",
+        "unassigned": "Unassigned"
+      },
+      "kpis": {
+        "operationalStatus": "OPERATIONAL STATUS",
+        "gatewayLoad": "GATEWAY LOAD",
+        "activeAlerts": "ACTIVE ALERTS",
+        "firmwareDrift": "FIRMWARE DRIFT",
+        "critical": "Critical",
+        "loadUnit": "avg msg/s",
+        "driftUnit": "nodes out-of-sync"
+      },
+      "inventory": {
+        "title": "ESP32 Gateway Fleet",
+        "searchPlaceholder": "Search by Device ID or Site Location...",
+        "headers": {
+          "deviceId": "DEVICE ID",
+          "siteLocation": "SITE LOCATION",
+          "status": "STATUS",
+          "wifiRssi": "WI-FI RSSI",
+          "firmware": "FIRMWARE",
+          "uptime": "UPTIME",
+          "actions": "ACTIONS"
+        },
+        "statuses": {
+          "online": "ONLINE",
+          "lowSignal": "LOW SIGNAL",
+          "commFailure": "COMM FAILURE",
+          "updatePending": "UPDATE PENDING"
+        },
+        "text": {
+          "timeout": "Timeout",
+          "outdated": "Outdated",
+          "reboot": "Reboot",
+          "flash": "Flash",
+          "manage": "Manage"
+        },
+        "showingText": "Showing {start} to {end} of {total} entries"
+      }
+    },
+    "deviceDetailsPage": {
+      "loading": "Loading device details...",
+      "breadcrumbs": {
+        "devices": "DEVICES"
+      },
+      "header": {
+        "title": "ESP32 Gateway Node ({location})",
+        "calibrateBtn": "Calibrate Sensor",
+        "calibrating": "Calibrating..."
+      },
+      "liveTelemetry": {
+        "title": "Environmental Stability",
+        "kicker": "LIVE TELEMETRY",
+        "status": {
+          "active": "ACTIVE",
+          "offline": "OFFLINE"
+        },
+        "labels": {
+          "lastSyncTime": "LAST SYNC TIME",
+          "signal": "SIGNAL (RSSI)",
+          "health": "HEALTH"
+        },
+        "subs": {
+          "localTime": "Local Time",
+          "excellent": "EXCELLENT",
+          "nominalOps": "NOMINAL OPS",
+          "commFailure": "COMM FAILURE"
+        }
+      },
+      "connectionDetails": {
+        "kicker": "CONNECTION DETAILS",
+        "labels": {
+          "ssid": "SSID",
+          "ipAddress": "IP Address",
+          "macAddress": "MAC Address",
+          "protocol": "Protocol",
+          "lastSync": "LAST SYNC"
+        },
+        "values": {
+          "never": "Never",
+          "justNow": "Just now",
+          "secondsAgo": "{seconds} seconds ago",
+          "minutesAgo": "{minutes} minute ago",
+          "minutesAgoPlural": "{minutes} minutes ago"
+        }
+      },
+      "analytics": {
+        "title": "High-Density Sensor Analytics",
+        "labels": {
+          "gasLevel": "GAS LEVEL",
+          "waterFlow": "WATER FLOW",
+          "energyConsumption": "ENERGY CONSUMPTION",
+          "voltageSafety": "VOLTAGE SAFETY",
+          "motionSensor": "MOTION SENSOR",
+          "deviceStatus": "DEVICE STATUS",
+          "signalStrength": "SIGNAL STRENGTH",
+          "ramUsage": "RAM USAGE",
+          "packetLoss": "PACKET LOSS",
+          "avgTemp": "AVG TEMP",
+          "peakLoad": "PEAK LOAD"
+        },
+        "trends": {
+          "nominal": "NOMINAL",
+          "active": "ACTIVE",
+          "stable": "STABLE",
+          "optimal": "OPTIMAL",
+          "excellent": "EXCELLENT",
+          "alert": "ALERT",
+          "voltageOk": "VOLTAGE OK",
+          "voltageDrop": "VOLTAGE DROP",
+          "highAlert": "HIGH ALERT",
+          "highFlow": "HIGH FLOW",
+          "overload": "OVERLOAD",
+          "presenceDetected": "PRESENCE DETECTED",
+          "disconnected": "DISCONNECTED"
+        }
+      },
+      "eventLogs": {
+        "kicker": "SYSTEM EVENT LOGS",
+        "buttons": {
+          "collapse": "COLLAPSE LOGS",
+          "viewAll": "VIEW ALL LOGS"
+        },
+        "messages": {
+          "calibrationSuccessfulTitle": "Calibration Successful",
+          "calibrationSuccessfulDesc": "Internal sensor range adjusted to ±0.2°C.",
+          "fringeSignalTitle": "Fringe Signal Detected",
+          "fringeSignalDesc": "RSSI dropped below -75dBm for 12 seconds.",
+          "routineHeartbeatTitle": "Routine Heartbeat",
+          "routineHeartbeatDesc": "System status report sent to main gateway.",
+          "rebootInitiatedTitle": "Reboot Initiated",
+          "rebootInitiatedDesc": "System hard reboot requested by administrator. Connection closed.",
+          "firmwareFlashedTitle": "Firmware Flashed",
+          "firmwareFlashedDesc": "System flashed successfully to v2.4.1-stable.",
+          "sensorCalibratedTitle": "Sensor Calibrated",
+          "sensorCalibratedDesc": "Calibration successful. Zero offset adjusted. Current Temp: {val}",
+          "voltageSpikeDetectedTitle": "Voltage Spike Detected",
+          "voltageSpikeDetectedDesc": "Voltage reached 245V for 0.5s.",
+          "powerCycleInitiatedTitle": "Power Cycle Initiated",
+          "powerCycleInitiatedDesc": "Manual reboot triggered by landlord.",
+          "gasLeakWarningTitle": "Gas Leak Warning",
+          "gasLeakWarningDesc": "Gas reading reached 25 ppm.",
+          "sensorPreheatCompleteTitle": "Sensor Pre-heat Complete",
+          "sensorPreheatCompleteDesc": "Chamber reached operational temperature of 120°C."
+        }
+      },
+      "hardwareProfile": {
+        "kicker": "HARDWARE PROFILE",
+        "labels": {
+          "firmwareVersion": "FIRMWARE VERSION",
+          "hardwareRev": "HARDWARE REV",
+          "coreFrequency": "CORE FREQUENCY",
+          "chipTemp": "CHIP TEMP"
+        },
+        "buttons": {
+          "updating": "UPDATING...",
+          "firmwareUpdate": "FIRMWARE UPDATE",
+          "firmwareUpToDate": "FIRMWARE UP-TO-DATE",
+          "rebooting": "REBOOTING...",
+          "offline": "OFFLINE",
+          "hardReboot": "HARD REBOOT"
+        }
+      }
+    }
 }

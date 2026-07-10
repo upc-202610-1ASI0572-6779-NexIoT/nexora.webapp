@@ -2,9 +2,9 @@
   <div class="table-container">
     <div class="table-header">
       <div class="table-title-group">
-        <h2 class="table-title">Recent Critical Events</h2>
+        <h2 class="table-title">{{ t('alertsPage.table.title') }}</h2>
         <span class="live-updates-badge">
-          <span class="pulse-dot"></span> LIVE UPDATES
+          <span class="pulse-dot"></span> {{ t('alertsPage.table.liveUpdates') }}
         </span>
       </div>
       <div class="table-actions">
@@ -24,39 +24,39 @@
     <!-- Collapsible Filter Panel -->
     <div v-if="showFilters" class="filter-panel">
       <div class="filter-group">
-        <label for="filter-severity">Severity</label>
+        <label for="filter-severity">{{ t('alertsPage.table.severity') }}</label>
         <select id="filter-severity" v-model="selectedSeverity" @change="applyFilters" class="filter-select">
-          <option value="">All Severities</option>
-          <option value="Warning">Warning</option>
-          <option value="Critical">Critical</option>
+          <option value="">{{ t('alertsPage.table.severityAll') }}</option>
+          <option value="Warning">{{ t('alertsPage.table.severityWarning') }}</option>
+          <option value="Critical">{{ t('alertsPage.table.severityCritical') }}</option>
         </select>
       </div>
       
       <div class="filter-group">
-        <label for="filter-type">Alert Type</label>
+        <label for="filter-type">{{ t('alertsPage.table.type') }}</label>
         <select id="filter-type" v-model="selectedType" @change="applyFilters" class="filter-select">
-          <option value="">All Types</option>
-          <option value="Gas">Gas Threshold</option>
-          <option value="Overcurrent">Overcurrent Detected</option>
-          <option value="Voltage">Voltage Instability</option>
-          <option value="Intrusión">Intrusión (Security)</option>
+          <option value="">{{ t('alertsPage.table.typeAll') }}</option>
+          <option value="Gas">{{ t('alertsPage.table.typeGas') }}</option>
+          <option value="Overcurrent">{{ t('alertsPage.table.typeOvercurrent') }}</option>
+          <option value="Voltage">{{ t('alertsPage.table.typeVoltage') }}</option>
+          <option value="Intrusión">{{ t('alertsPage.table.typeIntrusion') }}</option>
         </select>
       </div>
       
       <button v-if="selectedSeverity || selectedType" class="clear-filters-btn" @click="resetAllFilters">
-        Clear Filters
+        {{ t('alertsPage.table.clearFilters') }}
       </button>
     </div>
     
     <table class="events-table">
       <thead>
         <tr>
-          <th>Timestamp</th>
-          <th>Device ID</th>
-          <th>Sensor Type</th>
-          <th>Reading</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th>{{ t('alertsPage.table.headers.timestamp') }}</th>
+          <th>{{ t('alertsPage.table.headers.deviceId') }}</th>
+          <th>{{ t('alertsPage.table.headers.sensorType') }}</th>
+          <th>{{ t('alertsPage.table.headers.reading') }}</th>
+          <th>{{ t('alertsPage.table.headers.status') }}</th>
+          <th>{{ t('alertsPage.table.headers.actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -100,9 +100,7 @@
     </table>
     
     <div class="table-footer">
-      <span class="showing-text">
-        Showing <strong>{{ showingStart }} - {{ showingEnd }}</strong> of <strong>{{ totalAlerts }}</strong> total alerts
-      </span>
+      <span class="showing-text" v-html="t('alertsPage.table.showingText', { start: showingStart, end: showingEnd, total: totalAlerts })"></span>
       <div class="pagination" v-if="totalPages > 1">
         <button 
           class="page-btn" 
@@ -139,6 +137,9 @@
 <script setup>
 import { computed, ref } from 'vue';
 import StatusBadge from './StatusBadge.vue';
+import { useI18n } from '@/shared/presentation/i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   events: {

@@ -46,7 +46,7 @@
       </div>
     </div>
 
-    <SettingsModal :is-open="isSettingsOpen" @close="isSettingsOpen = false" />
+    <SettingsModal :is-open="isSettingsOpen" @close="isSettingsOpen = false" @edit-profile="handleOpenEditFromSettings" />
 
     <HelpCenter :is-open="isHelpCenterOpen" @close="isHelpCenterOpen = false" />
   </div>
@@ -101,6 +101,11 @@ function handleCloseEdit() {
 function handleSaveEdit() {
   isEditProfileOpen.value = false;
   isProfileOpen.value = true;
+}
+
+function handleOpenEditFromSettings() {
+  isSettingsOpen.value = false;
+  isEditProfileOpen.value = true;
 }
 
 const isFullPageRoute = computed(() => {

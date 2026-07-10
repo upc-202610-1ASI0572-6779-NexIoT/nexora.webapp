@@ -3,7 +3,9 @@ import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useDevicesStore } from '../store/devicesStore';
 import KpiCard from '@/contexts/service-monitoring/dashboard/presentation/components/KpiCard.vue';
 import apiClient from '@/shared/infrastructure/http/apiClient';
+import { useI18n } from '@/shared/presentation/i18n';
 
+const { t } = useI18n();
 const devicesStore = useDevicesStore();
 const activeFilter = ref('All Assets');
 const currentPage = ref(1);
@@ -86,16 +88,23 @@ const setFilter = (filterName) => {
 const exportInventory = () => {
   const list = filteredDevices.value;
   if (list.length === 0) {
-    alert('No devices to export.');
+    alert(t('devicesPage.exportWarning'));
     return;
   }
 
-  const headers = ['DEVICE ID', 'SITE LOCATION', 'STATUS', 'WI-FI RSSI', 'FIRMWARE', 'UPTIME'];
+  const headers = [
+    t('devicesPage.inventory.headers.deviceId'),
+    t('devicesPage.inventory.headers.siteLocation'),
+    t('devicesPage.inventory.headers.status'),
+    t('devicesPage.inventory.headers.wifiRssi'),
+    t('devicesPage.inventory.headers.firmware'),
+    t('devicesPage.inventory.headers.uptime')
+  ];
   const rows = list.map(d => [
     d.id,
     d.location,
-    d.getStatusLabel(),
-    d.rssi !== null ? `${d.rssi} dBm` : 'Timeout',
+    getStatusText(d.status),
+    d.rssi !== null ? `${d.rssi} dBm` : t('devicesPage.inventory.text.timeout'),
     d.firmware,
     d.uptime
   ]);
@@ -117,11 +126,11 @@ const exportInventory = () => {
 };
 
 const filters = [
-  { name: 'All Assets', icon: 'microchip' },
-  { name: 'Online', icon: 'circle-check' },
-  { name: 'Needs Maintenance', icon: 'triangle-exclamation' },
-  { name: 'Offline', icon: 'circle-info' },
-  { name: 'Unassigned', icon: 'folder-open' }
+  { name: 'All Assets', labelKey: 'devicesPage.filters.allAssets', icon: 'microchip' },
+  { name: 'Online', labelKey: 'devicesPage.filters.online', icon: 'circle-check' },
+  { name: 'Needs Maintenance', labelKey: 'devicesPage.filters.needsMaintenance', icon: 'triangle-exclamation' },
+  { name: 'Offline', labelKey: 'devicesPage.filters.offline', icon: 'circle-info' },
+  { name: 'Unassigned', labelKey: 'devicesPage.filters.unassigned', icon: 'folder-open' }
 ];
 
 const getRssiIcon = (rssi) => {
@@ -150,10 +159,10 @@ const getStatusBadgeClass = (status) => {
 
 const getStatusText = (status) => {
   switch (status) {
-    case 'online': return 'ONLINE';
-    case 'low-signal': return 'LOW SIGNAL';
-    case 'comm-failure': return 'COMM FAILURE';
-    case 'update-pending': return 'UPDATE PENDING';
+    case 'online': return t('devicesPage.inventory.statuses.online');
+    case 'low-signal': return t('devicesPage.inventory.statuses.lowSignal');
+    case 'comm-failure': return t('devicesPage.inventory.statuses.commFailure');
+    case 'update-pending': return t('devicesPage.inventory.statuses.updatePending');
     default: return status.toUpperCase();
   }
 };
@@ -164,15 +173,15 @@ const getStatusText = (status) => {
     <!-- Loading State -->
     <div v-if="devicesStore.isLoading && devicesStore.devices.length === 0" class="loading-overlay">
       <div class="spinner"></div>
-      <p>Scanning IoT fleet...</p>
+      <p>{{ t('devicesPage.loading') }}</p>
     </div>
 
     <template v-else>
       <!-- 1. Fleet Header -->
       <header class="fleet-header">
         <div class="fleet-header__titles">
-          <h1 class="fleet-header__title">Device Fleet Overview</h1>
-          <p class="fleet-header__subtitle">Monitoring {{ devicesStore.devices.length }} ESP32 Gateway nodes.</p>
+          <h1 class="fleet-header__title">{{ t('devicesPage.title') }}</h1>
+          <p class="fleet-header__subtitle">{{ t('devicesPage.subtitle', { count: devicesStore.devices.length }) }}</p>
         </div>
         
         <div class="segmented-control">
@@ -183,7 +192,7 @@ const getStatusText = (status) => {
             @click="setFilter(filter.name)"
           >
             <font-awesome-icon :icon="filter.icon" class="segmented-control__icon" />
-            {{ filter.name }}
+            {{ t(filter.labelKey) }}
           </button>
         </div>
       </header>
@@ -191,7 +200,7 @@ const getStatusText = (status) => {
       <!-- 2. KPI Grid -->
       <div class="kpi-grid">
         <KpiCard 
-          title="OPERATIONAL STATUS" 
+          :title="t('devicesPage.kpis.operationalStatus')" 
           :value="devicesStore.kpis.operationalStatus" 
           subtitle="+0.4%"
           icon="check-circle"
@@ -200,23 +209,23 @@ const getStatusText = (status) => {
           trendDirection="up"
         />
         <KpiCard 
-          title="GATEWAY LOAD" 
+          :title="t('devicesPage.kpis.gatewayLoad')" 
           :value="devicesStore.kpis.gatewayLoad" 
-          subtitle="avg msg/s"
+          :subtitle="t('devicesPage.kpis.loadUnit')"
           icon="network-wired"
           variant="info"
         />
         <KpiCard 
-          title="ACTIVE ALERTS" 
+          :title="t('devicesPage.kpis.activeAlerts')" 
           :value="devicesStore.kpis.activeAlerts" 
-          subtitle="Critical"
+          :subtitle="t('devicesPage.kpis.critical')"
           icon="triangle-exclamation"
           variant="danger"
         />
         <KpiCard 
-          title="FIRMWARE DRIFT" 
+          :title="t('devicesPage.kpis.firmwareDrift')" 
           :value="devicesStore.kpis.firmwareDrift" 
-          subtitle="nodes out-of-sync"
+          :subtitle="t('devicesPage.kpis.driftUnit')"
           icon="download"
           variant="solid-orange"
         />
@@ -225,7 +234,7 @@ const getStatusText = (status) => {
       <!-- 3. Inventory Panel -->
       <section class="inventory-panel">
         <div class="inventory-panel__header">
-          <h2 class="inventory-panel__title">ESP32 Gateway Fleet</h2>
+          <h2 class="inventory-panel__title">{{ t('devicesPage.inventory.title') }}</h2>
           <div class="inventory-panel__actions">
             <button class="icon-button" :class="{ 'icon-button--active': showSearch }" @click="toggleSearch">
               <font-awesome-icon icon="filter" />
@@ -242,7 +251,7 @@ const getStatusText = (status) => {
           <input 
             type="text" 
             v-model="searchQuery" 
-            placeholder="Search by Device ID or Site Location..." 
+            :placeholder="t('devicesPage.inventory.searchPlaceholder')" 
             class="search-input"
           />
         </div>
@@ -251,13 +260,13 @@ const getStatusText = (status) => {
           <table class="data-table">
             <thead>
               <tr>
-                <th>DEVICE ID</th>
-                <th>SITE LOCATION</th>
-                <th>STATUS</th>
-                <th>WI-FI RSSI</th>
-                <th>FIRMWARE</th>
-                <th>UPTIME</th>
-                <th>ACTIONS</th>
+                <th>{{ t('devicesPage.inventory.headers.deviceId') }}</th>
+                <th>{{ t('devicesPage.inventory.headers.siteLocation') }}</th>
+                <th>{{ t('devicesPage.inventory.headers.status') }}</th>
+                <th>{{ t('devicesPage.inventory.headers.wifiRssi') }}</th>
+                <th>{{ t('devicesPage.inventory.headers.firmware') }}</th>
+                <th>{{ t('devicesPage.inventory.headers.uptime') }}</th>
+                <th>{{ t('devicesPage.inventory.headers.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -271,7 +280,7 @@ const getStatusText = (status) => {
                 <td>{{ device.location }}</td>
                 <td>
                   <span :class="['badge', getStatusBadgeClass(device.status)]">
-                    {{ device.getStatusLabel() }}
+                    {{ getStatusText(device.status) }}
                   </span>
                 </td>
                 <td>
@@ -280,25 +289,25 @@ const getStatusText = (status) => {
                       :icon="getRssiIcon(device.rssi)" 
                       :style="{ color: getRssiColor(device.rssi) }"
                     />
-                    <span>{{ device.rssi !== null ? device.rssi + ' dBm' : 'Timeout' }}</span>
+                    <span>{{ device.rssi !== null ? device.rssi + ' dBm' : t('devicesPage.inventory.text.timeout') }}</span>
                   </div>
                 </td>
                 <td>
                   <span :class="{ 'text-warning': device.needsUpdate() }">
-                    {{ device.firmware }} {{ device.needsUpdate() ? '(Outdated)' : '' }}
+                    {{ device.firmware }} {{ device.needsUpdate() ? '(' + t('devicesPage.inventory.text.outdated') + ')' : '' }}
                   </span>
                 </td>
                 <td>{{ device.uptime }}</td>
                 <td class="data-table__actions">
                   <template v-if="device.isOffline()">
-                    <button class="button--danger-small" @click="rebootDevice(device.id)">Reboot</button>
+                    <button class="button--danger-small" @click="rebootDevice(device.id)">{{ t('devicesPage.inventory.text.reboot') }}</button>
                   </template>
                   <template v-else-if="device.status === 'update-pending'">
-                    <a href="#" class="action-link" @click.prevent>Flash</a>
+                    <a href="#" class="action-link" @click.prevent>{{ t('devicesPage.inventory.text.flash') }}</a>
                   </template>
                   <template v-else>
                     <router-link :to="{ name: 'device-details', params: { deviceId: device.id } }" class="action-link">
-                      Manage
+                      {{ t('devicesPage.inventory.text.manage') }}
                     </router-link>
                   </template>
                 </td>
@@ -310,7 +319,11 @@ const getStatusText = (status) => {
         <div class="inventory-panel__footer">
           <div class="pagination">
             <span class="pagination__info">
-              Showing {{ filteredDevices.length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredDevices.length) }} of {{ filteredDevices.length }} entries
+              {{ t('devicesPage.inventory.showingText', { 
+                   start: filteredDevices.length === 0 ? 0 : (currentPage - 1) * pageSize + 1, 
+                   end: Math.min(currentPage * pageSize, filteredDevices.length), 
+                   total: filteredDevices.length 
+                 }) }}
             </span>
             <div class="pagination__controls">
               <button class="pagination__btn" :disabled="currentPage === 1 || totalPages === 1" @click="currentPage--">

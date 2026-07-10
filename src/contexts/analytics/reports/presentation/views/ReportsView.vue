@@ -2,8 +2,10 @@
 import { onMounted, computed } from 'vue';
 import { useReportsStore } from '../store/reportsStore';
 import apiClient from '@/shared/infrastructure/http/apiClient';
+import { useI18n } from '@/shared/presentation/i18n';
 
 const reportsStore = useReportsStore();
+const { t } = useI18n();
 
 onMounted(() => {
   reportsStore.fetchReportsData();
@@ -46,7 +48,12 @@ const getStatusBadgeClass = (status) => {
 };
 
 const getStatusText = (status) => {
-  return status.replace('-', ' ').toUpperCase();
+  switch (status) {
+    case 'optimal': return t('reportsPage.breakdown.status.optimal');
+    case 'monitor': return t('reportsPage.breakdown.status.monitor');
+    case 'high-load': return t('reportsPage.breakdown.status.highLoad');
+    default: return status.replace('-', ' ').toUpperCase();
+  }
 };
 
 const handleExportPdf = async () => {
@@ -74,20 +81,20 @@ const handleExportPdf = async () => {
     <!-- Loading State -->
     <div v-if="reportsStore.isLoading" class="loading-overlay">
       <div class="spinner"></div>
-      <p>Loading reports and insights...</p>
+      <p>{{ t('reportsPage.loading') }}</p>
     </div>
 
     <template v-else>
       <!-- 1. Header -->
       <header class="view-header">
         <div>
-          <h2 class="view-header__title">Consumption & Sustainability</h2>
-          <p class="view-header__subtitle">Analyze property efficiency, identify leakage anomalies, and manage resources.</p>
+          <h2 class="view-header__title">{{ t('reportsPage.title') }}</h2>
+          <p class="view-header__subtitle">{{ t('reportsPage.subtitle') }}</p>
         </div>
         <div class="view-header__actions">
           <button class="button--outline" @click="handleExportPdf">
             <font-awesome-icon icon="file-pdf" />
-            EXPORT PDF
+            {{ t('reportsPage.exportPdf') }}
           </button>
         </div>
       </header>
@@ -99,8 +106,10 @@ const handleExportPdf = async () => {
           <!-- Tarjeta de Costos -->
           <div class="kpi-card kpi-card--solid-blue">
             <div class="kpi-card__header">
-              <span class="kpi-card__label">ESTIMATED COST</span>
-              <span class="trend-badge trend-badge--success">-3.2% vs last period</span>
+              <span class="kpi-card__label">{{ t('reportsPage.kpis.estimatedCost') }}</span>
+              <span class="trend-badge trend-badge--success">
+                {{ t('reportsPage.kpis.vsLastPeriod', { trend: '-3.2' }) }}
+              </span>
             </div>
             <div class="kpi-card__value-row">
               <span class="kpi-card__value">${{ reportsStore.consumptionSummary.estimatedCost.toFixed(2) }}</span>
@@ -108,8 +117,8 @@ const handleExportPdf = async () => {
             </div>
             <div class="kpi-card__footer">
               <div class="budget-info">
-                <span>Monthly Budget Plan</span>
-                <span>{{ Math.round(reportsStore.consumptionSummary.budgetPercent) }}% used</span>
+                <span>{{ t('reportsPage.kpis.budgetPlan') }}</span>
+                <span>{{ t('reportsPage.kpis.budgetUsed', { percent: Math.round(reportsStore.consumptionSummary.budgetPercent) }) }}</span>
               </div>
               <div class="progress-bar">
                 <div class="progress-bar__fill" :style="{ width: reportsStore.consumptionSummary.budgetPercent + '%' }"></div>
@@ -120,7 +129,7 @@ const handleExportPdf = async () => {
           <!-- Tarjeta de Luz -->
           <div v-if="reportsStore.hasElectricityLinked" class="kpi-card">
             <div class="kpi-card__header">
-              <span class="kpi-card__label">TOTAL ENERGY</span>
+              <span class="kpi-card__label">{{ t('reportsPage.kpis.totalEnergy') }}</span>
               <div class="kpi-card__icon-box kpi-card__icon-box--orange">
                 <font-awesome-icon icon="bolt" />
               </div>
@@ -129,13 +138,13 @@ const handleExportPdf = async () => {
               <span class="kpi-card__value">{{ reportsStore.consumptionSummary.totalElectricity }}</span>
               <span class="kpi-card__unit">kWh</span>
             </div>
-            <span class="kpi-card__subtitle">Across all active properties</span>
+            <span class="kpi-card__subtitle">{{ t('reportsPage.kpis.allProperties') }}</span>
           </div>
 
           <!-- Tarjeta de Gas -->
           <div v-if="reportsStore.hasGasLinked" class="kpi-card">
             <div class="kpi-card__header">
-              <span class="kpi-card__label">TOTAL GAS</span>
+              <span class="kpi-card__label">{{ t('reportsPage.kpis.totalGas') }}</span>
               <div class="kpi-card__icon-box kpi-card__icon-box--blue">
                 <font-awesome-icon icon="fire-flame-curved" />
               </div>
@@ -144,7 +153,7 @@ const handleExportPdf = async () => {
               <span class="kpi-card__value">{{ reportsStore.consumptionSummary.totalGas }}</span>
               <span class="kpi-card__unit">m³</span>
             </div>
-            <span class="kpi-card__subtitle">Aggregated gas consumption</span>
+            <span class="kpi-card__subtitle">{{ t('reportsPage.kpis.aggregatedGas') }}</span>
           </div>
         </div>
 
@@ -152,22 +161,22 @@ const handleExportPdf = async () => {
         <section class="comparative-chart-card">
           <header class="chart-header">
             <div>
-              <h3 class="chart-header__title">Comparative Resource Usage</h3>
-              <p class="view-header__subtitle">Compare consumption across selected timeline.</p>
+              <h3 class="chart-header__title">{{ t('reportsPage.chart.title') }}</h3>
+              <p class="view-header__subtitle">{{ t('reportsPage.chart.subtitle') }}</p>
             </div>
 
             <div class="chart-header__legend">
               <div v-if="reportsStore.hasElectricityLinked" class="legend-item">
                 <span class="dot dot--blue"></span>
-                <span>Energy (kWh)</span>
+                <span>{{ t('reportsPage.chart.energy') }}</span>
               </div>
               <div v-if="reportsStore.hasGasLinked" class="legend-item">
                 <span class="dot dot--orange"></span>
-                <span>Gas (m³)</span>
+                <span>{{ t('reportsPage.chart.gas') }}</span>
               </div>
               <div v-if="reportsStore.hasWaterLinked" class="legend-item">
                 <span class="dot dot--cyan"></span>
-                <span>Water (m³)</span>
+                <span>{{ t('reportsPage.chart.water') }}</span>
               </div>
             </div>
 
@@ -176,11 +185,11 @@ const handleExportPdf = async () => {
                 v-model="reportsStore.selectedMonths"
                 @change="reportsStore.fetchReportsData()"
             >
-              <option :value="1">Last Month</option>
-              <option :value="3">Last 3 Months</option>
-              <option :value="6">Last 6 Months</option>
-              <option :value="12">Last Year</option>
-              <option :value="24">Last 2 Years</option>
+              <option :value="1">{{ t('reportsPage.chart.filters.lastMonth') }}</option>
+              <option :value="3">{{ t('reportsPage.chart.filters.last3Months') }}</option>
+              <option :value="6">{{ t('reportsPage.chart.filters.last6Months') }}</option>
+              <option :value="12">{{ t('reportsPage.chart.filters.lastYear') }}</option>
+              <option :value="24">{{ t('reportsPage.chart.filters.last2Years') }}</option>
             </select>
           </header>
 
@@ -224,20 +233,20 @@ const handleExportPdf = async () => {
         <!-- Panel Izquierdo: Desglose por Propiedad -->
         <section class="property-breakdown-panel">
           <header class="panel-header">
-            <h3 class="panel-header__title">Property Breakdown</h3>
-            <router-link :to="{ name: 'buildings' }" class="view-all-link">VIEW ALL PROPERTIES ></router-link>
+            <h3 class="panel-header__title">{{ t('reportsPage.breakdown.title') }}</h3>
+            <router-link :to="{ name: 'buildings' }" class="view-all-link">{{ t('reportsPage.breakdown.viewAll') }}</router-link>
           </header>
 
           <div class="table-container">
             <table class="data-table--minimal">
               <thead>
               <tr>
-                <th>PROPERTY NAME</th>
-                <th>LOCATION</th>
-                <th v-if="reportsStore.hasElectricityLinked">ENERGY (kWh)</th>
-                <th v-if="reportsStore.hasGasLinked">GAS (m³)</th>
-                <th v-if="reportsStore.hasWaterLinked">WATER (m³)</th>
-                <th>STATUS</th>
+                <th>{{ t('reportsPage.breakdown.headers.name') }}</th>
+                <th>{{ t('reportsPage.breakdown.headers.location') }}</th>
+                <th v-if="reportsStore.hasElectricityLinked">{{ t('reportsPage.breakdown.headers.energy') }}</th>
+                <th v-if="reportsStore.hasGasLinked">{{ t('reportsPage.breakdown.headers.gas') }}</th>
+                <th v-if="reportsStore.hasWaterLinked">{{ t('reportsPage.breakdown.headers.water') }}</th>
+                <th>{{ t('reportsPage.breakdown.headers.status') }}</th>
               </tr>
               </thead>
               <tbody>

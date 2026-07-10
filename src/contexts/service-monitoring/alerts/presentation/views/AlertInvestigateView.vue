@@ -6,28 +6,28 @@
         <div class="breadcrumbs">
           <router-link to="/dashboard">DASHBOARD</router-link> >
           <router-link to="/alerts">ALERTS CENTER</router-link> >
-          <strong>INVESTIGATION #{{ alertId }}</strong>
+          <strong v-html="t('alertInvestigation.breadcrumbs', { id: alertId })"></strong>
         </div>
-        <h1 class="page-title">Alert Investigation</h1>
-        <p class="page-subtitle">Real-time diagnostics and maintenance resolution interface.</p>
+        <h1 class="page-title">{{ t('alertInvestigation.title') }}</h1>
+        <p class="page-subtitle">{{ t('alertInvestigation.subtitle') }}</p>
       </div>
       <button class="back-btn" @click="$router.push('/alerts')">
-        <font-awesome-icon icon="arrow-left" /> Back to Alerts Center
+        <font-awesome-icon icon="arrow-left" /> {{ t('alertInvestigation.backBtn') }}
       </button>
     </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
       <div class="spinner"></div>
-      <p>Loading diagnostic details from Cloud Gateway...</p>
+      <p>{{ t('alertInvestigation.loading') }}</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <font-awesome-icon icon="triangle-exclamation" class="error-icon" />
-      <h3>Failed to Load Alert</h3>
+      <h3>{{ t('alertInvestigation.error.title') }}</h3>
       <p>{{ error }}</p>
-      <button class="retry-btn" @click="fetchAlertDetails">Retry Connection</button>
+      <button class="retry-btn" @click="fetchAlertDetails">{{ t('alertInvestigation.error.retry') }}</button>
     </div>
 
     <!-- Main Investigation Console -->
@@ -39,29 +39,29 @@
           <div class="panel-header">
             <span class="severity-badge" :class="alert.severity.toLowerCase()">
               <font-awesome-icon :icon="alert.severity === 'Critical' ? 'triangle-exclamation' : 'exclamation-circle'" />
-              {{ alert.severity.toUpperCase() }}
+              {{ alert.severity === 'Critical' ? t('alertInvestigation.severity.critical') : t('alertInvestigation.severity.warning') }}
             </span>
-            <span class="timestamp">Logged: {{ formatDateTime(alert.timestamp) }}</span>
+            <span class="timestamp">{{ t('alertInvestigation.logged', { dateTime: formatDateTime(alert.timestamp) }) }}</span>
           </div>
           <h2 class="alert-type-title">{{ alert.type }}</h2>
           <p class="device-label">
-            <font-awesome-icon icon="microchip" /> Device Signature: <code>{{ alert.deviceId }}</code>
+            <font-awesome-icon icon="microchip" /> {{ t('alertInvestigation.deviceSignature') }} <code>{{ alert.deviceId }}</code>
           </p>
           <div class="alert-explanation">
             <p v-if="alert.type.includes('Overcurrent')">
-              <strong>Diagnostic Summary:</strong> The current consumption on this line exceeded the maximum safe current limit of <strong>20.0 Amps</strong>. This indicates an overload anomaly, which could trigger safety relays or represent a hazard for the electrical grid.
+              {{ t('alertInvestigation.diagnostics.overcurrent') }}
             </p>
             <p v-else-if="alert.type.includes('Voltage')">
-              <strong>Diagnostic Summary:</strong> Grid instability has been reported by the safety unit (`VoltageOk` status is False). This indicates voltage drops, sags, or potential micro-outages in the power supply.
+              {{ t('alertInvestigation.diagnostics.voltage') }}
             </p>
             <p v-else-if="alert.type.includes('Gas')">
-              <strong>Diagnostic Summary:</strong> Combustible gas levels have exceeded safety levels. Values above 100 PPM require warnings, while readings exceeding 300 PPM demand critical emergency response.
+              {{ t('alertInvestigation.diagnostics.gas') }}
             </p>
             <p v-else-if="alert.type.includes('Intrusión') || alert.type.includes('intrusion')">
-              <strong>Diagnostic Summary:</strong> Motion or access sensor triggered while the security system is armed. This represents a potential intrusion warning.
+              {{ t('alertInvestigation.diagnostics.intrusion') }}
             </p>
             <p v-else>
-              <strong>Diagnostic Summary:</strong> Safety threshold breached. Inspect device logs and telemetry historical timeline below to identify potential causes.
+              {{ t('alertInvestigation.diagnostics.generic') }}
             </p>
           </div>
         </div>
@@ -71,28 +71,28 @@
           <div class="card-header">
             <h3>
               <font-awesome-icon icon="building" class="header-icon" />
-              Associated Property Asset
+              {{ t('alertInvestigation.propertyCard.title') }}
             </h3>
             <span class="security-status" :class="{ armed: alert.device?.property?.isSecurityModeArmed }">
               <font-awesome-icon :icon="alert.device?.property?.isSecurityModeArmed ? 'lock' : 'lock-open'" />
-              {{ alert.device?.property?.isSecurityModeArmed ? 'SECURITY ARMED' : 'SECURITY DISARMED' }}
+              {{ alert.device?.property?.isSecurityModeArmed ? t('alertInvestigation.propertyCard.armed') : t('alertInvestigation.propertyCard.disarmed') }}
             </span>
           </div>
           <div v-if="alert.device?.property" class="property-details-grid">
             <div class="detail-item">
-              <span class="label">Property Name</span>
+              <span class="label">{{ t('alertInvestigation.propertyCard.name') }}</span>
               <span class="value">{{ alert.device.property.name }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Address</span>
+              <span class="label">{{ t('alertInvestigation.propertyCard.address') }}</span>
               <span class="value">{{ alert.device.property.address }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">City & Country</span>
+              <span class="label">{{ t('alertInvestigation.propertyCard.cityCountry') }}</span>
               <span class="value">{{ alert.device.property.city }}, {{ alert.device.property.country }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Device Connection</span>
+              <span class="label">{{ t('alertInvestigation.propertyCard.connection') }}</span>
               <span class="value connection-status" :class="alert.device.connectionStatus.toLowerCase()">
                 <span class="status-dot"></span>
                 {{ alert.device.connectionStatus }}
@@ -101,7 +101,7 @@
           </div>
           <div v-else class="no-data">
             <font-awesome-icon icon="info-circle" />
-            No property assigned to this safety gateway. This alert applies to all accounts viewing this unit.
+            {{ t('alertInvestigation.propertyCard.noProperty') }}
           </div>
         </div>
 
@@ -110,10 +110,10 @@
           <div class="card-header">
             <h3>
               <font-awesome-icon icon="chart-line" class="header-icon" />
-              Historical Telemetry Logs (Recent readings)
+              {{ t('alertInvestigation.telemetryCard.title') }}
             </h3>
             <span class="live-indicator">
-              <span class="pulse-dot"></span> Live Link Active
+              <span class="pulse-dot"></span> {{ t('alertInvestigation.telemetryCard.liveLink') }}
             </span>
           </div>
           
@@ -121,12 +121,11 @@
             <table class="telemetry-table">
               <thead>
                 <tr>
-                  <th>Timestamp</th>
-                  <th v-if="hasGas()">Gas Level (PPM)</th>
-                  <th v-else>Electricity (Amps)</th>
-                  <th>Grid Voltage Status</th>
-                  <!-- <th>Presence / Motion</th> -->
-                  <th>Water Flow (Lpm)</th>
+                  <th>{{ t('alertInvestigation.telemetryCard.headers.timestamp') }}</th>
+                  <th v-if="hasGas()">{{ t('alertInvestigation.telemetryCard.headers.gasLevel') }}</th>
+                  <th v-else>{{ t('alertInvestigation.telemetryCard.headers.electricity') }}</th>
+                  <th>{{ t('alertInvestigation.telemetryCard.headers.voltageStatus') }}</th>
+                  <th>{{ t('alertInvestigation.telemetryCard.headers.waterFlow') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,29 +138,23 @@
                     </span>
                     <span v-else>
                       <span v-if="hasElectricity()">{{ formatDecimal(log.electricityReading) }} A</span>
-                      <span v-else class="text-muted">Not Available</span>
+                      <span v-else class="text-muted">{{ t('alertInvestigation.telemetryCard.values.notAvailable') }}</span>
                     </span>
                   </td>
                   <td>
                     <span v-if="hasVoltage()" class="grid-badge" :class="log.voltageOk ? 'ok' : 'error'">
                       <font-awesome-icon :icon="log.voltageOk ? 'circle-check' : 'xmark'" />
-                      {{ log.voltageOk ? 'Stable' : 'Unstable' }}
+                      {{ log.voltageOk ? t('alertInvestigation.telemetryCard.values.stable') : t('alertInvestigation.telemetryCard.values.unstable') }}
                     </span>
-                    <span v-else class="text-muted">Not Available</span>
+                    <span v-else class="text-muted">{{ t('alertInvestigation.telemetryCard.values.notAvailable') }}</span>
                   </td>
-                  <!-- Commented out Presence / Motion column cell -->
-                  <!-- <td>
-                    <span class="presence-badge" :class="{ active: log.presenceReading }">
-                      {{ log.presenceReading ? 'Motion' : 'None' }}
-                    </span>
-                  </td> -->
                   <td>
                     <span v-if="hasWater()">{{ formatDecimal(log.waterReading) }} Lpm</span>
-                    <span v-else class="text-muted">Not Available</span>
+                    <span v-else class="text-muted">{{ t('alertInvestigation.telemetryCard.values.notAvailable') }}</span>
                   </td>
                 </tr>
                 <tr v-if="!alert.recentTelemetry || alert.recentTelemetry.length === 0">
-                  <td colspan="4" class="empty-table">No telemetry records registered for this safety unit.</td>
+                  <td colspan="4" class="empty-table">{{ t('alertInvestigation.telemetryCard.empty') }}</td>
                 </tr>
               </tbody>
             </table>
@@ -173,30 +166,30 @@
       <div class="actions-column">
         <!-- Maintenance Ticket Panel -->
         <div class="action-card ticket-panel">
-          <h3>Incident Management</h3>
-          <p class="panel-desc">Manage the maintenance lifecycle and log the engineer resolution.</p>
+          <h3>{{ t('alertInvestigation.ticketPanel.title') }}</h3>
+          <p class="panel-desc">{{ t('alertInvestigation.ticketPanel.subtitle') }}</p>
 
           <div class="ticket-status-box" :class="ticket ? ticket.status.toLowerCase() : 'none'">
-            <span class="box-label">TICKET STATUS</span>
-            <span class="box-value">{{ ticket ? ticket.status.toUpperCase() : 'NO TICKET CREATED' }}</span>
+            <span class="box-label">{{ t('alertInvestigation.ticketPanel.statusLabel') }}</span>
+            <span class="box-value">{{ ticket ? ticket.status.toUpperCase() : t('alertInvestigation.ticketPanel.noTicket') }}</span>
           </div>
 
           <!-- Ticket details if exists -->
           <div v-if="ticket" class="ticket-info">
             <div class="info-row">
-              <span>Ticket ID:</span>
+              <span>{{ t('alertInvestigation.ticketPanel.details.id') }}</span>
               <strong>#{{ ticket.id }}</strong>
             </div>
             <div class="info-row">
-              <span>Assigned To:</span>
+              <span>{{ t('alertInvestigation.ticketPanel.details.assigned') }}</span>
               <strong>{{ ticket.assignedTo || 'Unassigned' }}</strong>
             </div>
             <div class="info-row">
-              <span>Opened At:</span>
+              <span>{{ t('alertInvestigation.ticketPanel.details.opened') }}</span>
               <span>{{ formatDateTime(ticket.createdAt) }}</span>
             </div>
             <div v-if="ticket.resolvedAt" class="info-row">
-              <span>Resolved At:</span>
+              <span>{{ t('alertInvestigation.ticketPanel.details.resolved') }}</span>
               <span>{{ formatDateTime(ticket.resolvedAt) }}</span>
             </div>
           </div>
@@ -205,69 +198,69 @@
           <div class="ticket-actions-form">
             <!-- Create ticket if not exists -->
             <div v-if="!ticket" class="form-group">
-              <label for="technician">Assign Safety Inspector / Engineer</label>
+              <label for="technician">{{ t('alertInvestigation.ticketPanel.assign.label') }}</label>
               <select id="technician" v-model="technicianName" class="form-select">
-                <option value="">-- Select Engineer --</option>
-                <option value="Ing. Carlos Mendoza">Ing. Carlos Mendoza (Electrical Inspector)</option>
-                <option value="Ing. Sofía Reyes">Ing. Sofía Reyes (Gas Safety Expert)</option>
-                <option value="Tech. Juan Torres">Tech. Juan Torres (Field Technician)</option>
+                <option value="">{{ t('alertInvestigation.ticketPanel.assign.placeholder') }}</option>
+                <option value="Ing. Carlos Mendoza">{{ t('alertInvestigation.ticketPanel.assign.carlos') }}</option>
+                <option value="Ing. Sofía Reyes">{{ t('alertInvestigation.ticketPanel.assign.sofia') }}</option>
+                <option value="Tech. Juan Torres">{{ t('alertInvestigation.ticketPanel.assign.juan') }}</option>
               </select>
               <button class="primary-btn mt-12" @click="createTicket" :disabled="isActionLoading">
-                <font-awesome-icon icon="plus" /> Open Maintenance Ticket
+                <font-awesome-icon icon="plus" /> {{ t('alertInvestigation.ticketPanel.buttons.openTicket') }}
               </button>
             </div>
 
             <!-- Ticket exists and is Pending or Assigned -->
             <div v-else-if="ticket.status !== 'Resolved'">
               <div v-if="!ticket.assignedTo" class="form-group mb-12">
-                <label for="technicianAssign">Assign Safety Inspector</label>
+                <label for="technicianAssign">{{ t('alertInvestigation.ticketPanel.assign.label') }}</label>
                 <select id="technicianAssign" v-model="technicianName" class="form-select">
-                  <option value="">-- Select Engineer --</option>
-                  <option value="Ing. Carlos Mendoza">Ing. Carlos Mendoza (Electrical Inspector)</option>
-                  <option value="Ing. Sofía Reyes">Ing. Sofía Reyes (Gas Safety Expert)</option>
-                  <option value="Tech. Juan Torres">Tech. Juan Torres (Field Technician)</option>
+                  <option value="">{{ t('alertInvestigation.ticketPanel.assign.placeholder') }}</option>
+                  <option value="Ing. Carlos Mendoza">{{ t('alertInvestigation.ticketPanel.assign.carlos') }}</option>
+                  <option value="Ing. Sofía Reyes">{{ t('alertInvestigation.ticketPanel.assign.sofia') }}</option>
+                  <option value="Tech. Juan Torres">{{ t('alertInvestigation.ticketPanel.assign.juan') }}</option>
                 </select>
                 <button class="secondary-btn mt-12" @click="assignTechnician" :disabled="!technicianName || isActionLoading">
-                  Assign Inspector
+                  {{ t('alertInvestigation.ticketPanel.buttons.assignInspector') }}
                 </button>
               </div>
               <button class="success-btn w-100" @click="resolveTicket" :disabled="isActionLoading">
-                <font-awesome-icon icon="check" /> Mark Incident as Resolved
+                <font-awesome-icon icon="check" /> {{ t('alertInvestigation.ticketPanel.buttons.resolve') }}
               </button>
             </div>
 
             <div v-else class="resolved-note">
               <font-awesome-icon icon="circle-check" class="resolved-icon" />
-              <p>This incident has been fully resolved and marked as safe. The safety gateway logs are preserved for audits.</p>
+              <p>{{ t('alertInvestigation.ticketPanel.resolvedNote') }}</p>
             </div>
           </div>
         </div>
 
         <!-- Safety Protocols Card -->
         <div class="action-card protocol-card">
-          <h3>Emergency Protocols</h3>
-          <p class="panel-desc">Mandatory procedures for the assigned engineer.</p>
+          <h3>{{ t('alertInvestigation.protocols.title') }}</h3>
+          <p class="panel-desc">{{ t('alertInvestigation.protocols.subtitle') }}</p>
 
           <ul class="protocol-list" v-if="alert.type.includes('Overcurrent')">
             <li>
               <span class="step-num">1</span>
               <div>
-                <strong>Overload Trip Verification:</strong>
-                Verify if the automatic thermal-magnetic circuit breaker on Apt-402 has tripped.
+                <strong>{{ t('alertInvestigation.protocols.overcurrent.step1Title') }}</strong>
+                {{ t('alertInvestigation.protocols.overcurrent.step1Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">2</span>
               <div>
-                <strong>Load Shedding:</strong>
-                Locate and disconnect high-power appliances (water heaters, HVAC units, space heaters) to identify the overload source.
+                <strong>{{ t('alertInvestigation.protocols.overcurrent.step2Title') }}</strong>
+                {{ t('alertInvestigation.protocols.overcurrent.step2Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">3</span>
               <div>
-                <strong>Thermal Scan:</strong>
-                Inspect the electrical board using a thermal camera to look for loose connections or damaged wiring.
+                <strong>{{ t('alertInvestigation.protocols.overcurrent.step3Title') }}</strong>
+                {{ t('alertInvestigation.protocols.overcurrent.step3Desc') }}
               </div>
             </li>
           </ul>
@@ -276,22 +269,22 @@
             <li>
               <span class="step-num">1</span>
               <div>
-                <strong>Phase Test:</strong>
-                Measure line voltage at the distribution panel to verify if it falls between 210V - 230V.
+                <strong>{{ t('alertInvestigation.protocols.voltage.step1Title') }}</strong>
+                {{ t('alertInvestigation.protocols.voltage.step1Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">2</span>
               <div>
-                <strong>Neutral Check:</strong>
-                Verify that the neutral-to-ground voltage is below 2.0V. High neutral voltage indicates neutral drift.
+                <strong>{{ t('alertInvestigation.protocols.voltage.step2Title') }}</strong>
+                {{ t('alertInvestigation.protocols.voltage.step2Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">3</span>
               <div>
-                <strong>Grid Sync:</strong>
-                Report phase drops to the utility company if the grid failure is external.
+                <strong>{{ t('alertInvestigation.protocols.voltage.step3Title') }}</strong>
+                {{ t('alertInvestigation.protocols.voltage.step3Desc') }}
               </div>
             </li>
           </ul>
@@ -300,22 +293,22 @@
             <li>
               <span class="step-num">1</span>
               <div>
-                <strong>Main Valve Shut-off:</strong>
-                Close the manual gas valve at the property immediately.
+                <strong>{{ t('alertInvestigation.protocols.gas.step1Title') }}</strong>
+                {{ t('alertInvestigation.protocols.gas.step1Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">2</span>
               <div>
-                <strong>Ventilation:</strong>
-                Open windows and doors to disperse the gas concentration. Do NOT toggle electrical switches.
+                <strong>{{ t('alertInvestigation.protocols.gas.step2Title') }}</strong>
+                {{ t('alertInvestigation.protocols.gas.step2Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">3</span>
               <div>
-                <strong>Sensor Calibration:</strong>
-                Inspect the gas safety unit sensor for contamination or damage.
+                <strong>{{ t('alertInvestigation.protocols.gas.step3Title') }}</strong>
+                {{ t('alertInvestigation.protocols.gas.step3Desc') }}
               </div>
             </li>
           </ul>
@@ -324,15 +317,15 @@
             <li>
               <span class="step-num">1</span>
               <div>
-                <strong>Site Audit:</strong>
-                Visit the property to confirm if there are any visible signs of damage.
+                <strong>{{ t('alertInvestigation.protocols.generic.step1Title') }}</strong>
+                {{ t('alertInvestigation.protocols.generic.step1Desc') }}
               </div>
             </li>
             <li>
               <span class="step-num">2</span>
               <div>
-                <strong>Inspect Devices:</strong>
-                Confirm the safety gateway has normal LED signals and is communicating correctly.
+                <strong>{{ t('alertInvestigation.protocols.generic.step2Title') }}</strong>
+                {{ t('alertInvestigation.protocols.generic.step2Desc') }}
               </div>
             </li>
           </ul>
@@ -345,6 +338,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import apiClient from '@/shared/infrastructure/http/apiClient';
+import { useI18n } from '@/shared/presentation/i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   alertId: {
@@ -369,11 +365,11 @@ const fetchAlertDetails = async () => {
       alert.value = res.data;
       ticket.value = res.data.ticket;
     } else {
-      error.value = "Alert record is empty.";
+      error.value = t('alertInvestigation.error.empty');
     }
   } catch (e) {
     console.error('Failed to load alert details', e);
-    error.value = e.response?.data?.message || "Failed to establish contact with backend services. Please ensure the backend is running.";
+    error.value = e.response?.data?.message || t('alertInvestigation.error.fallback');
   } finally {
     isLoading.value = false;
   }

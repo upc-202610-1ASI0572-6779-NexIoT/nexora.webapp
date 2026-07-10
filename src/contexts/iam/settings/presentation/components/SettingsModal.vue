@@ -239,7 +239,7 @@ const props = defineProps({
   isOpen: Boolean
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'edit-profile']);
 const router = useRouter();
 const settingsStore = useSettingsStore();
 const authStore = useAuthStore();
@@ -303,7 +303,7 @@ function close() {
 
 function goToProfile() {
   close();
-  router.push('/profile');
+  emit('edit-profile');
 }
 
 function deactivateAccount() {

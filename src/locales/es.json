@@ -505,5 +505,393 @@
        "successDesc": "Gracias por informarnos. Nuestro equipo de soporte revisará tu reporte y se comunicará contigo a la brevedad.",
        "newReport": "Enviar otro reporte"
      }
-   }
+   },
+   "reportsPage": {
+      "loading": "Cargando informes y análisis...",
+      "title": "Consumo y Sostenibilidad",
+      "subtitle": "Analiza la eficiencia de las propiedades, identifica anomalías por fugas y gestiona los recursos.",
+      "exportPdf": "EXPORTAR PDF",
+      "kpis": {
+        "estimatedCost": "COSTO ESTIMADO",
+        "vsLastPeriod": "{trend}% vs período anterior",
+        "budgetPlan": "Plan de presupuesto mensual",
+        "budgetUsed": "{percent}% usado",
+        "totalEnergy": "ENERGÍA TOTAL",
+        "allProperties": "En todas las propiedades activas",
+        "totalGas": "GAS TOTAL",
+        "aggregatedGas": "Consumo de gas agregado"
+      },
+      "chart": {
+        "title": "Uso Comparativo de Recursos",
+        "subtitle": "Compara el consumo a lo largo del período de tiempo seleccionado.",
+        "energy": "Energía (kWh)",
+        "gas": "Gas (m³)",
+        "water": "Agua (m³)",
+        "filters": {
+          "lastMonth": "Último mes",
+          "last3Months": "Últimos 3 meses",
+          "last6Months": "Últimos 6 meses",
+          "lastYear": "Último año",
+          "last2Years": "Últimos 2 años"
+        }
+      },
+      "breakdown": {
+        "title": "Desglose de Propiedades",
+        "viewAll": "VER TODAS LAS PROPIEDADES >",
+        "headers": {
+          "name": "NOMBRE DE PROPIEDAD",
+          "location": "UBICACIÓN",
+          "energy": "ENERGÍA (kWh)",
+          "gas": "GAS (m³)",
+          "water": "AGUA (m³)",
+          "status": "ESTADO"
+        },
+        "status": {
+          "optimal": "ÓPTIMO",
+          "monitor": "MONITOR",
+          "highLoad": "CARGA ALTA"
+        }
+      }
+    },
+    "alertsPage": {
+      "breadcrumbs": "DASHBOARD > <strong>CENTRO DE ALERTAS</strong>",
+      "title": "Centro de Alertas de Emergencia",
+      "subtitle": "Monitoreo en tiempo real de eventos críticos en todas las propiedades industriales.",
+      "exportBtn": "Exportar Reporte de Incidencias (PDF)",
+      "exporting": "Exportando PDF...",
+      "kpis": {
+        "activeCritical": "CRÍTICAS ACTIVAS",
+        "criticalSubtitle": "Requiere Acción Inmediata",
+        "pendingWarnings": "ADVERTENCIAS PENDIENTES",
+        "warningSubtitle": "Esperando Investigación",
+        "sensorsOnline": "SENSORES EN LÍNEA",
+        "sensorsOnlineSubtitle": "{online} de {total} unidades activas"
+      },
+      "table": {
+        "title": "Eventos Críticos Recientes",
+        "liveUpdates": "ACTUALIZACIONES EN VIVO",
+        "severity": "Severidad",
+        "severityAll": "Todas las Severidades",
+        "severityWarning": "Advertencia",
+        "severityCritical": "Crítico",
+        "type": "Tipo de Alerta",
+        "typeAll": "Todos los Tipos",
+        "typeGas": "Umbral de Gas",
+        "typeOvercurrent": "Sobrecorriente Detectada",
+        "typeVoltage": "Inestabilidad de Voltaje",
+        "typeIntrusion": "Intrusión (Seguridad)",
+        "clearFilters": "Limpiar Filtros",
+        "headers": {
+          "timestamp": "Marca de tiempo",
+          "deviceId": "ID de Dispositivo",
+          "sensorType": "Tipo de Sensor",
+          "reading": "Lectura",
+          "status": "Estado",
+          "actions": "Acciones"
+        },
+        "sensorTypes": {
+          "system": "Sistema",
+          "gas": "Nivel de Gas",
+          "overcurrent": "Sobrecarga de Corriente",
+          "voltage": "Monitor de Voltaje",
+          "intrusion": "Movimiento de Seguridad",
+          "water": "Flujo de Agua"
+        },
+        "readings": {
+          "voltageOk": "220V Correcto",
+          "voltageUnstable": "Inestable",
+          "intrusion": "Intrusión"
+        },
+        "actions": {
+          "investigate": "INVESTIGAR",
+          "viewLog": "VER LOG"
+        },
+        "showingText": "Mostrando <strong>{start} - {end}</strong> de <strong>{total}</strong> alertas en total"
+      }
+    },
+    "alertInvestigation": {
+      "breadcrumbs": "DASHBOARD > CENTRO DE ALERTAS > <strong>INVESTIGACIÓN #{id}</strong>",
+      "title": "Investigación de Alerta",
+      "subtitle": "Interfaz de resolución de mantenimiento y diagnóstico en tiempo real.",
+      "backBtn": "Volver al Centro de Alertas",
+      "loading": "Cargando detalles de diagnóstico desde la puerta de enlace en la nube...",
+      "error": {
+        "title": "Error al Cargar la Alerta",
+        "retry": "Reintentar Conexión",
+        "empty": "El registro de la alerta está vacío.",
+        "fallback": "No se pudo establecer contacto con los servicios de backend. Asegúrese de que el backend esté ejecutándose."
+      },
+      "severity": {
+        "critical": "CRÍTICO",
+        "warning": "ADVERTENCIA"
+      },
+      "logged": "Registrado: {dateTime}",
+      "deviceSignature": "Firma del Dispositivo:",
+      "diagnostics": {
+        "overcurrent": "Resumen de diagnóstico: El consumo de corriente en esta línea superó el límite de corriente de seguridad máximo de 20.0 amperios. Esto indica una anomalía de sobrecarga, que podría activar relés de seguridad o representar un peligro para la red eléctrica.",
+        "voltage": "Resumen de diagnóstico: La unidad de seguridad ha informado inestabilidad en la red (el estado de VoltageOk es Falso). Esto indica caídas de voltaje, caídas de tensión o posibles microcortes en el suministro de energía.",
+        "gas": "Resumen de diagnóstico: Los niveles de gas combustible han superado los niveles de seguridad. Los valores superiores a 100 PPM requieren advertencias, mientras que las lecturas que superan los 300 PPM exigen una respuesta de emergencia crítica.",
+        "intrusion": "Resumen de diagnóstico: Sensor de movimiento o de acceso activado mientras el sistema de seguridad está armado. Esto representa una posible advertencia de intrusión.",
+        "generic": "Resumen de diagnóstico: Se ha superado el umbral de seguridad. Inspeccione los registros del dispositivo y la línea de tiempo histórica de telemetría a continuación para identificar posibles causas."
+      },
+      "propertyCard": {
+        "title": "Propiedad Asociada",
+        "armed": "SEGURIDAD ARMADA",
+        "disarmed": "SEGURIDAD DESARMADA",
+        "name": "Nombre de Propiedad",
+        "address": "Dirección",
+        "cityCountry": "Ciudad y País",
+        "connection": "Conexión de Dispositivo",
+        "noProperty": "Ninguna propiedad asignada a esta puerta de enlace de seguridad. Esta alerta se aplica a todas las cuentas que visualizan esta unidad."
+      },
+      "telemetryCard": {
+        "title": "Registros Históricos de Telemetría (Lecturas recientes)",
+        "liveLink": "Enlace en vivo activo",
+        "headers": {
+          "timestamp": "Marca de tiempo",
+          "gasLevel": "Nivel de Gas (PPM)",
+          "electricity": "Electricidad (Amperios)",
+          "voltageStatus": "Estado de Voltaje de Red",
+          "waterFlow": "Flujo de Agua (Lpm)"
+        },
+        "values": {
+          "stable": "Estable",
+          "unstable": "Inestable",
+          "notAvailable": "No disponible"
+        },
+        "empty": "No hay registros de telemetría registrados para esta unidad de seguridad."
+      },
+      "ticketPanel": {
+        "title": "Gestión de Incidentes",
+        "subtitle": "Administre el ciclo de vida del mantenimiento y registre la resolución del ingeniero.",
+        "statusLabel": "ESTADO DEL TICKET",
+        "noTicket": "NINGÚN TICKET CREADO",
+        "details": {
+          "id": "ID de Ticket:",
+          "assigned": "Asignado a:",
+          "opened": "Abierto el:",
+          "resolved": "Resuelto el:"
+        },
+        "assign": {
+          "label": "Asignar Inspector de Seguridad / Ingeniero",
+          "placeholder": "-- Seleccione Ingeniero --",
+          "carlos": "Ing. Carlos Mendoza (Inspector Eléctrico)",
+          "sofia": "Ing. Sofía Reyes (Experta en Seguridad de Gas)",
+          "juan": "Tec. Juan Torres (Técnico de Campo)"
+        },
+        "buttons": {
+          "openTicket": "Abrir Ticket de Mantenimiento",
+          "assignInspector": "Asignar Inspector",
+          "resolve": "Marcar Incidente como Resuelto"
+        },
+        "resolvedNote": "Este incidente ha sido completamente resuelto y marcado como seguro. Los registros de la puerta de enlace de seguridad se conservan para auditorías."
+      },
+      "protocols": {
+        "title": "Protocolos de Emergencia",
+        "subtitle": "Procedimientos obligatorios para el ingeniero asignado.",
+        "overcurrent": {
+          "step1Title": "Verificación de disparo por sobrecarga:",
+          "step1Desc": "Verifique si se ha disparado el interruptor automático termomagnético en Apt-402.",
+          "step2Title": "Desconexión de cargas:",
+          "step2Desc": "Localice y desconecte los electrodomésticos de alta potencia (calentadores de agua, unidades de aire acondicionado, calentadores portátiles) para identificar la fuente de sobrecarga.",
+          "step3Title": "Escaneo térmico:",
+          "step3Desc": "Inspeccione el cuadro eléctrico con una cámara térmica para buscar conexiones sueltas o cables dañosados."
+        },
+        "voltage": {
+          "step1Title": "Prueba de fase:",
+          "step1Desc": "Mida la tensión de línea en el panel de distribución para verificar si cae entre 210V - 230V.",
+          "step2Title": "Comprobación de neutro:",
+          "step2Desc": "Verifique que la tensión de neutro a tierra sea inferior a 2,0V. Un voltaje de neutro alto indica deriva de neutro.",
+          "step3Title": "Sincronización de red:",
+          "step3Desc": "Reporte las caídas de fase a la compañía de servicios públicos si la falla de la red es externa."
+        },
+        "gas": {
+          "step1Title": "Cierre de la válvula principal:",
+          "step1Desc": "Cierre la válvula manual de gas en la propiedad de inmediato.",
+          "step2Title": "Ventilación:",
+          "step2Desc": "Abra ventanas y puertas para dispersar la concentración de gas. No accione interruptores eléctricos.",
+          "step3Title": "Calibración de sensor:",
+          "step3Desc": "Inspeccione el sensor de la unidad de seguridad de gas para detectar contaminación o daños."
+        },
+        "generic": {
+          "step1Title": "Auditoría de sitio:",
+          "step1Desc": "Visite la propiedad para confirmar si hay signos visibles de daños.",
+          "step2Title": "Inspeccionar dispositivos:",
+          "step2Desc": "Confirme que la puerta de enlace de seguridad tenga señales LED normales y se esté comunicando correctamente."
+        }
+      }
+    },
+    "devicesPage": {
+      "loading": "Escaneando flota IoT...",
+      "title": "Vista General de la Flota de Dispositivos",
+      "subtitle": "Monitoreando {count} nodos Gateway ESP32.",
+      "exportWarning": "No hay dispositivos para exportar.",
+      "filters": {
+        "allAssets": "Todos",
+        "online": "En línea",
+        "needsMaintenance": "Requiere mantenimiento",
+        "offline": "Fuera de línea",
+        "unassigned": "Sin asignar"
+      },
+      "kpis": {
+        "operationalStatus": "ESTADO OPERATIVO",
+        "gatewayLoad": "CARGA DE GATEWAY",
+        "activeAlerts": "ALERTAS ACTIVAS",
+        "firmwareDrift": "DESVIACIÓN DE FIRMWARE",
+        "critical": "Crítico",
+        "loadUnit": "prom msg/s",
+        "driftUnit": "nodos desincronizados"
+      },
+      "inventory": {
+        "title": "Flota Gateway ESP32",
+        "searchPlaceholder": "Buscar por ID de dispositivo o ubicación del sitio...",
+        "headers": {
+          "deviceId": "ID DE DISPOSITIVO",
+          "siteLocation": "UBICACIÓN DEL SITIO",
+          "status": "ESTADO",
+          "wifiRssi": "RSSI DE WI-FI",
+          "firmware": "FIRMWARE",
+          "uptime": "TIEMPO DE ACTIVIDAD",
+          "actions": "ACCIONES"
+        },
+        "statuses": {
+          "online": "EN LÍNEA",
+          "lowSignal": "SEÑAL BAJA",
+          "commFailure": "FALLA DE COMUNICACIÓN",
+          "updatePending": "ACTUALIZACIÓN PENDIENTE"
+        },
+        "text": {
+          "timeout": "Timeout",
+          "outdated": "Desactualizado",
+          "reboot": "Reiniciar",
+          "flash": "Flashear",
+          "manage": "Gestionar"
+        },
+        "showingText": "Mostrando {start} a {end} de {total} entradas"
+      }
+    },
+    "deviceDetailsPage": {
+      "loading": "Cargando detalles del dispositivo...",
+      "breadcrumbs": {
+        "devices": "DISPOSITIVOS"
+      },
+      "header": {
+        "title": "Nodo Gateway ESP32 ({location})",
+        "calibrateBtn": "Calibrar Sensor",
+        "calibrating": "Calibrando..."
+      },
+      "liveTelemetry": {
+        "title": "Estabilidad Ambiental",
+        "kicker": "TELEMETRÍA EN VIVO",
+        "status": {
+          "active": "ACTIVO",
+          "offline": "FUERA DE LÍNEA"
+        },
+        "labels": {
+          "lastSyncTime": "HORA ÚLTIMA SYNC",
+          "signal": "SEÑAL (RSSI)",
+          "health": "SALUD"
+        },
+        "subs": {
+          "localTime": "Hora Local",
+          "excellent": "EXCELENTE",
+          "nominalOps": "OP. NOMINAL",
+          "commFailure": "FALLA DE COMUNICACIÓN"
+        }
+      },
+      "connectionDetails": {
+        "kicker": "DETALLES DE CONEXIÓN",
+        "labels": {
+          "ssid": "SSID",
+          "ipAddress": "Dirección IP",
+          "macAddress": "Dirección MAC",
+          "protocol": "Protocolo",
+          "lastSync": "ÚLTIMA SYNC"
+        },
+        "values": {
+          "never": "Nunca",
+          "justNow": "Hace un momento",
+          "secondsAgo": "Hace {seconds} segundos",
+          "minutesAgo": "Hace {minutes} minuto",
+          "minutesAgoPlural": "Hace {minutes} minutos"
+        }
+      },
+      "analytics": {
+        "title": "Análisis de Sensores de Alta Densidad",
+        "labels": {
+          "gasLevel": "NIVEL DE GAS",
+          "waterFlow": "FLUJO DE AGUA",
+          "energyConsumption": "CONSUMO DE ENERGÍA",
+          "voltageSafety": "SEGURIDAD DE VOLTAJE",
+          "motionSensor": "SENSOR DE MOVIMIENTO",
+          "deviceStatus": "ESTADO DEL DISPOSITIVO",
+          "signalStrength": "FUERZA DE SEÑAL",
+          "ramUsage": "USO DE RAM",
+          "packetLoss": "PÉRDIDA DE PAQUETES",
+          "avgTemp": "TEMP PROMEDIO",
+          "peakLoad": "CARGA MÁXIMA"
+        },
+        "trends": {
+          "nominal": "NOMINAL",
+          "active": "ACTIVO",
+          "stable": "ESTABLE",
+          "optimal": "ÓPTIMO",
+          "excellent": "EXCELENTE",
+          "alert": "ALERTA",
+          "voltageOk": "VOLTAJE CORRECTO",
+          "voltageDrop": "CAÍDA DE VOLTAJE",
+          "highAlert": "ALERTA ALTA",
+          "highFlow": "FLUJO ALTO",
+          "overload": "SOBRECARGA",
+          "presenceDetected": "PRESENCIA DETECTADA",
+          "disconnected": "DESCONECTADO"
+        }
+      },
+      "eventLogs": {
+        "kicker": "LOGS DE EVENTOS DEL SISTEMA",
+        "buttons": {
+          "collapse": "CONTRAER LOGS",
+          "viewAll": "VER TODOS LOS LOGS"
+        },
+        "messages": {
+          "calibrationSuccessfulTitle": "Calibración Exitosa",
+          "calibrationSuccessfulDesc": "Rango del sensor interno ajustado a ±0.2°C.",
+          "fringeSignalTitle": "Señal Marginal Detectada",
+          "fringeSignalDesc": "RSSI cayó por debajo de -75dBm durante 12 segundos.",
+          "routineHeartbeatTitle": "Heartbeat Rutinario",
+          "routineHeartbeatDesc": "Informe de estado del sistema enviado al gateway principal.",
+          "rebootInitiatedTitle": "Reinicio Iniciado",
+          "rebootInitiatedDesc": "Reinicio de hardware del sistema solicitado por el administrador. Conexión cerrada.",
+          "firmwareFlashedTitle": "Firmware Flasheado",
+          "firmwareFlashedDesc": "Sistema flasheado con éxito a v2.4.1-stable.",
+          "sensorCalibratedTitle": "Sensor Calibrado",
+          "sensorCalibratedDesc": "Calibración exitosa. Desviación cero ajustada. Temp Actual: {val}",
+          "voltageSpikeDetectedTitle": "Pico de Voltaje Detectado",
+          "voltageSpikeDetectedDesc": "El voltaje alcanzó 245V durante 0.5s.",
+          "powerCycleInitiatedTitle": "Ciclo de Alimentación Iniciado",
+          "powerCycleInitiatedDesc": "Reinicio manual activado por el arrendador.",
+          "gasLeakWarningTitle": "Advertencia de Fuga de Gas",
+          "gasLeakWarningDesc": "La lectura de gas alcanzó 25 ppm.",
+          "sensorPreheatCompleteTitle": "Precalentamiento del Sensor Completo",
+          "sensorPreheatCompleteDesc": "La cámara alcanzó la temperatura operativa de 120°C."
+        }
+      },
+      "hardwareProfile": {
+        "kicker": "PERFIL DE HARDWARE",
+        "labels": {
+          "firmwareVersion": "VERSIÓN DE FIRMWARE",
+          "hardwareRev": "REV DE HARDWARE",
+          "coreFrequency": "FRECUENCIA DE NÚCLEO",
+          "chipTemp": "TEMP DEL CHIP"
+        },
+        "buttons": {
+          "updating": "ACTUALIZANDO...",
+          "firmwareUpdate": "ACTUALIZAR FIRMWARE",
+          "firmwareUpToDate": "FIRMWARE ACTUALIZADO",
+          "rebooting": "REINICIANDO...",
+          "offline": "FUERA DE LÍNEA",
+          "hardReboot": "REINICIO FORZADO"
+        }
+      }
+    }
 }
